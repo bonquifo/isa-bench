@@ -3,20 +3,32 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { desktopFromMain, listenPort, loopbackUrl } from './paths.ts'
+import { desktopFromMain } from './paths.ts'
 
 describe('desktop layout', () => {
-  it('resolves a packaged repository and UI directory', () => {
+  it('finds the built UI bundle beside the packaged app', () => {
     const root = mkdtempSync(join(tmpdir(), 'isa-desktop-'))
-    mkdirSync(join(root, 'src', 'engine'), { recursive: true })
     mkdirSync(join(root, 'dist'), { recursive: true })
-    writeFileSync(join(root, 'src', 'engine', 'index.ts'), 'export {}')
     writeFileSync(join(root, 'dist', 'index.html'), '<html></html>')
     const main = pathToFileURL(join(root, 'desktop', 'dist', 'main.js')).href
-    const found = desktopFromMain(main, [], { ISA_SIM_REPOSITORY_ROOT: root })
+    const found = desktopFromMain(main, [], {})
     expect(found.development).toBe(false)
-    expect(found.layout.repositoryRoot).toBe(root)
     expect(found.layout.staticDir).toBe(join(root, 'dist'))
+  })
+
+  it('prefers an explicit static directory override', () => {
+    const root = mkdtempSync(join(tmpdir(), 'isa-desktop-override-'))
+    mkdirSync(join(root, 'custom'), { recursive: true })
+    writeFileSync(join(root, 'custom', 'index.html'), '<html></html>')
+    const main = pathToFileURL(join(root, 'desktop', 'dist', 'main.js')).href
+    expect(desktopFromMain(main, [], { ISA_SIM_STATIC_DIR: join(root, 'custom') }).layout.staticDir)
+      .toBe(join(root, 'custom'))
+  })
+
+  it('reports no static directory when nothing is built yet', () => {
+    const root = mkdtempSync(join(tmpdir(), 'isa-desktop-empty-'))
+    const main = pathToFileURL(join(root, 'desktop', 'dist', 'main.js')).href
+    expect(desktopFromMain(main, [], {}).layout.staticDir).toBeUndefined()
   })
 
   it('points at a CommonJS preload, which is the only kind a sandboxed renderer loads', () => {
@@ -34,8 +46,7 @@ describe('desktop layout', () => {
 
   it('treats --dev as the Vite development shell', () => {
     expect(desktopFromMain(import.meta.url, ['--dev'], {}).development).toBe(true)
-    expect(loopbackUrl(4317)).toBe('http://127.0.0.1:4317')
-    expect(listenPort({ port: 4318 })).toBe(4318)
-    expect(() => loopbackUrl(0)).toThrow(/invalid/)
+    expect(desktopFromMain(import.meta.url, [], { ISA_BENCH_DEV_URL: 'http://127.0.0.1:5173' }).development).toBe(true)
+    expect(desktopFromMain(import.meta.url, [], {}).development).toBe(false)
   })
 })

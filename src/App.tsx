@@ -26,14 +26,9 @@ import { Report } from './ui/Report.tsx'
 import { isCurrentCompareResult, type ReportableResult } from './ui/reportLegacy.ts'
 import { currentCatalogProfile, replayProfileState } from './ui/replayProfile.ts'
 import { deleteSave, loadSavesState, restoreInput, saveRun, type StoredRun } from './ui/saves.ts'
-import { runControlled } from './ui/runController.ts'
-import { BackendClient, eventProgress } from './ui/backendClient.ts'
-import { useServerJob } from './ui/api/useServerJob.ts'
-import { CompareResultSchema } from './engine/compareSchema.ts'
+import { runComparisonAsync } from './engine/index.ts'
 
-export default function App({ backendClient }: { backendClient?: BackendClient } = {}) {
-  const client = useMemo(() => backendClient ?? new BackendClient(), [backendClient])
-  const serverJob = useServerJob(client, 'analytical-inorder')
+export default function App() {
   const [workloadId, setWorkloadId] = useState('dot_product')
   const [n, setN] = useState(256)
   const [seed, setSeed] = useState(42)
@@ -70,19 +65,10 @@ export default function App({ backendClient }: { backendClient?: BackendClient }
     detail: '',
   })
   const runAbort = useRef<AbortController | null>(null)
-  const serverResult = useMemo(() => {
-    const value = serverJob.state.job?.state === 'succeeded' ? serverJob.state.job.result : null
-    if (!value) return { result: null, error: null }
-    const parsed = CompareResultSchema.safeParse(value)
-    return parsed.success
-      ? { result: parsed.data, error: null }
-      : { result: null, error: `INVALID BACKEND RESULT · ${parsed.error.message}` }
-  }, [serverJob.state.job])
-  const shownResult = result ?? serverResult.result
-  const shownError = error ?? serverResult.error ?? serverJob.state.error
-  const visibleRunning = running || serverJob.state.running
-  const latestServerEvent = serverJob.state.events.at(-1)
-  const visibleProgress = (latestServerEvent ? eventProgress(latestServerEvent) : null) ?? progress
+  const shownResult = result
+  const shownError = error
+  const visibleRunning = running
+  const visibleProgress = progress
 
   const workload = WORKLOADS.find((w) => w.id === workloadId)
   const cProgram = cExampleByWorkloadId(workloadId)
@@ -232,7 +218,7 @@ export default function App({ backendClient }: { backendClient?: BackendClient }
     setError(null)
     setProgress({ ratio: 0.02, phase: 'MODEL', detail: 'opening the pipeline' })
     try {
-      const next = await runControlled(
+      const next = await runComparisonAsync(
         {
           workloadId,
           n,
@@ -251,12 +237,7 @@ export default function App({ backendClient }: { backendClient?: BackendClient }
           cpuByIsa,
         },
         setProgress,
-        {
-          signal: controller.signal,
-          client,
-          managedRun: serverJob.run,
-          managedCancel: serverJob.cancel,
-        },
+        { signal: controller.signal },
       )
       setResult(next)
     } catch (err) {
@@ -295,10 +276,7 @@ export default function App({ backendClient }: { backendClient?: BackendClient }
             {visibleRunning && <JackIn progress={visibleProgress} />}
             <button
               type="button"
-              onClick={visibleRunning ? () => {
-                runAbort.current?.abort()
-                serverJob.cancel()
-              } : run}
+              onClick={visibleRunning ? () => runAbort.current?.abort() : run}
               className="jack-btn"
             >
               {visibleRunning ? 'CANCEL RUN' : 'RUN MODEL'}

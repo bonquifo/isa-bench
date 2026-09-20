@@ -12,7 +12,7 @@ import {
   type OoOCompareInput,
   type OoOResult,
 } from '../engine/index.ts'
-import { EnvelopeBadges } from '../ui/Evidence.tsx'
+import { EvidenceBadgeView } from '../ui/Evidence.tsx'
 import { LaneToolbar } from './LaneToolbar.tsx'
 
 export function OoOLane() {
@@ -153,7 +153,7 @@ function OoOReport({ result, rerunInput }: { result: OoOResult; rerunInput: OoOC
       {result.rows.map((row, index) => (
         <section className="hud-panel p-4" key={row.isa}>
           <div className="flex flex-wrap justify-between gap-3">
-            <div><h3 className="font-display text-lg">{ISA_META[row.isa].full}</h3><EnvelopeBadges envelope={result.envelopes[index]} primary="SIMULATED ANALYTICAL" /></div>
+            <div><h3 className="font-display text-lg">{ISA_META[row.isa].full}</h3><EvidenceBadgeView /></div>
             <span className="font-mono text-xs text-white/45">comparisonGroupKey {result.envelopes[index]?.comparisonGroupKey}</span>
           </div>
           <dl className="metric-grid mt-4">

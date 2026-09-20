@@ -1,14 +1,7 @@
 import { useEffect, useState, type KeyboardEvent } from 'react'
 import ControlledInOrderApp from '../App.tsx'
-import { BackendPanel } from '../ui/BackendPanel.tsx'
-import { useBackend } from '../ui/api/useBackend.ts'
-import { ActiveServerJobs, ServerJobProvider } from '../ui/api/ServerJobProvider.tsx'
-import { CalibratedLane } from './CalibratedLane.tsx'
-import { EmpiricalLane } from './EmpiricalLane.tsx'
-import { ExternalLane } from './ExternalLane.tsx'
 import { LANES, nextLaneIndex, type LaneId } from './types.ts'
 import { OoOLane } from './OoOLane.tsx'
-import { ToolchainLane } from './ToolchainLane.tsx'
 
 function initialLane(): LaneId {
   const value = globalThis.location?.hash.replace(/^#\//, '') as LaneId
@@ -17,7 +10,6 @@ function initialLane(): LaneId {
 
 export default function MultiLaneApp() {
   const [lane, setLane] = useState<LaneId>(initialLane)
-  const { client, backend, refresh } = useBackend()
   const descriptor = LANES.find((item) => item.id === lane)!
   useEffect(() => {
     const listener = () => setLane(initialLane())
@@ -36,16 +28,15 @@ export default function MultiLaneApp() {
     document.getElementById(`lane-tab-${LANES[next]!.id}`)?.focus()
   }
   return (
-    <ServerJobProvider client={client}>
     <div className="min-h-svh">
       <a className="skip-link" href={`#lane-panel-${lane}`}>Skip to experiment</a>
       <header className="experiment-header">
         <div className="mx-auto max-w-[1600px] px-4 py-4">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div><p className="hud-kicker">NET//ISA · EVIDENCE WORKBENCH</p><h1 className="font-display text-2xl font-bold uppercase tracking-wider">Experiment lanes</h1></div>
+            <div><p className="hud-kicker">NET//ISA · SIMULATION WORKBENCH</p><h1 className="font-display text-2xl font-bold uppercase tracking-wider">Timing models</h1></div>
             <span className="category-label">{descriptor.category}</span>
           </div>
-          <nav className="experiment-nav mt-4" role="tablist" aria-label="Experiment selector">
+          <nav className="experiment-nav mt-4" role="tablist" aria-label="Model selector">
             {LANES.map((item, index) => <button key={item.id} id={`lane-tab-${item.id}`} type="button" role="tab" aria-selected={lane === item.id} aria-controls={`lane-panel-${item.id}`} tabIndex={lane === item.id ? 0 : -1} className={lane === item.id ? 'active' : ''} onKeyDown={(event) => keyNavigate(event, index)} onClick={() => navigate(item.id)}>
               <span>{item.title}</span><small>{item.short}</small>
             </button>)}
@@ -54,8 +45,6 @@ export default function MultiLaneApp() {
             <strong>{descriptor.runLabel}</strong>
             <span>{descriptor.runHint}</span>
           </p>
-          <BackendPanel backend={backend} onRefresh={refresh} />
-          <ActiveServerJobs />
         </div>
       </header>
       <main>
@@ -69,15 +58,10 @@ export default function MultiLaneApp() {
           className={item.id === 'inorder' ? '' : 'mx-auto max-w-[1600px] px-4 py-5'}
           tabIndex={0}
         >
-          {lane === item.id && item.id === 'inorder' && <ControlledInOrderApp backendClient={client} />}
+          {lane === item.id && item.id === 'inorder' && <ControlledInOrderApp />}
           {lane === item.id && item.id === 'ooo' && <OoOLane />}
-          {lane === item.id && item.id === 'toolchain' && <ToolchainLane client={client} backend={backend} />}
-          {lane === item.id && item.id === 'external' && <ExternalLane client={client} backend={backend} />}
-          {lane === item.id && item.id === 'empirical' && <EmpiricalLane client={client} backend={backend} />}
-          {lane === item.id && item.id === 'calibrated' && <CalibratedLane client={client} backend={backend} />}
         </section>)}
       </main>
     </div>
-    </ServerJobProvider>
   )
 }

@@ -18,8 +18,6 @@ describe('public terminology', () => {
       ...sourceFiles(join(root, 'src')),
       join(root, 'README.md'),
       join(root, 'index.html'),
-      join(root, 'docs/PROTOCOL.md'),
-      join(root, 'docs/THREAT-MODEL.md'),
     ]
     const forbidden = [
       new RegExp(['Real', 'CPUs'].join(' '), 'i'),
@@ -52,7 +50,7 @@ describe('public terminology', () => {
 
   it('keeps every public Guest C version string synchronized', () => {
     const root = resolve(import.meta.dirname, '../..')
-    const files = [...sourceFiles(join(root, 'src')), join(root, 'README.md'), join(root, 'docs/PROTOCOL.md')]
+    const files = [...sourceFiles(join(root, 'src')), join(root, 'README.md')]
     const versions = files.flatMap((file) =>
       [...readFileSync(file, 'utf8').matchAll(/Guest C v\d+(?:\.\d+)*/g)].map((match) => match[0])
     )
@@ -60,13 +58,11 @@ describe('public terminology', () => {
     expect([...new Set(versions)]).toEqual([GUEST_C_VERSION])
   })
 
-  it('states that empirical and calibrated production sets stay empty until signed evidence arrives', () => {
+  it('keeps modeled output labelled as modeled, never as measurement', () => {
     const root = resolve(import.meta.dirname, '../..')
     const readme = readFileSync(join(root, 'README.md'), 'utf8')
-    const protocol = readFileSync(join(root, 'docs/PROTOCOL.md'), 'utf8')
-    expect(readme).toMatch(/empty until signed evidence/i)
-    expect(protocol).toMatch(/empty until signed evidence/i)
-    expect(readme).toContain('docs/PROTOCOL.md')
-    expect(readme).toContain('docs/THREAT-MODEL.md')
+    expect(readme).toMatch(/model cycles.*not nanoseconds|not stopwatch time/i)
+    expect(readme).toMatch(/pseudo-backends/i)
+    expect(readme).toMatch(/no claim about how fast real silicon/i)
   })
 })

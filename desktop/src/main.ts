@@ -1,10 +1,8 @@
 import { app, BrowserWindow, Menu, shell } from 'electron'
-import { join, resolve } from 'node:path'
-import { createBackend, type Backend } from '@isa-sim/server'
-import { desktopFromMain, listenPort, loopbackUrl } from './paths.js'
+import { join } from 'node:path'
+import { desktopFromMain } from './paths.js'
 
 const started = desktopFromMain(import.meta.url, process.argv, process.env)
-let backend: Backend | undefined
 let window: BrowserWindow | undefined
 
 if (!app.requestSingleInstanceLock()) {
@@ -21,33 +19,7 @@ app.on('window-all-closed', () => {
   app.quit()
 })
 
-app.on('before-quit', () => {
-  void backend?.app.close()
-})
-
 async function start(): Promise<void> {
-  // The server honors ISA_SIM_DATA_DIR; passing an explicit override here used
-  // to silently discard it, leaving the packaged app unable to reach a native
-  // corpus built anywhere but its own userData directory.
-  const dataDir = process.env.ISA_SIM_DATA_DIR
-    ? resolve(process.env.ISA_SIM_DATA_DIR)
-    : join(app.getPath('userData'), 'data')
-  process.chdir(started.layout.repositoryRoot)
-  backend = await createBackend({
-    host: '127.0.0.1',
-    port: started.development ? 4317 : 0,
-    dataDir,
-    repositoryRoot: started.layout.repositoryRoot,
-    ...(!started.development && started.layout.staticDir ? { staticDir: started.layout.staticDir } : {}),
-  })
-  try {
-    await backend.app.listen({ host: backend.config.host, port: backend.config.port })
-  } catch (error) {
-    if (!started.development || !addressInUse(error)) throw error
-  }
-  const url = started.development
-    ? (process.env.ISA_BENCH_DEV_URL ?? 'http://127.0.0.1:5173')
-    : loopbackUrl(listenPort(backend.app.server.address()))
   if (process.platform === 'darwin') {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'viewMenu' }]))
   } else {
@@ -65,16 +37,18 @@ async function start(): Promise<void> {
       sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
-      additionalArguments: started.development ? [] : [`--isa-bench-origin=${url}`],
     },
   })
-  window.webContents.setWindowOpenHandler(({ url: target }) => {
-    if (target.startsWith('https:') || target.startsWith('http://127.0.0.1')) void shell.openExternal(target)
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https:')) void shell.openExternal(url)
     return { action: 'deny' }
   })
-  await window.loadURL(url)
-}
-
-function addressInUse(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'EADDRINUSE'
+  if (started.development) {
+    await window.loadURL(process.env.ISA_BENCH_DEV_URL ?? 'http://127.0.0.1:5173')
+    return
+  }
+  // The simulation runs entirely in the renderer, so the packaged app loads the
+  // built bundle straight off disk. There is no local server and no network use.
+  if (!started.layout.staticDir) throw new Error('packaged UI bundle is missing; run `npm run build` first')
+  await window.loadFile(join(started.layout.staticDir, 'index.html'))
 }

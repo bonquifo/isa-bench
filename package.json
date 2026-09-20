@@ -2,71 +2,29 @@
   "name": "isa-bench",
   "private": true,
   "version": "1.0.0",
-  "description": "Standalone ISA Bench evidence workbench",
+  "description": "Desktop ISA simulator: run the same C program across eight instruction-set architectures and compare modeled timing",
   "author": "ISA Bench",
   "type": "module",
   "main": "desktop/dist/main.js",
-  "workspaces": [
-    "packages/*",
-    "server",
-    "runner"
-  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "lint": "oxlint",
-    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:deep": "vitest run --config vitest.deep.config.ts",
-    "calibration:build": "npm run build -w @isa-sim/calibration",
-    "calibration:test": "npm run test -w @isa-sim/calibration",
-    "calibration:typecheck": "npm run typecheck -w @isa-sim/calibration",
-    "verify:calibration": "npm run typecheck -w @isa-sim/calibration && npm run lint -w @isa-sim/calibration && npm test -w @isa-sim/calibration && npm run build -w @isa-sim/calibration && npm run typecheck -w @isa-sim/server && npm test -w @isa-sim/server",
-    "contracts:build": "npm run build -w @isa-sim/contracts",
-    "contracts:test": "npm run test -w @isa-sim/contracts",
-    "contracts:typecheck": "npm run typecheck -w @isa-sim/contracts",
-    "dev:all": "concurrently -k -n web,server \"npm run dev\" \"npm run serve -w @isa-sim/server\"",
-    "server": "npm run serve -w @isa-sim/server",
-    "cli": "npm run cli -w @isa-sim/server --",
-    "server:test": "npm test -w @isa-sim/server",
-    "toolchains:build": "node toolchains/scripts/toolchains.mjs build",
-    "toolchains:build:qemu": "node toolchains/scripts/toolchains.mjs build-qemu",
-    "toolchains:doctor": "node toolchains/scripts/toolchains.mjs doctor",
-    "toolchains:test": "tsx toolchains/scripts/emit-semantic-smoke.ts && node toolchains/scripts/toolchains.mjs test && tsx toolchains/scripts/semantic-cases.ts && tsx toolchains/scripts/cross-smoke.ts && tsx toolchains/scripts/backend-smoke.ts",
-    "verify:toolchains": "tsx toolchains/scripts/emit-semantic-smoke.ts && node toolchains/scripts/toolchains.mjs verify && tsx toolchains/scripts/semantic-cases.ts && tsx toolchains/scripts/cross-smoke.ts && tsx toolchains/scripts/backend-smoke.ts",
-    "native-corpus:doctor": "npm run corpus -w @isa-sim/native-benchmarks -- doctor",
-    "native-corpus:build": "npm run corpus -w @isa-sim/native-benchmarks -- build",
-    "verify:native-corpus": "npm run typecheck -w @isa-sim/native-benchmarks && npm run lint -w @isa-sim/native-benchmarks && npm test -w @isa-sim/native-benchmarks && npm run corpus -w @isa-sim/native-benchmarks -- verify",
-    "verify:native-corpus:full": "npm run typecheck -w @isa-sim/native-benchmarks && npm run lint -w @isa-sim/native-benchmarks && npm test -w @isa-sim/native-benchmarks && npm run corpus -w @isa-sim/native-benchmarks -- verify --full",
-    "external:build": "node external/scripts/external.mjs build",
-    "external:doctor": "node external/scripts/external.mjs doctor",
-    "external:test": "npm test -w @isa-sim/server -- external && node external/scripts/external.mjs test",
-    "docs:external": "node external/scripts/protocol-table.mjs",
-    "verify:external": "npm run contracts:build && npm run typecheck -w @isa-sim/server && npm run lint -w @isa-sim/server && npm test -w @isa-sim/server -- external && node external/scripts/external.mjs verify && node external/scripts/protocol-table.mjs --check",
-    "verify:backend": "npm run typecheck -w @isa-sim/server && npm run lint -w @isa-sim/server && npm test -w @isa-sim/server && npm run build -w @isa-sim/server",
-    "verify:ooo": "vitest run src/engine/ooo.test.ts src/engine/cpu.test.ts src/engine/cache.test.ts src/engine/predictor.test.ts",
-    "verify:empirical": "npm run verify:empirical-runner && npm run verify:calibration",
-    "runner:build": "npm run build -w @isa-sim/empirical-runner",
-    "runner:test": "npm test -w @isa-sim/empirical-runner",
-    "helper:build": "cargo build --manifest-path crates/measurement-helper/Cargo.toml",
-    "helper:test": "cargo test --manifest-path crates/measurement-helper/Cargo.toml --features test-only-fixture",
-    "helper:test-fixture-build": "cargo build --manifest-path crates/measurement-helper/Cargo.toml --features test-only-fixture --bin measurement-test-fixture && cargo build --manifest-path crates/measurement-helper/Cargo.toml --bin measurement-helper",
-    "verify:empirical-runner": "npm run typecheck -w @isa-sim/contracts && npm run lint -w @isa-sim/contracts && npm test -w @isa-sim/contracts && npm run typecheck -w @isa-sim/empirical-runner && npm run lint -w @isa-sim/empirical-runner && npm run runner:build && npm run helper:test-fixture-build && npm run runner:test && npm run helper:test && npm run typecheck -w @isa-sim/server && npm run lint -w @isa-sim/server && npm test -w @isa-sim/server && npm run build -w @isa-sim/server",
-    "verify": "npm run typecheck && npm run lint && npm run build && npm test && npm run test:deep && npm run verify:backend && npm run verify:ooo && npm run contracts:test",
-    "verify:all": "npm run verify && npm run verify:empirical && npm run verify:native-corpus && npm run verify:external && npm run verify:toolchains",
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build",
     "desktop:compile": "tsc -b desktop/tsconfig.json --pretty false",
     "desktop:dev": "npm run desktop:compile && concurrently -k -n web,desktop \"vite\" \"electron . --dev\"",
     "desktop:build": "npm run build && npm run desktop:compile",
     "desktop:pack": "npm run desktop:build && electron-builder --publish never",
     "desktop:pack:win": "npm run desktop:build && electron-builder --win nsis portable --publish never",
     "desktop:pack:linux": "npm run desktop:build && electron-builder --linux AppImage tar.gz --publish never",
-    "desktop:pack:linux:wsl": "node scripts/wsl-pack.mjs",
     "desktop:pack:mac": "npm run desktop:build && electron-builder --mac dmg zip --publish never"
   },
   "dependencies": {
-    "@isa-sim/server": "*",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "zod": "^4.4.3"
@@ -96,24 +54,8 @@
     "files": [
       "desktop/dist/**/*",
       "dist/**/*",
-      "src/**/*",
-      "server/src/**/*",
-      "server/dist/**/*",
-      "server/package.json",
-      "packages/contracts/package.json",
-      "packages/contracts/dist/**/*",
-      "packages/contracts/src/**/*",
-      "packages/calibration/package.json",
-      "packages/calibration/dist/**/*",
-      "packages/native-benchmarks/manifest.json",
-      "packages/native-benchmarks/src/**/*",
-      "packages/native-benchmarks/native/**/*",
-      "toolchains/**/*",
-      "external/**/*",
-      "docs/**/*",
       "package.json"
     ],
-    "asar": false,
     "extraMetadata": {
       "main": "desktop/dist/main.js"
     },
@@ -140,17 +82,16 @@
         "dmg",
         "zip"
       ],
-      "category": "public.app-category.developer-tools",
-      "icon": "desktop/icon.png"
+      "icon": "desktop/icon.png",
+      "category": "public.app-category.developer-tools"
     },
     "linux": {
       "target": [
         "AppImage",
         "tar.gz"
       ],
-      "category": "Science",
       "icon": "desktop/icon.png",
-      "synopsis": "Deterministic ISA comparison workbench"
+      "category": "Development"
     }
   }
 }
