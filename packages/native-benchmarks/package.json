@@ -1,0 +1,30 @@
+{
+  "name": "@isa-sim/native-benchmarks",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "oxlint src test scripts",
+    "test": "vitest run",
+    "corpus": "tsx scripts/corpus.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "oxlint": "^1.79.0",
+    "tsx": "^4.20.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

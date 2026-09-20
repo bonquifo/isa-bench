@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-27T13:11:00.805Z",
+  "sourceManifestSha256": "6e365fe02f582b46b29df3c59c2ab12b8dfc1a1a62643aa0b3d45986fa5f1b22",
+  "deterministicConfigBuilds": 2,
+  "normalizedExclusions": [
+    "BuildKit wall-clock progress diagnostics"
+  ],
+  "buildWallClockMs": 4149214.521,
+  "images": {
+    "gem5": {
+      "reference": "isa-sim/gem5:25.1.0.0",
+      "imageId": "sha256:de43ace002e3249d446d0439f62e7d9862516e8b67344cc341b311a1006ec29c",
+      "repoDigests": [
+        "isa-sim/gem5@sha256:de43ace002e3249d446d0439f62e7d9862516e8b67344cc341b311a1006ec29c"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "gem5",
+        "version": "25.1.0.0",
+        "binary": "gem5.opt",
+        "optimization": "release",
+        "buildTarget": "ALL",
+        "requiredIsas": [
+          "X86",
+          "ARM",
+          "RISCV"
+        ]
+      }
+    },
+    "llvm-mca": {
+      "reference": "isa-sim/codegen:23.1.0",
+      "imageId": "sha256:f5a0e19a8fb1587885ffada519a229f2ad3956a2a2956bd9408d93977ae95143",
+      "repoDigests": [
+        "isa-sim/codegen@sha256:f5a0e19a8fb1587885ffada519a229f2ad3956a2a2956bd9408d93977ae95143"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "codegen",
+        "llvm": "23.1.0",
+        "targets": [
+          "X86",
+          "AArch64",
+          "RISCV",
+          "Mips",
+          "PowerPC",
+          "Sparc",
+          "WebAssembly"
+        ]
+      }
+    },
+    "champsim": {
+      "reference": "isa-sim/champsim:2026-04",
+      "imageId": "sha256:89b457df3f425ea40c9e2d8c42b09966958b1ef3392e14d65d09154cef39ef8c",
+      "repoDigests": [
+        "isa-sim/champsim@sha256:89b457df3f425ea40c9e2d8c42b09966958b1ef3392e14d65d09154cef39ef8c"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "champsim",
+        "version": "2026-04",
+        "commit": "8e5f6c114fcbc8fe4f7838d86c3f5881c14077da",
+        "traceRecordBytes": 64
+      }
+    }
+  }
+}

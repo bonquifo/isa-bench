@@ -1,0 +1,43 @@
+ARG BASE=debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+FROM ${BASE} AS fetch
+ARG CHAMPSIM_URL=https://codeload.github.com/ChampSim/ChampSim/tar.gz/refs/tags/2026-04
+ARG CHAMPSIM_SHA256=56bf59681245b06e18abbca3f196107818f6a30e98ba0f088b910cdca237ddf7
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --fail --location --proto '=https' --tlsv1.2 "${CHAMPSIM_URL}" -o /tmp/champsim.tar.gz \
+ && echo "${CHAMPSIM_SHA256}  /tmp/champsim.tar.gz" | sha256sum --check --strict \
+ && mkdir /src && tar -xzf /tmp/champsim.tar.gz -C /src --strip-components=1
+
+FROM ${BASE} AS build
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} PYTHONHASHSEED=0
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential python3 libcli11-dev nlohmann-json3-dev libfmt-dev \
+    libbz2-dev liblzma-dev zlib1g-dev \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=fetch /src /src
+WORKDIR /src
+RUN mkdir -p vcpkg_installed/x64-linux/include vcpkg_installed/x64-linux/lib \
+ && ar rcs vcpkg_installed/x64-linux/lib/libCLI11.a \
+ && ./config.sh champsim_config.json \
+ && make -j2 CXXFLAGS="-O3 -DNDEBUG -ffile-prefix-map=/src=."
+
+FROM ${BASE}
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} PYTHONHASHSEED=0 ISA_IMAGE_KIND=champsim
+LABEL org.opencontainers.image.title="ISA Sim ChampSim trace simulator" \
+      org.opencontainers.image.version="2026-04" \
+      org.opencontainers.image.revision="8e5f6c114fcbc8fe4f7838d86c3f5881c14077da" \
+      org.opencontainers.image.licenses="Apache-2.0"
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 libfmt9 libbz2-1.0 liblzma5 zlib1g \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 65532 nonroot \
+ && useradd --no-log-init --uid 65532 --gid 65532 --home-dir /nonexistent nonroot
+COPY --from=build /src/bin/champsim /opt/champsim/bin/champsim
+COPY external/scripts/champsim-runner.py /usr/local/bin/run
+COPY external/scripts/external-entrypoint.sh /usr/local/bin/external-entrypoint
+RUN chmod 0555 /opt/champsim/bin/champsim /usr/local/bin/run /usr/local/bin/external-entrypoint
+USER 65532:65532
+WORKDIR /artifacts
+ENTRYPOINT ["/usr/local/bin/external-entrypoint"]

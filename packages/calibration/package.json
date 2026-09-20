@@ -1,0 +1,32 @@
+{
+  "name": "@isa-sim/calibration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest run",
+    "lint": "oxlint src"
+  },
+  "dependencies": {
+    "@isa-sim/contracts": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "oxlint": "^1.79.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

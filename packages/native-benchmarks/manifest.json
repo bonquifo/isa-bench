@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "corpusVersion": "1.1.0",
+  "sourceDateEpoch": 1787616000,
+  "source": {
+    "path": "native/core.c",
+    "sha256": "09a968ef5fa534c8feac97af30117261e151bd0188adb3196fc61831c388f4d8",
+    "license": "project-internal-reviewed"
+  },
+  "integerSemantics": {
+    "word": "u32 modulo 2^32; interpreted as two's-complement i32 only for signed ordering",
+    "lcg": "state=(state*1664525+1013904223) modulo 2^32; seed is the input i32 bit pattern",
+    "remainder": "workload value generation applies signed-i32 C/JavaScript remainder; Fisher-Yates alone applies unsigned-u32 modulo",
+    "fnv": "h=2166136261; for each logical i32 word h=(h xor wordBits)*16777619 modulo 2^32",
+    "shifts": "logical u32 shifts with count masked by 31",
+    "layout": "logical u32 and binary64 elements; any serialized representation is fixed little-endian"
+  },
+  "workloads": [
+    {
+      "id": "int_sum", "version": 1, "family": "integer-reduction", "selector": 1,
+      "n": { "meaning": "terms 0 through N-1", "min": 8, "max": 20000, "default": 512 },
+      "seed": { "meaning": "unused", "used": false, "default": 0 },
+      "inputLayout": "no input array",
+      "oracle": "wrapping i32 ordered sum of 0..N-1",
+      "roi": "only the ordered accumulation loop",
+      "targets": { "native": "all", "mos": { "maxN": 512 } }
+    },
+    {
+      "id": "dot_product", "version": 1, "family": "integer-mac", "selector": 2,
+      "n": { "meaning": "elements in each vector", "min": 8, "max": 8192, "default": 256 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "A[N] then B[N] logical i32; A=(LCG%17)-8, B=(LCG%13)-6",
+      "oracle": "wrapping i32 ordered sum A[i]*B[i]",
+      "roi": "only the ordered multiply-accumulate loop",
+      "targets": { "native": "all", "mos": { "maxN": 48 } }
+    },
+    {
+      "id": "saxpy", "version": 1, "family": "integer-stream", "selector": 3,
+      "n": { "meaning": "elements in X and Y", "min": 8, "max": 4096, "default": 256 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "X[N] then Y[N] logical i32; X=(LCG%11)-5, Y=(LCG%9)-4",
+      "oracle": "FNV over wrapping y[i]+3*x[i]",
+      "roi": "update Y followed by its FNV oracle reduction",
+      "targets": { "native": "all", "mos": { "maxN": 32 } }
+    },
+    {
+      "id": "memcpy", "version": 1, "family": "word-copy", "selector": 4,
+      "n": { "meaning": "32-bit words copied", "min": 8, "max": 4096, "default": 256 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "source[N] LCG words then zeroed destination[N]",
+      "oracle": "FNV over destination words after ordered copy",
+      "roi": "copy loop followed by destination FNV reduction",
+      "targets": { "native": "all", "mos": { "maxN": 32 } }
+    },
+    {
+      "id": "matmul", "version": 1, "family": "integer-matrix", "selector": 5,
+      "n": { "meaning": "square matrix dimension", "min": 2, "max": 20, "default": 8 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "row-major A[N*N], B[N*N], zero C[N*N]; inputs=(LCG%7)-3",
+      "oracle": "FNV over row-major C from ordered ijk wrapping i32 GEMM",
+      "roi": "complete ijk GEMM followed by C FNV reduction",
+      "targets": { "native": "all", "mos": { "maxN": 4 } }
+    },
+    {
+      "id": "insertion_sort", "version": 1, "family": "comparison-sort", "selector": 6,
+      "n": { "meaning": "elements sorted", "min": 4, "max": 192, "default": 48 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "A[N] consecutive LCG words",
+      "oracle": "FNV over stable ascending signed-i32 insertion sort result",
+      "roi": "in-place insertion sort followed by FNV reduction",
+      "targets": { "native": "all", "mos": { "maxN": 24 } }
+    },
+    {
+      "id": "binary_search", "version": 1, "family": "search", "selector": 7,
+      "n": { "meaning": "sorted values and query count", "min": 8, "max": 512, "default": 64 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "sorted values[N]=LCG%10000 then keys[N]; each third key is LCG%10000, others values[i]",
+      "oracle": "wrapping sum of exact midpoint-hit indices, or -1 when absent",
+      "roi": "all ordered binary searches and index accumulation",
+      "targets": { "native": "all", "mos": { "maxN": 24 } }
+    },
+    {
+      "id": "sieve", "version": 1, "family": "prime-sieve", "selector": 8,
+      "n": { "meaning": "inclusive prime limit", "min": 16, "max": 4000, "default": 400 },
+      "seed": { "meaning": "unused", "used": false, "default": 0 },
+      "inputLayout": "N+1 logical u32 marks initialized to one",
+      "oracle": "count of primes less than or equal to N",
+      "roi": "Eratosthenes marking and final count",
+      "targets": { "native": "all", "mos": { "maxN": 96 } }
+    },
+    {
+      "id": "checksum", "version": 1, "family": "integer-mix", "selector": 9,
+      "n": { "meaning": "mix rounds", "min": 16, "max": 20000, "default": 1024 },
+      "seed": { "meaning": "initial wrapping hash word", "used": true, "default": 1 },
+      "inputLayout": "no input array",
+      "oracle": "each round xor i, rotate-left 5, add 0x9e3779b9, xor logical-right 7",
+      "roi": "all ordered mix rounds",
+      "targets": { "native": "all", "mos": { "maxN": 256 } }
+    },
+    {
+      "id": "pointer_chase", "version": 1, "family": "dependent-memory", "selector": 10,
+      "n": { "meaning": "nodes and dependent steps", "min": 8, "max": 1024, "default": 128 },
+      "seed": { "meaning": "Fisher-Yates LCG state and payload addend", "used": true, "default": 1 },
+      "inputLayout": "next-index[N] cycle equivalent to built-in pointer links; payload(i)=i*17+seed",
+      "oracle": "wrapping payload sum walking N links from node zero",
+      "roi": "dependent link walk and payload accumulation",
+      "targets": { "native": "all", "mos": { "maxN": 32 } }
+    },
+    {
+      "id": "fir", "version": 1, "family": "integer-filter", "selector": 11,
+      "n": { "meaning": "input and output samples", "min": 8, "max": 512, "default": 96 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "X[N]=(LCG%21)-10; fixed taps [1,-2,3,-1,2,1,-1,1]; zero left padding",
+      "oracle": "wrapping ordered sum of all 8-tap wrapping outputs",
+      "roi": "all convolution loops and output accumulation",
+      "targets": { "native": "all", "mos": { "maxN": 24 } }
+    },
+    {
+      "id": "fp_sum", "version": 1, "family": "binary64-reduction", "selector": 12,
+      "n": { "meaning": "binary64 values", "min": 8, "max": 2048, "default": 256 },
+      "seed": { "meaning": "initial LCG state", "used": true, "default": 1 },
+      "inputLayout": "binary64[N], each exactly rounded from ((LCG%2001)-1000)/100",
+      "oracle": "exact raw bits of strict source-order IEEE-754 binary64 additions from +0",
+      "roi": "only the source-order binary64 reduction",
+      "targets": { "native": "all", "mos": { "supported": false, "reason": "llvm-mos target has no auditable binary64 ABI/runtime within the 64 KiB simulator contract" } }
+    }
+  ]
+}

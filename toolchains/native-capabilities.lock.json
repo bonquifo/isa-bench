@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-17T23:59:14.596Z",
+  "imagesLockSha256": "6f6ba84a7c42ae352aa11a9be0fed7f5d31b80107c954d53f568791fea56ea3e",
+  "observations": {
+    "x86_64-linux": {
+      "tier": "execute",
+      "objectSha256": "9685cef387b2ad4b41176bc12300cc4ba27cb4129c8a98a66110bce29a7c5728",
+      "semanticObjectSha256": "3ef218ecfc07494c588e7667cece8ecdb2fe6e66391aa1664ea28934869e9578",
+      "log": "",
+      "reproducibility": {
+        "builds": 2,
+        "identical": true,
+        "sha256": "9685cef387b2ad4b41176bc12300cc4ba27cb4129c8a98a66110bce29a7c5728",
+        "normalizedExclusions": []
+      },
+      "reason": "freestanding static ELF executed in the hardened container",
+      "semanticExecution": {
+        "frameVersion": 1,
+        "rawBits": "0x11223300",
+        "independentlyMatched": true
+      }
+    },
+    "wasm32-wasip1": {
+      "tier": "execute",
+      "objectSha256": "d64ff0de67bb619fb04862575830700fa2d5c51e5020082293a80c1724673c42",
+      "semanticObjectSha256": "98f75fb05b46c356636e923f672dd8a09684708d8fd32c918fe0871753270f5c",
+      "log": "",
+      "reason": "WASI module executed with fuel and no inherited directories, environment, or stdio files",
+      "semanticExecution": {
+        "frameVersion": 1,
+        "rawBits": "0x11223300",
+        "independentlyMatched": true
+      }
+    },
+    "mos-sim": {
+      "tier": "execute",
+      "reason": "separate 64 KiB llvm-mos path passed arithmetic, unaligned memory, and div/rem edge probes via MMIO",
+      "binarySha256": "7e1761932c12a4f1f7790de76dcd7936a788847bdf5a1a82d3b67657df43d0a4",
+      "stdout": "arithmetic:ok\nmemory:ok\nedge:ok\n"
+    }
+  }
+}

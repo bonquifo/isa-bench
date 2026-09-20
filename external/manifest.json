@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "sourceDateEpoch": 1787616000,
+  "baseImage": {
+    "reference": "debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171",
+    "platformDigest": "sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867"
+  },
+  "sources": {
+    "gem5": {
+      "version": "25.1.0.0",
+      "tag": "v25.1.0.0",
+      "commit": "7a2b0e413d06c5ce7097104abef3b1d9eaabca91",
+      "url": "https://codeload.github.com/gem5/gem5/tar.gz/refs/tags/v25.1.0.0",
+      "sha256": "31381b5b3fce28c0825fbff677c24052fc2c6ad1f2ef2885d54edbafb590ebed",
+      "license": "BSD-3-Clause"
+    },
+    "llvmMca": {
+      "version": "23.1.0",
+      "image": "isa-sim/codegen:23.1.0",
+      "imageDigest": "sha256:f5a0e19a8fb1587885ffada519a229f2ad3956a2a2956bd9408d93977ae95143",
+      "sourceSha256": "ab1f0e3ec52448c33e8782eaf0422504b87c7b016b22514653ee0d8fcee479ff",
+      "license": "Apache-2.0 WITH LLVM-exception"
+    },
+    "champsim": {
+      "version": "2026-04",
+      "tag": "2026-04",
+      "commit": "8e5f6c114fcbc8fe4f7838d86c3f5881c14077da",
+      "url": "https://codeload.github.com/ChampSim/ChampSim/tar.gz/refs/tags/2026-04",
+      "sha256": "56bf59681245b06e18abbca3f196107818f6a30e98ba0f088b910cdca237ddf7",
+      "vcpkgCommit": "6d7bf7ef2193e2d1c5798a5ff8811d533104c861",
+      "license": "Apache-2.0"
+    }
+  },
+  "images": {
+    "gem5": "isa-sim/gem5:25.1.0.0",
+    "llvm-mca": "isa-sim/codegen:23.1.0",
+    "champsim": "isa-sim/champsim:2026-04"
+  },
+  "runtime": {
+    "user": "65532:65532",
+    "network": "none",
+    "readOnly": true,
+    "capDrop": "ALL",
+    "noNewPrivileges": true,
+    "dockerSocket": false
+  }
+}

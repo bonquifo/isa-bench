@@ -1,0 +1,26 @@
+ARG BASE=debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+ARG RUNTIME_BASE=ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+FROM ${BASE} AS fetch
+ARG LLVM_URL=https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.0/LLVM-23.1.0-Linux-X64.tar.xz
+ARG LLVM_SHA256=18da30f77f475688a18f7704d23f9f155ae007ed9922dbed6850a9419d9fec8c
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --fail --location --proto '=https' --tlsv1.2 "${LLVM_URL}" -o /tmp/llvm.tar.xz \
+ && echo "${LLVM_SHA256}  /tmp/llvm.tar.xz" | sha256sum --check --strict \
+ && mkdir /opt/llvm && tar -xJf /tmp/llvm.tar.xz -C /opt/llvm --strip-components=1
+
+FROM ${RUNTIME_BASE}
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} PATH=/opt/llvm/bin:$PATH ISA_IMAGE_KIND=codegen
+LABEL org.opencontainers.image.title="ISA Sim LLVM code generation" \
+      org.opencontainers.image.version="23.1.0" \
+      org.opencontainers.image.licenses="Apache-2.0 WITH LLVM-exception"
+RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 libedit2 libxml2 zlib1g libicu70 \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 65532 nonroot && useradd --no-log-init --uid 65532 --gid 65532 --home-dir /nonexistent nonroot
+COPY --from=fetch /opt/llvm /opt/llvm
+COPY toolchains/scripts/self-test.sh /usr/local/bin/isa-self-test
+RUN chmod 0555 /usr/local/bin/isa-self-test
+USER 65532:65532
+WORKDIR /artifacts
+ENTRYPOINT ["/usr/local/bin/isa-self-test"]

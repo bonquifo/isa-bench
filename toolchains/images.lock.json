@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-27T05:46:56.809Z",
+  "sourceManifestSha256": "a59adc67d0a04c0fa3d5c2a085959a8ec1ebe57aa2355ffcb1ded6aea6e69cd0",
+  "images": {
+    "codegen": {
+      "reference": "isa-sim/codegen:23.1.0",
+      "imageId": "sha256:f5a0e19a8fb1587885ffada519a229f2ad3956a2a2956bd9408d93977ae95143",
+      "repoDigests": [
+        "isa-sim/codegen@sha256:f5a0e19a8fb1587885ffada519a229f2ad3956a2a2956bd9408d93977ae95143"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "codegen",
+        "llvm": "23.1.0",
+        "targets": [
+          "X86",
+          "AArch64",
+          "RISCV",
+          "Mips",
+          "PowerPC",
+          "Sparc",
+          "WebAssembly"
+        ]
+      }
+    },
+    "qemu": {
+      "reference": "isa-sim/qemu-user:11.1.0",
+      "imageId": "sha256:bfd2b3331cc4ff7ce767209a713c5c3daefb89bf983c8fb6237f5f9d5f881eed",
+      "repoDigests": [
+        "isa-sim/qemu-user@sha256:bfd2b3331cc4ff7ce767209a713c5c3daefb89bf983c8fb6237f5f9d5f881eed"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "qemu",
+        "version": "11.1.0",
+        "targets": [
+          "aarch64",
+          "riscv64",
+          "mipsel",
+          "ppc64le",
+          "sparc"
+        ]
+      }
+    },
+    "sparc": {
+      "reference": "isa-sim/sparc-linker:2.40-2",
+      "imageId": "sha256:27eafa2dc70e9d1f1cec21b73c995621e9eb3d29307d66adeab90a3223017ad6",
+      "repoDigests": [
+        "isa-sim/sparc-linker@sha256:27eafa2dc70e9d1f1cec21b73c995621e9eb3d29307d66adeab90a3223017ad6"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "sparc-linker",
+        "binutils": "2.40-2",
+        "emulation": "elf32_sparc"
+      }
+    },
+    "wasi": {
+      "reference": "isa-sim/wasi:33.0-48.0.1",
+      "imageId": "sha256:4e600387af246a5b986ca148ef2161d0cd6e42407abf38dc9c0508ace6c17491",
+      "repoDigests": [
+        "isa-sim/wasi@sha256:4e600387af246a5b986ca148ef2161d0cd6e42407abf38dc9c0508ace6c17491"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "wasi",
+        "wasiSdk": "33.0",
+        "clang": "22.1.0",
+        "wasmtime": "48.0.1"
+      }
+    },
+    "mos": {
+      "reference": "isa-sim/mos:23.0.1",
+      "imageId": "sha256:039bfbd2114bb1dab5b243cdba3e496c98358265416e47b4f2b30de9332d273a",
+      "repoDigests": [
+        "isa-sim/mos@sha256:039bfbd2114bb1dab5b243cdba3e496c98358265416e47b4f2b30de9332d273a"
+      ],
+      "selfTest": {
+        "ok": true,
+        "image": "mos",
+        "llvmMos": "23.0.1",
+        "clang": "23.0.0",
+        "execution": true,
+        "executor": "mos-sim"
+      }
+    }
+  }
+}

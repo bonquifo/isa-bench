@@ -1,0 +1,30 @@
+import { type InstClass as InstClassT, type MachInst, type OperationOrigin as OperationOriginT, type Opcode as OpcodeT } from './types.ts';
+export declare function mach(partial: {
+    op: OpcodeT;
+    mnemonic: string;
+    bytes: number;
+    cls: InstClassT;
+    dst?: number;
+    srcA?: number;
+    srcB?: number;
+    imm?: number;
+    memBase?: number;
+    memOff?: number;
+    memIndex?: number;
+    memScale?: number;
+    label?: string;
+    uops?: number;
+    readsMem?: boolean;
+    writesMem?: boolean;
+    saveRegs?: number[];
+    saveSpills?: number[];
+    resourceReads?: string[];
+    resourceWrites?: string[];
+    serializing?: boolean;
+    origin?: OperationOriginT;
+}): MachInst;
+export declare function resolveLabels(insts: MachInst[]): void;
+export declare function assignAddresses(insts: MachInst[]): number;
+export declare function binClass(op: string): InstClassT;
+export declare function binOpcode(op: string): OpcodeT;
+//# sourceMappingURL=mach.d.ts.map

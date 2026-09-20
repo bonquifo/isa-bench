@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/calibration" },
+    { "path": "./packages/contracts" },
+    { "path": "./packages/native-benchmarks" },
+    { "path": "./runner" },
+    { "path": "./server" },
+    { "path": "./desktop" },
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.test.json" }
+  ]
+}

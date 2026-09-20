@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://isa-sim.local/contracts/0.1.0/jobs.schema.json",
+  "title": "Durable jobs and event stream",
+  "oneOf": [
+    { "$ref": "#/$defs/job" },
+    { "$ref": "#/$defs/transition" },
+    { "$ref": "#/$defs/event" }
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:\\-]{0,127}$" },
+    "decimal": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "state": { "enum": ["queued", "assigned", "running", "cancelling", "succeeded", "failed", "cancelled"] },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256", "byteSize", "mimeType", "role"],
+      "properties": {
+        "id": { "$ref": "#/$defs/sha256" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "byteSize": { "$ref": "#/$defs/decimal" },
+        "mimeType": { "type": "string" },
+        "role": { "enum": ["source", "binary", "object", "assembly", "config", "profile", "trace", "log", "result", "raw-sample", "dataset", "report", "other"] },
+        "filename": { "type": "string" }
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requestId", "experimentKind", "inputArtifact", "requestedCapability", "target", "parameters"],
+      "properties": {
+        "requestId": { "$ref": "#/$defs/id" },
+        "experimentKind": { "enum": ["analytical-inorder", "analytical-ooo", "toolchain-validation", "gem5", "llvm-mca", "champsim", "empirical-measurement", "calibrated-prediction"] },
+        "inputArtifact": { "$ref": "#/$defs/artifact" },
+        "requestedCapability": { "enum": ["execute", "codegen-only"] },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["triple", "abi", "endianness", "addressWidth"],
+          "properties": {
+            "triple": { "type": "string" },
+            "abi": { "type": "string" },
+            "endianness": { "enum": ["little", "big"] },
+            "addressWidth": { "enum": [16, 32, 64, 128] }
+          }
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+        }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "revision", "request", "createdAt", "updatedAt"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "state": { "$ref": "#/$defs/state" },
+        "revision": { "$ref": "#/$defs/decimal" },
+        "request": { "$ref": "#/$defs/request" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" },
+        "assignedRunnerId": { "$ref": "#/$defs/id" },
+        "terminalResultArtifactId": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId", "sequence", "from", "to", "at", "reason"],
+      "properties": {
+        "jobId": { "$ref": "#/$defs/id" },
+        "sequence": { "$ref": "#/$defs/decimal" },
+        "from": { "$ref": "#/$defs/state" },
+        "to": { "$ref": "#/$defs/state" },
+        "at": { "$ref": "#/$defs/timestamp" },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["jobId", "sequence", "at", "type"],
+      "properties": {
+        "jobId": { "$ref": "#/$defs/id" },
+        "sequence": { "$ref": "#/$defs/decimal" },
+        "at": { "$ref": "#/$defs/timestamp" },
+        "type": { "enum": ["progress", "log", "artifact", "partial", "done", "error", "cancelled"] },
+        "fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "phase": { "type": "string" },
+        "detail": { "type": "string" },
+        "level": { "enum": ["debug", "info", "warn", "error"] },
+        "message": { "type": "string" },
+        "artifact": { "$ref": "#/$defs/artifact" },
+        "payload": { "type": "object" },
+        "result": { "type": "object" },
+        "code": { "$ref": "#/$defs/id" },
+        "retryable": { "type": "boolean" },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

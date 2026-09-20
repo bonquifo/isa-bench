@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://isa-sim.local/contracts/0.1.0/calibration.schema.json",
+  "title": "Dataset, calibration, evaluation, applicability and uncertainty contracts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["calibration", "evaluation", "applicability", "uncertainty"],
+  "properties": {
+    "calibration": { "$ref": "#/$defs/calibration" },
+    "evaluation": { "$ref": "#/$defs/evaluation" },
+    "applicability": { "$ref": "#/$defs/applicability" },
+    "uncertainty": { "$ref": "#/$defs/uncertainty" }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:\\-]{0,127}$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "decimal": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" },
+    "split": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["datasetArtifactId", "strategy", "seed", "trainingIds", "validationIds", "testIds"],
+      "properties": {
+        "datasetArtifactId": { "$ref": "#/$defs/sha256" },
+        "strategy": { "enum": ["random", "grouped", "temporal", "leave-one-target-out"] },
+        "seed": { "$ref": "#/$defs/decimal" },
+        "trainingIds": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "validationIds": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "testIds": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["calibrationId", "method", "modelVersion", "datasetSplit", "featureSchemaHash", "parameterArtifactId", "fittedAt"],
+      "properties": {
+        "calibrationId": { "$ref": "#/$defs/sha256" },
+        "method": { "type": "string", "minLength": 1 },
+        "modelVersion": { "type": "string", "minLength": 1 },
+        "datasetSplit": { "$ref": "#/$defs/split" },
+        "featureSchemaHash": { "$ref": "#/$defs/sha256" },
+        "parameterArtifactId": { "$ref": "#/$defs/sha256" },
+        "fittedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["calibrationId", "split", "metrics", "sampleCount"],
+      "properties": {
+        "calibrationId": { "$ref": "#/$defs/sha256" },
+        "split": { "enum": ["validation", "test"] },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "value", "unit"],
+            "properties": {
+              "name": { "$ref": "#/$defs/id" },
+              "value": { "type": "number" },
+              "unit": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "sampleCount": { "$ref": "#/$defs/decimal" }
+      }
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportedTargets", "workloadSemanticClasses", "excludedConditions", "minFeatureValues", "maxFeatureValues"],
+      "properties": {
+        "supportedTargets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["triple", "abi", "endianness", "addressWidth"],
+            "properties": {
+              "triple": { "type": "string" },
+              "abi": { "type": "string" },
+              "endianness": { "enum": ["little", "big"] },
+              "addressWidth": { "enum": [16, 32, 64, 128] }
+            }
+          }
+        },
+        "workloadSemanticClasses": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } },
+        "excludedConditions": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "minFeatureValues": { "type": "object", "additionalProperties": { "type": "number" } },
+        "maxFeatureValues": { "type": "object", "additionalProperties": { "type": "number" } }
+      }
+    },
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "confidenceLevel", "lower", "upper", "unit"],
+      "properties": {
+        "method": { "enum": ["bootstrap", "conformal", "posterior", "analytical"] },
+        "confidenceLevel": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+        "lower": { "type": "number" },
+        "upper": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "sampleCount": { "$ref": "#/$defs/decimal" }
+      }
+    }
+  }
+}
