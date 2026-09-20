@@ -24,11 +24,6 @@
     "desktop:pack:linux": "npm run desktop:build && electron-builder --linux AppImage tar.gz --publish never",
     "desktop:pack:mac": "npm run desktop:build && electron-builder --mac dmg zip --publish never"
   },
-  "dependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "zod": "^4.4.3"
-  },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
@@ -39,10 +34,13 @@
     "electron": "^41.0.0",
     "electron-builder": "^26.0.12",
     "oxlint": "^1.79.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.2.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "zod": "^4.4.3"
   },
   "build": {
     "appId": "org.isa-bench.workbench",
