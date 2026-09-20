@@ -334,13 +334,31 @@ function migrateLegacy(raw: string, issues: string[]): LegacySavedRun[] {
   }
 }
 
+/**
+ * Storage can be present but unusable: blocked site data makes even reading the
+ * global throw, and some embedded runtimes expose a partial stub. Treating that
+ * as "no archives yet" keeps the fault banner for genuine data corruption,
+ * which is the only case the reader can actually act on.
+ */
+function usableStorage(): Storage | null {
+  try {
+    if (typeof localStorage === 'undefined' || localStorage === null) return null
+    return typeof localStorage.getItem === 'function' && typeof localStorage.setItem === 'function'
+      ? localStorage
+      : null
+  } catch {
+    return null
+  }
+}
+
 export function loadSavesState(): SaveLoadResult {
   const issues: string[] = []
   try {
-    if (typeof localStorage === 'undefined') return { saves: [], issues }
-    const raw = localStorage.getItem(SAVE_KEY_V2)
+    const storage = usableStorage()
+    if (!storage) return { saves: [], issues }
+    const raw = storage.getItem(SAVE_KEY_V2)
     const current = raw ? parseEntries(raw, issues) : []
-    const legacyRaw = localStorage.getItem(LEGACY_SAVE_KEY_V1)
+    const legacyRaw = storage.getItem(LEGACY_SAVE_KEY_V1)
     const legacy = legacyRaw ? migrateLegacy(legacyRaw, issues) : []
     const ids = new Set(current.map((save) => save.id))
     const migrated = legacy.filter((save) => {
@@ -382,9 +400,10 @@ function storageMessage(error: unknown): string {
 }
 
 export function persistSaves(saves: StoredRun[]): void {
-  if (typeof localStorage === 'undefined') return
+  const storage = usableStorage()
+  if (!storage) return
   const store: SaveStoreV2 = { schemaVersion: SAVE_SCHEMA_VERSION, entries: saves }
-  localStorage.setItem(SAVE_KEY_V2, stableSerialize(store))
+  storage.setItem(SAVE_KEY_V2, stableSerialize(store))
 }
 
 export function saveRun(name: string, result: CompareResult): SavedRun {

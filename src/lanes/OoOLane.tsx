@@ -141,7 +141,8 @@ export function OoOLane() {
   )
 }
 
-function OoOReport({ result, rerunInput }: { result: OoOResult; rerunInput: OoOCompareInput }) {
+/** Exported so the result surface can be rendered from a real engine result in tests. */
+export function OoOReport({ result, rerunInput }: { result: OoOResult; rerunInput: OoOCompareInput }) {
   return (
     <article className="mt-4 space-y-4">
       <header className="hud-panel p-4">
