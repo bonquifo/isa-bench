@@ -26,7 +26,9 @@ export function LaneToolbar({
         type="button"
         className="jack-btn"
         disabled={!running && Boolean(disabled)}
-        aria-label="RUN MODEL"
+        // The label has to track the action: while a run is in flight this
+        // button cancels, and announcing it as "RUN MODEL" would be wrong.
+        aria-label={running ? 'CANCEL RUN' : 'RUN MODEL'}
         onClick={running ? onCancel : onRun}
       >
         {running ? 'CANCEL RUN' : 'RUN MODEL'}

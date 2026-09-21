@@ -14,10 +14,13 @@ describe('rendered lane states', () => {
     expect(blocked).toContain('select at least one ISA')
   })
 
-  it('switches a running toolbar to a cancel control', () => {
+  it('switches a running toolbar to a cancel control, announced as one', () => {
     const running = renderToStaticMarkup(<LaneToolbar title="Detailed OoO" kicker="MODEL" running onRun={() => undefined} onCancel={() => undefined} />)
     expect(running).toContain('CANCEL RUN')
     expect(running).not.toContain('disabled')
+    // The accessible name has to match the action the button now performs.
+    expect(running).toContain('aria-label="CANCEL RUN"')
+    expect(running).not.toContain('aria-label="RUN MODEL"')
   })
 
   it('renders one tab and one panel per timing model with complete tab semantics', () => {

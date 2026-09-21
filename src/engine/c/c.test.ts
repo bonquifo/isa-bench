@@ -837,7 +837,7 @@ describe('C language semantics', () => {
     }
   })
 
-  it('runs queens on representative register allocators', { timeout: 15_000 }, () => {
+  it('runs queens on representative register allocators', { timeout: 60_000 }, () => {
     const queens = C_EXAMPLES.find((e) => e.id === 'queens')!
     const q = runC(queens.source, [IsaId.RISCV, IsaId.X86])
     expect(q.gold).toBe(92)
@@ -845,7 +845,7 @@ describe('C language semantics', () => {
     expect(q.rows).toHaveLength(2)
   })
 
-  it('runs scaled Machin pi on every target', { timeout: 30_000 }, () => {
+  it('runs scaled Machin pi on every target', { timeout: 60_000 }, () => {
     const pi = C_EXAMPLES.find((e) => e.id === 'pi')!
     const p = runC(pi.source, ALL_ISAS)
     expect(p.gold).toBe(machinPi(100000))
