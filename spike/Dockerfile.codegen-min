@@ -1,0 +1,42 @@
+# Minimal code-generation image: clang, lld and llvm-objdump only.
+#
+# The original toolchain image copied the whole extracted LLVM release into the
+# runtime layer — /opt/llvm alone is 12 GB of headers, static libraries and
+# development tools — which is why it weighed 15.8 GB. clang is statically
+# linked against LLVM and needs nothing else from that tree except its own
+# builtin headers, so the runtime set is four things.
+#
+# For the spike the binaries are lifted from the already-built image. A
+# production version would fetch the pinned LLVM release tarball and verify its
+# SHA-256, exactly as the original Dockerfile.codegen did.
+ARG SOURCE=isa-sim/codegen:23.1.0
+ARG RUNTIME_BASE=ubuntu:22.04
+
+FROM ${SOURCE} AS llvm
+
+FROM ${RUNTIME_BASE}
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} PATH=/opt/llvm/bin:$PATH
+LABEL org.opencontainers.image.title="ISA Bench minimal codegen" \
+      org.opencontainers.image.licenses="Apache-2.0 WITH LLVM-exception"
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libatomic1 libedit2 libxml2 zlib1g libicu70 \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 65532 nonroot \
+ && useradd --no-log-init --uid 65532 --gid 65532 --home-dir /nonexistent nonroot
+
+# The compiler, the linker, and the disassembler that reads back what they made.
+COPY --from=llvm /opt/llvm/bin/clang-23 /opt/llvm/bin/clang-23
+COPY --from=llvm /opt/llvm/bin/lld /opt/llvm/bin/lld
+COPY --from=llvm /opt/llvm/bin/llvm-objdump /opt/llvm/bin/llvm-objdump
+# clang cannot compile anything that includes <stdint.h> without these.
+COPY --from=llvm /opt/llvm/lib/clang/23/include /opt/llvm/lib/clang/23/include
+
+RUN ln -s clang-23 /opt/llvm/bin/clang \
+ && ln -s lld /opt/llvm/bin/ld.lld \
+ && ln -s lld /opt/llvm/bin/ld64.lld \
+ && ln -s lld /opt/llvm/bin/wasm-ld
+
+USER 65532:65532
+WORKDIR /artifacts
