@@ -1,0 +1,94 @@
+name: Release
+
+# Builds the downloadable app for all three platforms on their own runners.
+# macOS installers in particular cannot be produced anywhere else, and Linux
+# artifacts built on Windows lose their executable bit.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      # The exhaustive engine matrix takes minutes, so it guards releases
+      # rather than every push.
+      - run: npm run test:deep
+
+  package:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: desktop:pack:win
+            artifacts: |
+              release/*.exe
+          - os: ubuntu-latest
+            script: desktop:pack:linux
+            artifacts: |
+              release/*.AppImage
+              release/*.tar.gz
+          - os: macos-latest
+            script: desktop:pack:mac
+            artifacts: |
+              release/*.dmg
+              release/*.zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
+        env:
+          # Unsigned builds; signing needs certificates this workflow has none of.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - name: Check the Linux tarball kept its executable bits
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$(ls release/*.tar.gz | head -1)"
+          for entry in isa-bench chrome-sandbox; do
+            mode="$(tar tvzf "$archive" | awk -v name="/$entry\$" '$NF ~ name {print $1; exit}')"
+            echo "$entry: $mode"
+            case "$mode" in *x*) ;; *) echo "::error::$entry is not executable in $archive"; exit 1 ;; esac
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isa-bench-${{ matrix.os }}
+          path: ${{ matrix.artifacts }}
+          if-no-files-found: error
+
+  publish:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          draft: true
+          generate_release_notes: true
