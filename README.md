@@ -26,8 +26,30 @@ npm run desktop:pack:linux   # AppImage + tar.gz
 npm run desktop:pack:mac     # .dmg + .zip
 ```
 
-Artifacts land in `release/`. Each platform's installer must be built on that
-platform.
+Artifacts land in `release/`.
+
+**Build each platform on that platform.** This is not a preference:
+
+- A Linux `tar.gz` built on Windows unpacks **without the executable bit** on
+  `isa-bench` and `chrome-sandbox`, so it will not start, and AppImage needs
+  symlinks Windows withholds unless Developer Mode is on.
+- macOS `.dmg` packaging needs macOS tooling and cannot run elsewhere at all.
+
+Two supported ways to get all three:
+
+1. **CI** — [`.github/workflows/release.yml`](.github/workflows/release.yml)
+   builds every platform on its own runner and attaches the results to a draft
+   GitHub release when you push a `v*` tag. It also asserts the Linux tarball
+   kept its executable bits.
+2. **Linux from a Windows checkout via WSL**:
+
+   ```bash
+   wsl -d Ubuntu -- bash scripts/pack-linux-wsl.sh
+   ```
+
+   This copies the sources into the Linux filesystem, installs there, builds,
+   and copies the artifacts back into `release/`. It needs Node 22+ inside the
+   distro and prints how to install one, without root, if none is found.
 
 ## What it does
 

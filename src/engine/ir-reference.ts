@@ -313,6 +313,13 @@ export function interpretIrWorkers(
 
     if (progress) roundsWithoutProgress = 0
     else roundsWithoutProgress += 1
+    // Backstop only, and unreachable under the scheduler above: a round makes
+    // no progress only when every thread is halted or parked at a barrier, and
+    // both are resolved before this point — all-halted returns at the top of
+    // the loop, a full barrier releases, and a barrier some thread has already
+    // halted out of throws as a divergent barrier. It is kept so a future
+    // scheduling change fails loudly instead of spinning to the step limit,
+    // which is why no test covers it.
     if (roundsWithoutProgress >= maxRoundsWithoutProgress) {
       throw new Error(
         `IR reference deadlock after ${roundsWithoutProgress} rounds at barrier epoch ${epoch}`,
