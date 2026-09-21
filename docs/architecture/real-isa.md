@@ -178,10 +178,29 @@ Four tiers, all running in `npm test` on any machine, with no Docker.
 | Final state | 32 integer registers, 32 FP registers as raw bits, `fcsr`, and a 1 KiB memory window | the guest's own dump, byte for byte |
 | Randomised | the same two comparisons over generated programs | the same, per recorded seed |
 | Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
+| The app's corpus | the same, for the fourteen C programs the app ships | qemu **and** the answers the app already records |
 
-26 fixtures: ten hand-written, twelve randomised, four linked against musl.
-Roughly 24,000 instructions compared register by register, plus four whole
-programs compared on output.
+40 fixtures: ten hand-written, twelve randomised, four written against musl,
+and the app's fourteen. Roughly 24,000 instructions compared register by
+register, plus eighteen whole programs compared on output.
+
+**The last tier has the most independent oracle of the four.** Every other
+comparison is against qemu, which is a different implementation of the same
+architecture and could in principle be wrong in the same way. Those
+expectations were produced by something else entirely — the in-house Guest C
+compiler and the existing pseudo-backend — and are what the shipping app
+already validates against. All fourteen agree with both.
+
+One of them needed a compiler flag to get there, which is a finding rather
+than a convenience. `fire` seeds an LCG with `int seed = seed * 1664525 +
+1013904223`; that overflows, and signed overflow is undefined in C. Guest C
+wraps, so the recorded answer assumes wrapping, while clang at `-O2` may
+assume the overflow cannot happen. Without `-fwrapv`, `fire` matches qemu
+exactly and disagrees with the app — the program is at fault, not either
+engine. The flag is applied rather than the program edited, because the
+comparison is meant to be about the instruction set rather than about a
+compiler's licence to exploit undefined behaviour, and because editing the
+program would destroy an expected answer that is currently a real check.
 
 The last tier is compared on output rather than on architectural state, and
 that is a limit rather than a preference. A libc owns the entry point and
