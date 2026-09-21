@@ -25,5 +25,7 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
+  // *.node.ts is test and tooling support that imports node: builtins; it is
+  // never part of the renderer bundle.
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.node.ts"]
 }

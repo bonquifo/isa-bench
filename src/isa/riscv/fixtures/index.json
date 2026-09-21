@@ -1,0 +1,121 @@
+{
+  "generator": "tools/isa/build-rv64-fixtures.ts",
+  "codegen": "isa-bench/codegen-min:23.1.0",
+  "oracle": "isa-sim/qemu-user:11.1.0",
+  "target": "riscv64-unknown-linux-gnu",
+  "march": "rv64gc",
+  "flags": "-O2 -ffreestanding -fno-builtin -nostdlib -static",
+  "randomGenerator": "tools/isa/rv64/random.ts",
+  "randomSeeds": [
+    1,
+    2,
+    3,
+    5,
+    8,
+    13,
+    21,
+    34,
+    55,
+    89,
+    144,
+    233
+  ],
+  "fixtures": [
+    {
+      "name": "alu",
+      "steps": 168
+    },
+    {
+      "name": "asm_divmul",
+      "steps": 401
+    },
+    {
+      "name": "asm_shift",
+      "steps": 238
+    },
+    {
+      "name": "branch",
+      "steps": 748
+    },
+    {
+      "name": "call",
+      "steps": 17317
+    },
+    {
+      "name": "dot",
+      "steps": 2501
+    },
+    {
+      "name": "fp_bin",
+      "steps": 410
+    },
+    {
+      "name": "fp_cvt",
+      "steps": 481
+    },
+    {
+      "name": "mem",
+      "steps": 712
+    },
+    {
+      "name": "random-1",
+      "steps": 548,
+      "seed": 1
+    },
+    {
+      "name": "random-2",
+      "steps": 535,
+      "seed": 2
+    },
+    {
+      "name": "random-3",
+      "steps": 543,
+      "seed": 3
+    },
+    {
+      "name": "random-5",
+      "steps": 584,
+      "seed": 5
+    },
+    {
+      "name": "random-8",
+      "steps": 555,
+      "seed": 8
+    },
+    {
+      "name": "random-13",
+      "steps": 543,
+      "seed": 13
+    },
+    {
+      "name": "random-21",
+      "steps": 559,
+      "seed": 21
+    },
+    {
+      "name": "random-34",
+      "steps": 521,
+      "seed": 34
+    },
+    {
+      "name": "random-55",
+      "steps": 533,
+      "seed": 55
+    },
+    {
+      "name": "random-89",
+      "steps": 520,
+      "seed": 89
+    },
+    {
+      "name": "random-144",
+      "steps": 551,
+      "seed": 144
+    },
+    {
+      "name": "random-233",
+      "steps": 540,
+      "seed": 233
+    }
+  ]
+}
