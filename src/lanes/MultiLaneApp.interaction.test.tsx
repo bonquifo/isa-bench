@@ -47,9 +47,12 @@ describe('lane navigation', () => {
     await user.keyboard('{ArrowRight}')
     expect(tab(/DETAILED OOO/)).toHaveAttribute('aria-selected', 'true')
     await user.keyboard('{ArrowRight}')
+    expect(tab(/REAL ISA/)).toHaveAttribute('aria-selected', 'true')
+    // Wraps past the last tab back to the first.
+    await user.keyboard('{ArrowRight}')
     expect(tab(/IN-ORDER/)).toHaveAttribute('aria-selected', 'true')
     await user.keyboard('{ArrowLeft}')
-    expect(tab(/DETAILED OOO/)).toHaveAttribute('aria-selected', 'true')
+    expect(tab(/REAL ISA/)).toHaveAttribute('aria-selected', 'true')
   })
 
   it('jumps to the first and last lane with Home and End', async () => {
@@ -57,7 +60,7 @@ describe('lane navigation', () => {
     render(<MultiLaneApp />)
     tab(/IN-ORDER/).focus()
     await user.keyboard('{End}')
-    expect(tab(/DETAILED OOO/)).toHaveAttribute('aria-selected', 'true')
+    expect(tab(/REAL ISA/)).toHaveAttribute('aria-selected', 'true')
     await user.keyboard('{Home}')
     expect(tab(/IN-ORDER/)).toHaveAttribute('aria-selected', 'true')
   })

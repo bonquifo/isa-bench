@@ -1,7 +1,12 @@
-import { useEffect, useState, type KeyboardEvent } from 'react'
+import { Suspense, lazy, useEffect, useState, type KeyboardEvent } from 'react'
 import ControlledInOrderApp from '../App.tsx'
 import { LANES, nextLaneIndex, type LaneId } from './types.ts'
 import { OoOLane } from './OoOLane.tsx'
+// Loaded on demand. The lane carries the precompiled RV64 binaries inlined,
+// which is half a megabyte that nobody who stays on the modelling lanes
+// should have to download or parse.
+const RealIsaLane = lazy(() =>
+  import('./RealIsaLane.tsx').then((module) => ({ default: module.RealIsaLane })))
 
 function initialLane(): LaneId {
   const value = globalThis.location?.hash.replace(/^#\//, '') as LaneId
@@ -60,6 +65,11 @@ export default function MultiLaneApp() {
         >
           {lane === item.id && item.id === 'inorder' && <ControlledInOrderApp />}
           {lane === item.id && item.id === 'ooo' && <OoOLane />}
+          {lane === item.id && item.id === 'realisa' && (
+            <Suspense fallback={<div className="hud-panel p-4 font-mono text-xs">LOADING · real RV64GC binaries</div>}>
+              <RealIsaLane />
+            </Suspense>
+          )}
         </section>)}
       </main>
     </div>

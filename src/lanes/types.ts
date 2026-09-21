@@ -1,10 +1,10 @@
-export type LaneId = 'inorder' | 'ooo'
+export type LaneId = 'inorder' | 'ooo' | 'realisa'
 
 export const LANES: ReadonlyArray<{
   id: LaneId
   title: string
   short: string
-  category: 'MODEL'
+  category: 'MODEL' | 'EXECUTION + MODEL'
   runLabel: string
   runHint: string
 }> = [
@@ -23,6 +23,18 @@ export const LANES: ReadonlyArray<{
     category: 'MODEL',
     runLabel: 'RUN MODEL',
     runHint: 'Use RUN MODEL in the top cyan/magenta bar. This is the decoded-operation out-of-order model, not the in-order model.',
+  },
+  {
+    id: 'realisa',
+    title: 'Real RV64GC',
+    short: 'REAL ISA',
+    // Deliberately a different category from the other two. These lanes
+    // execute a lowering the engine invents; this one executes instructions a
+    // real compiler emitted, and the distinction should be visible before
+    // anyone reads a number.
+    category: 'EXECUTION + MODEL',
+    runLabel: 'RUN MODEL',
+    runHint: 'Executes real RISC-V instructions from a precompiled binary, then times them with the same deterministic model. One target only: it is not a comparison.',
   },
 ]
 

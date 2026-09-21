@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { LaneToolbar } from './LaneToolbar.tsx'
 import MultiLaneApp from './MultiLaneApp.tsx'
+import { LANES } from './types.ts'
 
 describe('rendered lane states', () => {
   it('always renders a labelled RUN MODEL control, enabled or explained', () => {
@@ -25,8 +26,8 @@ describe('rendered lane states', () => {
 
   it('renders one tab and one panel per timing model with complete tab semantics', () => {
     const shell = renderToStaticMarkup(<MultiLaneApp />)
-    expect(shell.match(/role="tab"/g)).toHaveLength(2)
-    expect(shell.match(/role="tabpanel"/g)).toHaveLength(2)
+    expect(shell.match(/role="tab"/g)).toHaveLength(LANES.length)
+    expect(shell.match(/role="tabpanel"/g)).toHaveLength(LANES.length)
     expect(shell).toContain('role="tablist"')
     expect(shell).toContain('tabindex="0"')
     expect(shell).toContain('tabindex="-1"')

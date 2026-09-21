@@ -410,7 +410,33 @@ claims FP support needs the same.
 
 ---
 
-## 6. Running it
+## 6. How it reaches the app
+
+RV64 appears as its own lane, **Real RV64GC**, beside the two modelling
+lanes. It is deliberately not a ninth column in the eight-way comparison.
+
+Putting one real instruction stream next to seven pseudo-backends in a single
+table would invite reading all eight as equally real, and the project's
+honesty guarantees are the thing that would pay for that. The lane therefore
+runs one target, says at the top what is executed and what is modelled, and
+states that it is not comparable to the other lanes. Existing RISC-V numbers,
+saved runs and exported reports are untouched.
+
+Three consequences worth knowing:
+
+- **The programs are fixed.** The app cannot compile at runtime — the minimal
+  clang image is 912 MB and needs Docker — so the lane runs binaries built
+  ahead of time. Editing the C and re-running stays a pseudo-backend feature.
+- **The shipped bytes are the verified bytes.** The lane loads the same
+  `corpus-*.elf` files the differential suite compares against qemu, not a
+  rebuild of them. A test asserts that.
+- **They are inlined, and the lane is code-split.** The packaged app loads
+  over `file://`, where fetching a sibling file is blocked, so the binaries
+  become `data:` URIs in the bundle. That is 538 KB, which would be dead
+  weight for anyone who never opens the lane, so the lane is a lazy chunk and
+  the main bundle is unchanged at 657 KB.
+
+## 7. Running it
 
 ```
 npm test                                      # includes the full differential suite

@@ -3,16 +3,23 @@ import { LANES, nextLaneIndex, nextRovingIndex } from './types.ts'
 
 describe('model lane navigation', () => {
   it('exposes each timing model as its own navigation destination', () => {
-    expect(LANES.map((lane) => lane.id)).toEqual(['inorder', 'ooo'])
-    expect(LANES.map((lane) => lane.runLabel)).toEqual(['RUN MODEL', 'RUN MODEL'])
-    expect(LANES.every((lane) => lane.category === 'MODEL')).toBe(true)
+    expect(LANES.map((lane) => lane.id)).toEqual(['inorder', 'ooo', 'realisa'])
+    expect(LANES.every((lane) => lane.runLabel === 'RUN MODEL')).toBe(true)
+    // The real-ISA lane is categorised apart from the two modelling lanes on
+    // purpose: it executes instructions a compiler emitted rather than a
+    // lowering the engine invents, and that shows before any number does.
+    expect(LANES.map((lane) => lane.category))
+      .toEqual(['MODEL', 'MODEL', 'EXECUTION + MODEL'])
   })
 
   it('wraps roving tabindex movement at both ends', () => {
-    expect(nextLaneIndex('Home', 1)).toBe(0)
-    expect(nextLaneIndex('End', 0)).toBe(1)
-    expect(nextLaneIndex('ArrowRight', 1)).toBe(0)
-    expect(nextLaneIndex('ArrowLeft', 0)).toBe(1)
+    // Expressed against the lane count so that adding a lane does not need
+    // this rewritten, only reconsidered.
+    const last = LANES.length - 1
+    expect(nextLaneIndex('Home', last)).toBe(0)
+    expect(nextLaneIndex('End', 0)).toBe(last)
+    expect(nextLaneIndex('ArrowRight', last)).toBe(0)
+    expect(nextLaneIndex('ArrowLeft', 0)).toBe(last)
     expect(nextLaneIndex('Enter', 0)).toBe(-1)
   })
 

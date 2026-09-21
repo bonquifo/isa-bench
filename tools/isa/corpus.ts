@@ -52,7 +52,13 @@ int main(void) {
  * to exploit undefined behaviour, and because editing them would invalidate
  * expected answers that are currently an independent check.
  */
-export const CORPUS_FLAGS = ['-fwrapv']
+export const CORPUS_FLAGS = [
+  '-fwrapv',
+  // These binaries ship inside the app, so the symbol and string tables go.
+  // They are a third of the bytes and nothing reads them: the loader needs
+  // only the program headers and the entry point.
+  '-Wl,--strip-all',
+]
 
 export interface CorpusProgram {
   name: string
