@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { ElfMachine, imageEnd, loadElf, parseElf } from './elf.ts'
 import { GuestMemory, Prot } from './memory.ts'
-import { readElf } from '../riscv/fixtures.node.ts'
+import { readElf } from './fixtures.node.ts'
+import { RV64_FIXTURE_DIR } from '../riscv/fixtures.node.ts'
 
 /**
  * Exercised against a real linked binary rather than a synthetic one, with
  * mutated copies for the rejection cases. A hand-built ELF would only prove
  * the parser agrees with whatever the test author believed the format to be.
  */
-const REAL = readElf('alu')
+const REAL = readElf(RV64_FIXTURE_DIR, 'alu')
 
 function mutate(change: (bytes: Uint8Array, view: DataView) => void): Uint8Array {
   const copy = REAL.slice()

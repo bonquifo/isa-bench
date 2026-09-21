@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { IllegalInstruction, UnimplementedInstruction } from '../common/errors.ts'
 import { Flow, Rv, decode32, decompress, isFullLength } from './decode.ts'
-import { fixtureNames, readObjdump } from './fixtures.node.ts'
+import { fixtureNames, readObjdump } from '../common/fixtures.node.ts'
+import { RV64_FIXTURE_DIR } from './fixtures.node.ts'
 
 interface DisasmLine {
   address: bigint
@@ -90,7 +91,7 @@ function decodeLine(line: DisasmLine) {
 }
 
 describe('decoder against llvm-objdump on the fixture corpus', () => {
-  const names = fixtureNames()
+  const names = fixtureNames(RV64_FIXTURE_DIR)
 
   it('has fixtures to check', () => {
     expect(names.length).toBeGreaterThan(0)
@@ -98,7 +99,7 @@ describe('decoder against llvm-objdump on the fixture corpus', () => {
 
   for (const name of names) {
     it(`decodes every instruction in ${name}`, () => {
-      const lines = parseObjdump(readObjdump(name))
+      const lines = parseObjdump(readObjdump(RV64_FIXTURE_DIR, name))
       expect(lines.length).toBeGreaterThan(0)
       const problems: string[] = []
       for (const line of lines) {
@@ -132,7 +133,7 @@ describe('decoder against llvm-objdump on the fixture corpus', () => {
     })
 
     it(`derives the same instruction boundaries as objdump in ${name}`, () => {
-      const lines = parseObjdump(readObjdump(name))
+      const lines = parseObjdump(readObjdump(RV64_FIXTURE_DIR, name))
       for (let i = 1; i < lines.length; i++) {
         const previous = lines[i - 1]!
         const here = lines[i]!

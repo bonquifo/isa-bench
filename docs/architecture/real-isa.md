@@ -114,6 +114,8 @@ interface RetireChunk {          // struct of arrays, reused between calls
 interface Interpreter {
   image: ProgramImage
   run(into: RetireChunk): 'more' | 'exited'
+  programCounter: bigint         // mid-run state, so lockstep can compare
+  gpr(index: number): bigint     // before every instruction, not just at exit
   finalState(): ArchState
   stdout(): Uint8Array
   exitCode: number
@@ -133,6 +135,11 @@ Three properties matter:
   an artifact of the pseudo-backend. The image maps address to instruction.
 - **`at` throws and `speculativeAt` does not.** A mispredicted fetch can
   legitimately run into bytes that are not instructions; executing them cannot.
+- **Mid-run state is part of the contract.** `programCounter` and `gpr` are
+  not an inspection convenience: differential verification compares state
+  before *every* instruction, which is what turns "the answer is wrong" into
+  "the answer first went wrong here", and a backend that cannot be read
+  mid-run cannot be verified that way.
 
 The consumer is [src/engine/simulateTrace.ts](../../src/engine/simulateTrace.ts),
 a trace-driven in-order model that reuses `SetCache`, `DramScheduler`,
@@ -246,10 +253,23 @@ for them every iteration.
 
 ## 5. What the remaining seven must implement
 
-Each needs a module under `src/isa/<name>/` providing a decoder, an execute
-function and a `ProgramImage`, plus these decisions. Everything in
-`src/isa/common/` is reusable as is — `GuestMemory` already takes endianness as
-a constructor argument for exactly this reason.
+Adding an instruction set is now a bounded act: implement
+[`IsaBackend`](../../src/isa/backend.ts), register it in
+[registry.ts](../../src/isa/registry.ts), add a
+[`FixtureTarget`](../../tools/isa/fixture-builder.ts) so fixtures can be
+captured, and call `describeIsaConformance` from a test file. The backend then
+inherits the entire differential suite — lockstep and final-state comparison —
+rather than growing its own version that checks slightly less.
+
+```
+per ISA     decode, semantics, register file and numbering, ELF machine and
+            byte order; a guest harness; a qemu register-dump parser
+shared      address space, ELF loading, IEEE-754, the trace interface, the
+            timing model, the fixture format and the conformance suite
+```
+
+Everything in `src/isa/common/` is reusable as is — `GuestMemory` already
+takes endianness as a constructor argument for exactly this reason.
 
 | Target | The structural surprise | Notes |
 | --- | --- | --- |
@@ -265,6 +285,31 @@ Instruction counts above are measured on the existing C corpus at `-O2`, not
 estimated. RV64 needed 49, and the interpreter that covers it is about 900 lines
 of semantics. "Real ISAs have hundreds of instructions" is true of the
 architectures and not of what a compiler emits for this corpus.
+
+### What an AArch64 target descriptor needs, measured
+
+The one part of the oracle layer that genuinely cannot be shared is parsing
+qemu's register dump, and the difference is larger than it looks. Captured
+from `qemu-aarch64 -one-insn-per-tb -d in_asm,cpu,nochain`:
+
+```
+ PC=0000000000210120 X00=0000000000000000 X01=0000000000000000
+X02=0000000000000000 ...
+X29=0000000000000000 X30=0000000000000000  SP=000077c16b1f1d80
+PSTATE=0000000040000000 -Z-- EL0t  SVCR=00000000 --  BTYPE=0
+```
+
+Three things follow. The register spelling is `X%02d=` with sixteen hex
+digits, not RISC-V's `x%d/%s` with variable width. The stack pointer is
+separate from the numbered registers rather than being one of them, so a
+lockstep comparison has to decide where to put it. And **PSTATE is in the
+trace**, which means AArch64's condition flags can be verified per instruction
+— a significant advantage over RISC-V, where `fcsr` is only visible when the
+guest reads it.
+
+Also worth knowing: this qemu build has no AArch64 disassembler, so `in_asm`
+prints `OBJD-T: 04000094` — the raw encoding — instead of a mnemonic. That is
+still useful as a decoder oracle, and `llvm-objdump` supplies the text.
 
 ### Two toolchain facts that will bite
 
@@ -290,8 +335,8 @@ claims FP support needs the same.
 ## 6. Running it
 
 ```
-npm test                                       # includes the full differential suite
-npx vite-node tools/isa/build-rv64-fixtures.ts # regenerate fixtures; needs Docker
+npm test                                      # includes the full differential suite
+npx vite-node tools/isa/build-fixtures.ts rv64  # regenerate fixtures; needs Docker
 ```
 
 Regeneration requires `isa-bench/codegen-min:23.1.0` and

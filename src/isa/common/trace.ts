@@ -168,6 +168,18 @@ export interface Interpreter {
   readonly image: ProgramImage
   /** Fills `into` with up to `into.pc.length` retired instructions. */
   run(into: RetireChunk): RunState
+  /**
+   * Architectural state part-way through a run: the next instruction to
+   * execute, and one general-purpose register in the ISA's own numbering.
+   *
+   * These are part of the contract rather than an inspection convenience.
+   * Differential verification against a reference compares state *before
+   * every instruction*, which is what turns "the answer is wrong" into "the
+   * answer first went wrong at this instruction", and a backend that cannot
+   * be read mid-run cannot be verified that way.
+   */
+  readonly programCounter: bigint
+  gpr(index: number): bigint
   /** Valid once `run` has returned EXITED. */
   finalState(): ArchState
   /** Bytes the guest wrote to fd 1. */

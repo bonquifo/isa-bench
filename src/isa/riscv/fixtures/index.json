@@ -1,5 +1,5 @@
 {
-  "generator": "tools/isa/build-rv64-fixtures.ts",
+  "generator": "tools/isa/fixture-builder.ts",
   "codegen": "isa-bench/codegen-min:23.1.0",
   "oracle": "isa-sim/qemu-user:11.1.0",
   "target": "riscv64-unknown-linux-gnu",

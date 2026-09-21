@@ -2,24 +2,24 @@ import { describe, expect, it } from 'vitest'
 import { HARDWARE_PROFILES, profileById } from './hardware.ts'
 import { simulateTrace } from './simulateTrace.ts'
 import { IsaId, type InstClass } from './types.ts'
-import { fixtureNames, readDump, readElf, readIndex, initialState } from '../isa/riscv/fixtures.node.ts'
-import { loadRv64 } from '../isa/riscv/load.ts'
+import { fixtureNames, initialState, readElf, readIndex } from '../isa/common/fixtures.node.ts'
+import { rv64Backend } from '../isa/riscv/backend.ts'
+import { RV64_FIXTURE_DIR, readDump } from '../isa/riscv/fixtures.node.ts'
 
 function run(name: string, profileId: string) {
-  const start = initialState(name)
-  const { interpreter } = loadRv64(readElf(name), {
-    initialSp: BigInt.asIntN(64, start.x[2]!),
+  const start = initialState(RV64_FIXTURE_DIR, name, rv64Backend.gprCount)
+  const { interpreter } = rv64Backend.load(readElf(RV64_FIXTURE_DIR, name), {
+    initialRegisters: start.x.map((value) => BigInt.asIntN(64, value)),
   })
-  for (let r = 1; r < 32; r++) interpreter.setGpr(r, BigInt.asIntN(64, start.x[r]!))
   const metrics = simulateTrace(interpreter, profileById(profileId), IsaId.RISCV)
   return { metrics, interpreter }
 }
 
 describe('trace-driven timing over real RV64 execution', () => {
-  const index = readIndex()
+  const index = readIndex(RV64_FIXTURE_DIR)
 
   it('times every instruction the reference executed, and no others', () => {
-    for (const name of fixtureNames()) {
+    for (const name of fixtureNames(RV64_FIXTURE_DIR)) {
       const { metrics } = run(name, 'equal-inorder')
       const declared = index.fixtures.find((f) => f.name === name)!
       expect(`${name}: ${metrics.instructions}`).toBe(`${name}: ${declared.steps}`)
