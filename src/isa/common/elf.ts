@@ -63,6 +63,14 @@ export interface ElfImage {
   segments: ElfSegment[]
   sections: ElfSection[]
   symbols: Map<string, ElfSymbol>
+  /**
+   * Where the program header table ends up in the guest's address space.
+   * A libc reads it through the auxiliary vector at startup, so it has to be
+   * translated from a file offset to an address here.
+   */
+  phdrAddress: bigint
+  phentsize: number
+  phnum: number
 }
 
 /** Reads the width-dependent fields so the header walk reads the same either way. */
@@ -204,7 +212,28 @@ export function parseElf(bytes: Uint8Array): ElfImage {
     }
   }
 
-  return { bits, littleEndian, machine, entry, segments, sections, symbols }
+  // AT_PHDR wants the address the program headers were loaded at. They sit at
+  // a file offset, so the segment that contains that offset gives the mapping.
+  let phdrAddress = 0n
+  for (const segment of segments) {
+    if (phoff >= segment.offset && phoff < segment.offset + segment.filesz) {
+      phdrAddress = segment.vaddr + BigInt(phoff - segment.offset)
+      break
+    }
+  }
+
+  return {
+    bits,
+    littleEndian,
+    machine,
+    entry,
+    segments,
+    sections,
+    symbols,
+    phdrAddress,
+    phentsize,
+    phnum,
+  }
 }
 
 function protOf(flags: number): number {

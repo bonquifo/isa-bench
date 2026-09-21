@@ -1,0 +1,92 @@
+# Cross sysroots for the real-ISA targets, from pinned, checksummed sources.
+#
+# None of the existing toolchain images contain a cross libc. Milestone 1 did
+# not need one -- a freestanding static binary with a hand-written _start is
+# enough to verify an interpreter -- but nothing that calls printf or malloc
+# can be compiled without it, which is most real C.
+#
+# musl rather than glibc: it builds statically without fuss, it is small, and
+# it supports every Linux target here except SPARC. SPARC has no musl port at
+# all and lld cannot link it either, so that target needs binutils and
+# picolibc and is deliberately not attempted here.
+#
+# musl alone is not enough, which is not obvious until the first link fails.
+# Its printf supports long double, and long double on RISC-V and AArch64 is
+# binary128, which no hardware here implements -- so the link asks for
+# __extenddftf2 and friends from compiler-rt. The builtins are therefore
+# built alongside, from the same pinned LLVM release the compiler came from.
+#
+# Build tools stay in the builder stages. llvm-ar alone is 58 MB and the LLVM
+# source tree is far larger; the published image gains the sysroots and
+# nothing else.
+ARG LLVM=isa-sim/codegen:23.1.0
+ARG BASE=isa-bench/codegen-min:23.1.0
+
+FROM ${LLVM} AS llvm
+
+# ---------------------------------------------------------------------------
+# A clang that can be driven for any target, with the archiver it needs.
+# ---------------------------------------------------------------------------
+FROM ubuntu:22.04 AS toolchain
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl make xz-utils ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=llvm /opt/llvm/bin/clang-23 /opt/llvm/bin/clang-23
+COPY --from=llvm /opt/llvm/bin/llvm-ar /opt/llvm/bin/llvm-ar
+COPY --from=llvm /opt/llvm/lib/clang/23/include /opt/llvm/lib/clang/23/include
+RUN ln -s clang-23 /opt/llvm/bin/clang && ln -s llvm-ar /opt/llvm/bin/llvm-ranlib
+ENV PATH=/opt/llvm/bin:$PATH
+
+# ---------------------------------------------------------------------------
+# compiler-rt builtins, per target.
+# ---------------------------------------------------------------------------
+FROM toolchain AS builtins
+ARG LLVM_VERSION=23.1.0
+# Recorded when the tarball was first fetched; a later fetch that does not
+# match is a different tarball, whatever the version number claims.
+ARG LLVM_SHA256=UNSET
+RUN curl -sSL -o /tmp/llvm.tar.xz \
+      "https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz" \
+ && if [ "${LLVM_SHA256}" != "UNSET" ]; then \
+      echo "${LLVM_SHA256}  /tmp/llvm.tar.xz" | sha256sum -c -; \
+    else sha256sum /tmp/llvm.tar.xz; fi \
+ && mkdir -p /src \
+ && tar -xJf /tmp/llvm.tar.xz -C /src --strip-components=1 \
+      --wildcards "llvm-project-${LLVM_VERSION}.src/compiler-rt/lib/builtins/*" \
+ && rm /tmp/llvm.tar.xz
+
+COPY build-builtins.sh /usr/local/bin/build-builtins.sh
+RUN sh /usr/local/bin/build-builtins.sh /src/compiler-rt/lib/builtins /builtins
+
+# ---------------------------------------------------------------------------
+# musl, per target.
+# ---------------------------------------------------------------------------
+FROM toolchain AS musl
+ARG MUSL_VERSION=1.2.5
+ARG MUSL_SHA256=a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4
+RUN curl -sSL -o /tmp/musl.tar.gz \
+      "https://musl.libc.org/releases/musl-${MUSL_VERSION}.tar.gz" \
+ && echo "${MUSL_SHA256}  /tmp/musl.tar.gz" | sha256sum -c - \
+ && mkdir -p /src \
+ && tar -xzf /tmp/musl.tar.gz -C /src --strip-components=1
+
+# One sysroot per target. Adding a target is one more entry here.
+RUN set -eux; \
+    for triple in riscv64 aarch64 x86_64; do \
+      mkdir -p "/build/${triple}"; \
+      cd "/build/${triple}"; \
+      CC=clang \
+      CFLAGS="--target=${triple}-unknown-linux-musl -O2" \
+      AR=llvm-ar RANLIB=llvm-ranlib \
+      /src/configure \
+        --target="${triple}-linux-musl" \
+        --prefix="/sysroot/${triple}" \
+        --disable-shared; \
+      make -j"$(nproc)"; \
+      make install; \
+    done
+
+FROM ${BASE}
+COPY --from=musl /sysroot /sysroot
+COPY --from=builtins /builtins /sysroot/builtins
+LABEL org.opencontainers.image.title="ISA Bench codegen with cross sysroots"

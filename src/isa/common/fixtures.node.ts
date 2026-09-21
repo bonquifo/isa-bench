@@ -33,6 +33,16 @@ export interface FixtureIndex {
   /** Seeds of the randomised programs, so a failure is reproducible by name. */
   randomSeeds: number[]
   fixtures: FixtureEntry[]
+  /** Image carrying the cross sysroot, or null when there is no libc tier. */
+  libcImage: string | null
+  /**
+   * Whole programs linked against a real libc. Compared on output rather
+   * than on architectural state: a libc owns the entry point and reads the
+   * environment and auxiliary vector off the initial stack, which under the
+   * reference is the container's real one and under the interpreter is
+   * synthetic, so the two legitimately diverge from the first instruction.
+   */
+  libcFixtures: { name: string; exitCode: number }[]
 }
 
 export function readIndex(dir: string): FixtureIndex {
@@ -49,6 +59,11 @@ export function readElf(dir: string, name: string): Uint8Array {
 
 export function readObjdump(dir: string, name: string): string {
   return readFileSync(join(dir, `${name}.objdump.txt`), 'utf8')
+}
+
+/** What the reference printed, for the libc tier. */
+export function readStdout(dir: string, name: string): Uint8Array {
+  return new Uint8Array(readFileSync(join(dir, `${name}.stdout`)))
 }
 
 /** The guest's own architectural state dump, as raw bytes. */

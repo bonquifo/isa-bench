@@ -53,6 +53,42 @@ export interface FixtureTarget {
   randomGenerator: string
   generateRandom(seed: number): { source: string }
   parseCpuLog(text: string): LockstepStep[]
+  /** Optional second tier: whole programs linked against a real libc. */
+  libc?: LibcTier
+}
+
+/**
+ * Programs compiled against a cross libc, compared on what they print rather
+ * than on architectural state.
+ *
+ * Architectural comparison is not available here and cannot be made so. A
+ * libc owns the entry point, and it reads argc, argv, the environment and the
+ * auxiliary vector off the initial stack -- which under qemu contains the
+ * container's real environment and a full kernel-supplied aux vector, and
+ * under the interpreter contains a synthetic one. The two processes therefore
+ * start from genuinely different state, and their registers diverge
+ * immediately and legitimately.
+ *
+ * What must still agree exactly is the output and the exit status, which is
+ * the property anyone actually depends on.
+ */
+export interface LibcTier {
+  /**
+   * Target triple for the libc build. Distinct from the freestanding one:
+   * musl is its own environment, and clang's driver behaves differently for
+   * `-musl` than for `-gnu`.
+   */
+  triple: string
+  /** Docker image carrying the cross sysroot. */
+  image: string
+  /** Sysroot directory inside that image. */
+  sysroot: string
+  /** compiler-rt builtins archive inside that image. */
+  builtins: string
+  /** Directory of programs, each with a main(). */
+  programsDir: string
+  /** Extra libraries, after -lc. */
+  libs: string[]
 }
 
 const SHARED_FLAGS = ['-O2', '-ffreestanding', '-fno-builtin', '-nostdlib', '-static']
@@ -146,6 +182,38 @@ function buildOne(target: FixtureTarget, name: string, source: string, work: str
   return steps.length
 }
 
+function buildLibcOne(target: FixtureTarget, name: string, source: string, work: string): number {
+  const tier = target.libc!
+  writeFileSync(join(work, 'prog.c'), source)
+  const s = tier.sysroot
+  run(tier.image, work, [
+    'sh', '-c',
+    `clang -target ${tier.triple} -O2 -static -nostdlib ` +
+    `-fuse-ld=lld -isystem ${s}/include ` +
+    `-o /work/out.elf ${s}/lib/crt1.o ${s}/lib/crti.o /work/prog.c ` +
+    `-L${s}/lib -lc ${tier.libs.join(' ')} ${tier.builtins} ${s}/lib/crtn.o`,
+  ])
+  sh(
+    target.oracle,
+    work,
+    `${target.qemu} /work/out.elf > /work/out.stdout 2>/work/out.stderr; ` +
+    'echo $? > /work/out.exit',
+  )
+
+  const elf = readFileSync(join(work, 'out.elf'))
+  const stdout = readFileSync(join(work, 'out.stdout'))
+  const exitCode = Number(readFileSync(join(work, 'out.exit'), 'utf8').trim())
+  if (stdout.length === 0) throw new Error(`${name}: the reference printed nothing`)
+
+  writeFileSync(join(target.outDir, `${name}.elf`), elf)
+  writeFileSync(join(target.outDir, `${name}.stdout`), stdout)
+  console.log(
+    `${name.padEnd(14)} ${String(elf.length).padStart(6)} B elf   ` +
+    `${String(stdout.length).padStart(7)} B stdout  exit ${exitCode}`,
+  )
+  return exitCode
+}
+
 export function buildFixtures(target: FixtureTarget): void {
   mkdirSync(target.outDir, { recursive: true })
   const work = target.workDir
@@ -171,6 +239,16 @@ export function buildFixtures(target: FixtureTarget): void {
     index.push({ name, steps, seed })
   }
 
+  const libc: { name: string; exitCode: number }[] = []
+  if (target.libc) {
+    const libcNames = readdirSync(target.libc.programsDir).filter((f) => f.endsWith('.c')).sort()
+    for (const file of libcNames) {
+      const name = `libc-${file.replace(/\.c$/, '')}`
+      const source = readFileSync(join(target.libc.programsDir, file), 'utf8')
+      libc.push({ name, exitCode: buildLibcOne(target, name, source, work) })
+    }
+  }
+
   writeFileSync(
     join(target.outDir, 'index.json'),
     `${JSON.stringify(
@@ -184,10 +262,12 @@ export function buildFixtures(target: FixtureTarget): void {
         randomGenerator: target.randomGenerator,
         randomSeeds: target.randomSeeds,
         fixtures: index,
+        libcImage: target.libc?.image ?? null,
+        libcFixtures: libc,
       },
       null,
       2,
     )}\n`,
   )
-  console.log(`\nwrote ${index.length} fixtures to ${target.outDir}`)
+  console.log(`\nwrote ${index.length + libc.length} fixtures to ${target.outDir}`)
 }

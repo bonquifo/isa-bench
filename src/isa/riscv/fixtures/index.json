@@ -26,6 +26,10 @@
       "steps": 168
     },
     {
+      "name": "asm_atomic",
+      "steps": 619
+    },
+    {
       "name": "asm_divmul",
       "steps": 401
     },
@@ -116,6 +120,25 @@
       "name": "random-233",
       "steps": 540,
       "seed": 233
+    }
+  ],
+  "libcImage": "isa-bench/codegen-musl:23.1.0-1.2.5",
+  "libcFixtures": [
+    {
+      "name": "libc-alloc",
+      "exitCode": 0
+    },
+    {
+      "name": "libc-mathfmt",
+      "exitCode": 0
+    },
+    {
+      "name": "libc-stdio",
+      "exitCode": 0
+    },
+    {
+      "name": "libc-structs",
+      "exitCode": 0
     }
   ]
 }

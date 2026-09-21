@@ -4,9 +4,10 @@ Written for engineers continuing this work on the remaining seven targets.
 
 This describes the RV64GC interpreter that replaces the pseudo-backend lowering
 for RISC-V, the interface it presents to the timing model, and what the other
-seven instruction sets have to implement. Milestone 1 is complete: real C,
-compiled by clang for RV64, executes against a real address space and matches
-`qemu-riscv64` on architectural state.
+seven instruction sets have to implement. RV64GC is complete: real C, compiled
+by clang and linked against a real libc, executes against a real address space
+and matches `qemu-riscv64` byte for byte -- on architectural state for
+freestanding programs, and on output for whole programs.
 
 ---
 
@@ -176,9 +177,20 @@ Four tiers, all running in `npm test` on any machine, with no Docker.
 | Lockstep | PC and all 32 integer registers **before every instruction** | `qemu-riscv64 -one-insn-per-tb -d cpu` |
 | Final state | 32 integer registers, 32 FP registers as raw bits, `fcsr`, and a 1 KiB memory window | the guest's own dump, byte for byte |
 | Randomised | the same two comparisons over generated programs | the same, per recorded seed |
+| Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
 
-21 fixtures: nine hand-written, twelve randomised. Roughly 23,000 instructions
-compared register-by-register.
+26 fixtures: ten hand-written, twelve randomised, four linked against musl.
+Roughly 24,000 instructions compared register by register, plus four whole
+programs compared on output.
+
+The last tier is compared on output rather than on architectural state, and
+that is a limit rather than a preference. A libc owns the entry point and
+reads argc, argv, the environment and the auxiliary vector off the initial
+stack -- which under qemu is the container's real one and under the
+interpreter is synthetic. The two processes genuinely start from different
+state and their registers diverge from the first instruction, legitimately.
+What must still agree exactly is what the program prints and the status it
+exits with, which is the property anything downstream depends on.
 
 ### Why the oracle output is committed
 
@@ -228,10 +240,28 @@ description; `IllegalInstruction` covers bit patterns that are not instructions;
 [src/isa/riscv/faults.test.ts](../../src/isa/riscv/faults.test.ts) asserts each
 one, including that `unimp` in the real fixtures is refused rather than skipped.
 
+### Linux process emulation
+
+A libc needs more than instructions. [linux.ts](../../src/isa/common/linux.ts)
+supplies the initial stack a program is started with -- argc, argv, envp and
+the auxiliary vector -- and the syscalls musl makes: `write`, `writev`, `brk`,
+`mmap` including `MAP_FIXED`, `exit`, and the dozen startup calls that have no
+interesting behaviour. It is shared rather than per-ISA because riscv64 and
+aarch64 use the same asm-generic numbers and the semantics are identical
+everywhere; only which registers carry the arguments differs.
+
+Two deliberate departures from a real kernel, both toward reproducibility:
+`clock_gettime` returns a fixed instant and `getrandom` a fixed sequence. A
+simulator whose output depended on the wall clock or on entropy could not be
+differentially tested, because two runs would disagree.
+
+A syscall this layer does not implement throws. Returning `-ENOSYS` would let
+a libc take a fallback path and produce a plausible wrong answer. Calls that
+are *supposed* to fail -- `ioctl` on something that is not a terminal --
+return the real errno, because that is correct behaviour and not a stub.
+
 ### What is deliberately not implemented
 
-- **The A extension.** No atomic appears in the corpus; the decoder names it
-  and refuses.
 - **`fence.i`.** Self-modifying code is out of scope.
 - **Rounding modes other than nearest-even, for arithmetic.** The host provides
   only one, so an instruction that asks for another is refused rather than
@@ -282,8 +312,10 @@ takes endianness as a constructor argument for exactly this reason.
 | MOS 6502 | 64 KiB, 8-bit accumulator, no OS | Cannot support a C library. Define honestly what it can claim. |
 
 Instruction counts above are measured on the existing C corpus at `-O2`, not
-estimated. RV64 needed 49, and the interpreter that covers it is about 900 lines
-of semantics. "Real ISAs have hundreds of instructions" is true of the
+estimated. RV64 needed 49 for that corpus, and 90 across four statically
+linked musl binaries, which is the whole of musl and not only the parts a
+program reaches; the interpreter that covers it is about a thousand lines of
+semantics. "Real ISAs have hundreds of instructions" is true of the
 architectures and not of what a compiler emits for this corpus.
 
 ### What an AArch64 target descriptor needs, measured
@@ -311,16 +343,43 @@ Also worth knowing: this qemu build has no AArch64 disassembler, so `in_asm`
 prints `OBJD-T: 04000094` — the raw encoding — instead of a mnemonic. That is
 still useful as a decoder oracle, and `llvm-objdump` supplies the text.
 
-### Two toolchain facts that will bite
+### The libc, decided and built
 
-- **There is no cross libc anywhere in any image.** Milestone 1 needed none —
-  freestanding static binaries with a hand-written `_start` are enough to
-  verify an interpreter — but the moment a workload wants `printf` or `malloc`,
-  one has to be chosen and added. musl covers riscv64, aarch64, x86_64, mipsel
-  and ppc64le. **musl has no SPARC port.**
-- **`lld` cannot link SPARC at all** (`unknown emulation: elf32_sparc`,
-  verified). That is what `isa-sim/sparc-linker:2.40-2` exists for. SPARC needs
-  binutils, and picolibc or a freestanding subset.
+There was no cross libc in any of the toolchain images.
+[Dockerfile.sysroot](../../tools/isa/Dockerfile.sysroot) now builds one:
+**musl 1.2.5**, from a checksummed tarball, for riscv64, aarch64 and x86_64.
+It builds in seconds and adds about 10 MB per target.
+
+musl alone turned out not to be enough, which is not visible until the first
+link fails. Its `printf` supports `long double`, and `long double` on RISC-V
+and AArch64 is binary128, which no hardware here implements -- so the link
+reaches for `__extenddftf2` and its relatives from compiler-rt whether or not
+the program mentions a long double. The builtins are therefore built
+alongside, from the same pinned LLVM release the compiler came from, by
+[build-builtins.sh](../../tools/isa/build-builtins.sh). Driving CMake to
+cross-compile them needs more scaffolding than compiling them directly does.
+
+Adding a target is one entry in each loop, plus its triple.
+
+**SPARC is the exception and will need separate work.** musl has no SPARC port
+at all, and `lld` cannot link SPARC either (`unknown emulation: elf32_sparc`,
+verified) — which is what `isa-sim/sparc-linker:2.40-2` exists for. That
+target needs binutils, and picolibc or a freestanding subset.
+
+### What a libc program actually needs, measured
+
+Running one was the only way to find out, and the answer was three things
+beyond the instruction set, each discovered by the run stopping:
+
+1. **Process startup.** musl reads the auxiliary vector before `main`. On a
+   zeroed stack it gets `AT_PAGESZ` of zero and computes nonsense in its
+   allocator, failing later somewhere unrelated.
+2. **A syscall surface.** Roughly twenty calls, of which only `write`,
+   `writev`, `brk` and `mmap` do anything.
+3. **The A extension.** musl's allocator uses atomics from its first call. On
+   one hart these are ordinary read-modify-write operations, so implementing
+   them was cheaper than refusing them, and they are verified against qemu
+   like everything else.
 
 ### A gap worth naming
 
@@ -339,8 +398,14 @@ npm test                                      # includes the full differential s
 npx vite-node tools/isa/build-fixtures.ts rv64  # regenerate fixtures; needs Docker
 ```
 
-Regeneration requires `isa-bench/codegen-min:23.1.0` and
-`isa-sim/qemu-user:11.1.0`. The initial stack pointer recorded in each lockstep
+Regeneration requires `isa-bench/codegen-min:23.1.0`,
+`isa-sim/qemu-user:11.1.0`, and for the libc tier
+`isa-bench/codegen-musl:23.1.0-1.2.5`, which is built by
+
+```
+docker build -f tools/isa/Dockerfile.sysroot \
+  -t isa-bench/codegen-musl:23.1.0-1.2.5 tools/isa
+``` The initial stack pointer recorded in each lockstep
 fixture comes from qemu and varies between captures, because qemu-user
 randomises it; the programs set their own stack immediately, so it does not
 affect execution, but it is why regenerating produces a diff even when nothing

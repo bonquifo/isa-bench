@@ -178,6 +178,30 @@ export const Rv = {
   FMSUB_D: 131,
   FNMSUB_D: 132,
   FNMADD_D: 133,
+
+  LR_W: 134,
+  SC_W: 135,
+  AMOSWAP_W: 136,
+  AMOADD_W: 137,
+  AMOXOR_W: 138,
+  AMOAND_W: 139,
+  AMOOR_W: 140,
+  AMOMIN_W: 141,
+  AMOMAX_W: 142,
+  AMOMINU_W: 143,
+  AMOMAXU_W: 144,
+
+  LR_D: 145,
+  SC_D: 146,
+  AMOSWAP_D: 147,
+  AMOADD_D: 148,
+  AMOXOR_D: 149,
+  AMOAND_D: 150,
+  AMOOR_D: 151,
+  AMOMIN_D: 152,
+  AMOMAX_D: 153,
+  AMOMINU_D: 154,
+  AMOMAXU_D: 155,
 } as const
 
 export type RvOp = (typeof Rv)[keyof typeof Rv]
@@ -701,8 +725,36 @@ export function decode32(word: number, len: 2 | 4, address: bigint): RvInst {
       else inst.rs1 = rs1
       return inst
     }
-    case OP_AMO:
-      return unsupported('atomic memory operation: the A extension is not implemented')
+    case OP_AMO: {
+      // The A extension. A single-threaded guest makes these ordinary
+      // read-modify-write operations, and musl's allocator uses them from
+      // its first call, so refusing them would refuse every libc program.
+      if (funct3 !== 2 && funct3 !== 3) return bad(`atomic with reserved funct3 ${funct3}`)
+      const wide = funct3 === 3
+      const funct5 = bits(word, 31, 27)
+      const table: Record<number, [RvOp, RvOp]> = {
+        0b00010: [Rv.LR_W, Rv.LR_D],
+        0b00011: [Rv.SC_W, Rv.SC_D],
+        0b00001: [Rv.AMOSWAP_W, Rv.AMOSWAP_D],
+        0b00000: [Rv.AMOADD_W, Rv.AMOADD_D],
+        0b00100: [Rv.AMOXOR_W, Rv.AMOXOR_D],
+        0b01100: [Rv.AMOAND_W, Rv.AMOAND_D],
+        0b01000: [Rv.AMOOR_W, Rv.AMOOR_D],
+        0b10000: [Rv.AMOMIN_W, Rv.AMOMIN_D],
+        0b10100: [Rv.AMOMAX_W, Rv.AMOMAX_D],
+        0b11000: [Rv.AMOMINU_W, Rv.AMOMINU_D],
+        0b11100: [Rv.AMOMAXU_W, Rv.AMOMAXU_D],
+      }
+      const pair = table[funct5]
+      if (!pair) return unsupported(`atomic with funct5 ${funct5.toString(2)}`)
+      const inst = make(wide ? pair[1] : pair[0], len, word)
+      inst.rd = rd
+      inst.rs1 = rs1
+      // A load-reserved names no second source; the field must be zero.
+      if (inst.op !== Rv.LR_W && inst.op !== Rv.LR_D) inst.rs2 = rs2
+      else if (rs2 !== 0) return bad('load-reserved with a non-zero rs2')
+      return inst
+    }
     case OP_LOAD_FP: {
       if (funct3 !== 2 && funct3 !== 3) return unsupported(`fp load with width funct3 ${funct3}`)
       const inst = make(funct3 === 2 ? Rv.FLW : Rv.FLD, len, word)

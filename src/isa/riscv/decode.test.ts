@@ -202,10 +202,16 @@ describe('decoder refuses rather than guessing', () => {
     expect(() => decode32(0x0000007f, 4, at)).toThrow(IllegalInstruction)
   })
 
-  it('reports atomics as unimplemented by name', () => {
-    // amoadd.w a0, a1, (a2)
-    expect(() => decode32(0x00b6252f, 4, at)).toThrow(UnimplementedInstruction)
-    expect(() => decode32(0x00b6252f, 4, at)).toThrow(/A extension is not implemented/)
+  it('rejects an atomic whose funct5 the architecture does not define', () => {
+    // The A extension is implemented; an undefined operation within it must
+    // still be refused rather than matched loosely onto a neighbour.
+    expect(() => decode32(0x28b6252f, 4, at)).toThrow(UnimplementedInstruction)
+    expect(() => decode32(0x28b6252f, 4, at)).toThrow(/funct5/)
+  })
+
+  it('rejects an atomic at a width the architecture does not define', () => {
+    // funct3 of 000 is a byte-wide atomic, which RV64A has no such thing as.
+    expect(() => decode32(0x00b6052f, 4, at)).toThrow(IllegalInstruction)
   })
 
   it('reports fence.i as unimplemented', () => {

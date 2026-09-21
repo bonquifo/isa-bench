@@ -1,0 +1,213 @@
+
+/work/out.elf:	file format elf64-littleriscv
+
+Disassembly of section .text:
+
+0000000000011210 <_start>:
+   11210: 00003117     	auipc	sp, 0x3
+   11214: 99010113     	addi	sp, sp, -0x670
+   11218: 62c1         	lui	t0, 0x10
+   1121a: 9116         	add	sp, sp, t0
+   1121c: 134000ef     	jal	0x11350 <kernel>
+   11220: 00002197     	auipc	gp, 0x2
+   11224: 37018193     	addi	gp, gp, 0x370
+   11228: 0001b023     	sd	zero, 0x0(gp)
+   1122c: 0011b423     	sd	ra, 0x8(gp)
+   11230: 0021b823     	sd	sp, 0x10(gp)
+   11234: 0031bc23     	sd	gp, 0x18(gp)
+   11238: 0241b023     	sd	tp, 0x20(gp)
+   1123c: 0251b423     	sd	t0, 0x28(gp)
+   11240: 0261b823     	sd	t1, 0x30(gp)
+   11244: 0271bc23     	sd	t2, 0x38(gp)
+   11248: 0481b023     	sd	s0, 0x40(gp)
+   1124c: 0491b423     	sd	s1, 0x48(gp)
+   11250: 04a1b823     	sd	a0, 0x50(gp)
+   11254: 04b1bc23     	sd	a1, 0x58(gp)
+   11258: 06c1b023     	sd	a2, 0x60(gp)
+   1125c: 06d1b423     	sd	a3, 0x68(gp)
+   11260: 06e1b823     	sd	a4, 0x70(gp)
+   11264: 06f1bc23     	sd	a5, 0x78(gp)
+   11268: 0901b023     	sd	a6, 0x80(gp)
+   1126c: 0911b423     	sd	a7, 0x88(gp)
+   11270: 0921b823     	sd	s2, 0x90(gp)
+   11274: 0931bc23     	sd	s3, 0x98(gp)
+   11278: 0b41b023     	sd	s4, 0xa0(gp)
+   1127c: 0b51b423     	sd	s5, 0xa8(gp)
+   11280: 0b61b823     	sd	s6, 0xb0(gp)
+   11284: 0b71bc23     	sd	s7, 0xb8(gp)
+   11288: 0d81b023     	sd	s8, 0xc0(gp)
+   1128c: 0d91b423     	sd	s9, 0xc8(gp)
+   11290: 0da1b823     	sd	s10, 0xd0(gp)
+   11294: 0db1bc23     	sd	s11, 0xd8(gp)
+   11298: 0fc1b023     	sd	t3, 0xe0(gp)
+   1129c: 0fd1b423     	sd	t4, 0xe8(gp)
+   112a0: 0fe1b823     	sd	t5, 0xf0(gp)
+   112a4: 0ff1bc23     	sd	t6, 0xf8(gp)
+   112a8: 1001b027     	fsd	ft0, 0x100(gp)
+   112ac: 1011b427     	fsd	ft1, 0x108(gp)
+   112b0: 1021b827     	fsd	ft2, 0x110(gp)
+   112b4: 1031bc27     	fsd	ft3, 0x118(gp)
+   112b8: 1241b027     	fsd	ft4, 0x120(gp)
+   112bc: 1251b427     	fsd	ft5, 0x128(gp)
+   112c0: 1261b827     	fsd	ft6, 0x130(gp)
+   112c4: 1271bc27     	fsd	ft7, 0x138(gp)
+   112c8: 1481b027     	fsd	fs0, 0x140(gp)
+   112cc: 1491b427     	fsd	fs1, 0x148(gp)
+   112d0: 14a1b827     	fsd	fa0, 0x150(gp)
+   112d4: 14b1bc27     	fsd	fa1, 0x158(gp)
+   112d8: 16c1b027     	fsd	fa2, 0x160(gp)
+   112dc: 16d1b427     	fsd	fa3, 0x168(gp)
+   112e0: 16e1b827     	fsd	fa4, 0x170(gp)
+   112e4: 16f1bc27     	fsd	fa5, 0x178(gp)
+   112e8: 1901b027     	fsd	fa6, 0x180(gp)
+   112ec: 1911b427     	fsd	fa7, 0x188(gp)
+   112f0: 1921b827     	fsd	fs2, 0x190(gp)
+   112f4: 1931bc27     	fsd	fs3, 0x198(gp)
+   112f8: 1b41b027     	fsd	fs4, 0x1a0(gp)
+   112fc: 1b51b427     	fsd	fs5, 0x1a8(gp)
+   11300: 1b61b827     	fsd	fs6, 0x1b0(gp)
+   11304: 1b71bc27     	fsd	fs7, 0x1b8(gp)
+   11308: 1d81b027     	fsd	fs8, 0x1c0(gp)
+   1130c: 1d91b427     	fsd	fs9, 0x1c8(gp)
+   11310: 1da1b827     	fsd	fs10, 0x1d0(gp)
+   11314: 1db1bc27     	fsd	fs11, 0x1d8(gp)
+   11318: 1fc1b027     	fsd	ft8, 0x1e0(gp)
+   1131c: 1fd1b427     	fsd	ft9, 0x1e8(gp)
+   11320: 1fe1b827     	fsd	ft10, 0x1f0(gp)
+   11324: 1ff1bc27     	fsd	ft11, 0x1f8(gp)
+   11328: 003022f3     	frcsr	t0
+   1132c: 2051b023     	sd	t0, 0x200(gp)
+   11330: 2001b423     	sd	zero, 0x208(gp)
+   11334: 04000893     	li	a7, 0x40
+   11338: 4505         	li	a0, 0x1
+   1133a: 858e         	mv	a1, gp
+   1133c: 61000613     	li	a2, 0x610
+   11340: 00000073     	ecall
+   11344: 05d00893     	li	a7, 0x5d
+   11348: 4501         	li	a0, 0x0
+   1134a: 00000073     	ecall
+   1134e: 0000         	unimp
+
+0000000000011350 <kernel>:
+   11350: 00001517     	auipc	a0, 0x1
+   11354: 1d853503     	ld	a0, 0x1d8(a0)
+   11358: 00002697     	auipc	a3, 0x2
+   1135c: 1d868693     	addi	a3, a3, 0x1d8
+   11360: 21050713     	addi	a4, a0, 0x210
+   11364: 29050593     	addi	a1, a0, 0x290
+   11368: 5621         	li	a2, -0x18
+   1136a: f6400793     	li	a5, -0x9c
+   1136e: 0006b803     	ld	a6, 0x0(a3)
+   11372: 01073023     	sd	a6, 0x0(a4)
+   11376: 0306b803     	ld	a6, 0x30(a3)
+   1137a: 090738af     	amoswap.d	a7, a6, (a4)
+   1137e: 0115b023     	sd	a7, 0x0(a1)
+   11382: 00073883     	ld	a7, 0x0(a4)
+   11386: 0115b423     	sd	a7, 0x8(a1)
+   1138a: 0006b883     	ld	a7, 0x0(a3)
+   1138e: 01173023     	sd	a7, 0x0(a4)
+   11392: 010738af     	amoadd.d	a7, a6, (a4)
+   11396: 0115b823     	sd	a7, 0x10(a1)
+   1139a: 00073883     	ld	a7, 0x0(a4)
+   1139e: 0115bc23     	sd	a7, 0x18(a1)
+   113a2: 0006b883     	ld	a7, 0x0(a3)
+   113a6: 01173023     	sd	a7, 0x0(a4)
+   113aa: 210738af     	amoxor.d	a7, a6, (a4)
+   113ae: 0315b023     	sd	a7, 0x20(a1)
+   113b2: 0006b883     	ld	a7, 0x0(a3)
+   113b6: 01173023     	sd	a7, 0x0(a4)
+   113ba: 610738af     	amoand.d	a7, a6, (a4)
+   113be: 0315b423     	sd	a7, 0x28(a1)
+   113c2: 0006b883     	ld	a7, 0x0(a3)
+   113c6: 01173023     	sd	a7, 0x0(a4)
+   113ca: 410738af     	amoor.d	a7, a6, (a4)
+   113ce: 0315b823     	sd	a7, 0x30(a1)
+   113d2: 0006b883     	ld	a7, 0x0(a3)
+   113d6: 01173023     	sd	a7, 0x0(a4)
+   113da: 810738af     	amomin.d	a7, a6, (a4)
+   113de: 0315bc23     	sd	a7, 0x38(a1)
+   113e2: 00073883     	ld	a7, 0x0(a4)
+   113e6: 0515b023     	sd	a7, 0x40(a1)
+   113ea: 0006b883     	ld	a7, 0x0(a3)
+   113ee: 01173023     	sd	a7, 0x0(a4)
+   113f2: a10738af     	amomax.d	a7, a6, (a4)
+   113f6: 0515b423     	sd	a7, 0x48(a1)
+   113fa: 0006b883     	ld	a7, 0x0(a3)
+   113fe: 01173023     	sd	a7, 0x0(a4)
+   11402: c10738af     	amominu.d	a7, a6, (a4)
+   11406: 0515b823     	sd	a7, 0x50(a1)
+   1140a: 0006b883     	ld	a7, 0x0(a3)
+   1140e: 01173023     	sd	a7, 0x0(a4)
+   11412: e107382f     	amomaxu.d	a6, a6, (a4)
+   11416: 0505bc23     	sd	a6, 0x58(a1)
+   1141a: 00073803     	ld	a6, 0x0(a4)
+   1141e: 0705b023     	sd	a6, 0x60(a1)
+   11422: 0006b803     	ld	a6, 0x0(a3)
+   11426: 01073023     	sd	a6, 0x0(a4)
+   1142a: 0306b803     	ld	a6, 0x30(a3)
+   1142e: 0006b883     	ld	a7, 0x0(a3)
+   11432: 01173023     	sd	a7, 0x0(a4)
+   11436: 090728af     	amoswap.w	a7, a6, (a4)
+   1143a: 0715b423     	sd	a7, 0x68(a1)
+   1143e: 00073883     	ld	a7, 0x0(a4)
+   11442: 0715b823     	sd	a7, 0x70(a1)
+   11446: 0006b883     	ld	a7, 0x0(a3)
+   1144a: 01173023     	sd	a7, 0x0(a4)
+   1144e: 010728af     	amoadd.w	a7, a6, (a4)
+   11452: 0715bc23     	sd	a7, 0x78(a1)
+   11456: 00073883     	ld	a7, 0x0(a4)
+   1145a: 0915b023     	sd	a7, 0x80(a1)
+   1145e: 0006b883     	ld	a7, 0x0(a3)
+   11462: 01173023     	sd	a7, 0x0(a4)
+   11466: 810728af     	amomin.w	a7, a6, (a4)
+   1146a: 0915b423     	sd	a7, 0x88(a1)
+   1146e: 0006b883     	ld	a7, 0x0(a3)
+   11472: 01173023     	sd	a7, 0x0(a4)
+   11476: a10728af     	amomax.w	a7, a6, (a4)
+   1147a: 0915b823     	sd	a7, 0x90(a1)
+   1147e: 0006b883     	ld	a7, 0x0(a3)
+   11482: 01173023     	sd	a7, 0x0(a4)
+   11486: c10728af     	amominu.w	a7, a6, (a4)
+   1148a: 0915bc23     	sd	a7, 0x98(a1)
+   1148e: 0006b883     	ld	a7, 0x0(a3)
+   11492: 01173023     	sd	a7, 0x0(a4)
+   11496: e107282f     	amomaxu.w	a6, a6, (a4)
+   1149a: 0b05b023     	sd	a6, 0xa0(a1)
+   1149e: 00073803     	ld	a6, 0x0(a4)
+   114a2: 1629         	addi	a2, a2, -0x16
+   114a4: 0721         	addi	a4, a4, 0x8
+   114a6: 0b05b423     	sd	a6, 0xa8(a1)
+   114aa: 0b058593     	addi	a1, a1, 0xb0
+   114ae: 06a1         	addi	a3, a3, 0x8
+   114b0: eaf61fe3     	bne	a2, a5, 0x1136e <kernel+0x1e>
+   114b4: fffff697     	auipc	a3, 0xfffff
+   114b8: d546b683     	ld	a3, -0x2ac(a3)
+   114bc: 27050713     	addi	a4, a0, 0x270
+   114c0: fffff797     	auipc	a5, 0xfffff
+   114c4: 26d53823     	sd	a3, 0x270(a0)
+   114c8: d407b683     	ld	a3, -0x2c0(a5)
+   114cc: 100737af     	lr.d	a5, (a4)
+   114d0: e19c         	sd	a5, 0x0(a1)
+   114d2: 18d736af     	sc.d	a3, a3, (a4)
+   114d6: e594         	sd	a3, 0x8(a1)
+   114d8: 27053683     	ld	a3, 0x270(a0)
+   114dc: 4795         	li	a5, 0x5
+   114de: e994         	sd	a3, 0x10(a1)
+   114e0: 26f53c23     	sd	a5, 0x278(a0)
+   114e4: 27850693     	addi	a3, a0, 0x278
+   114e8: 06300793     	li	a5, 0x63
+   114ec: 18f6b6af     	sc.d	a3, a5, (a3)
+   114f0: ed94         	sd	a3, 0x18(a1)
+   114f2: 27853683     	ld	a3, 0x278(a0)
+   114f6: f194         	sd	a3, 0x20(a1)
+   114f8: 100726af     	lr.w	a3, (a4)
+   114fc: 4cc447b7     	lui	a5, 0x4cc44
+   11500: bb378793     	addi	a5, a5, -0x44d
+   11504: f594         	sd	a3, 0x28(a1)
+   11506: 0786         	slli	a5, a5, 0x1
+   11508: 18f726af     	sc.w	a3, a5, (a4)
+   1150c: f994         	sd	a3, 0x30(a1)
+   1150e: 27053683     	ld	a3, 0x270(a0)
+   11512: 40c00533     	neg	a0, a2
+   11516: fd94         	sd	a3, 0x38(a1)
+   11518: 8082         	ret

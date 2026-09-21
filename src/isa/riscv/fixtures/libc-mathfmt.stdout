@@ -1,0 +1,16 @@
+0 sqrt=0 fabs=0 floor=0 ceil=0
+-0 sqrt=0 fabs=0 floor=-0 ceil=-0
+1 sqrt=1 fabs=1 floor=1 ceil=1
+-1 sqrt=1 fabs=1 floor=-1 ceil=-1
+0.5 sqrt=0.70710678118654757 fabs=0.5 floor=0 ceil=1
+2 sqrt=1.4142135623730951 fabs=2 floor=2 ceil=2
+3 sqrt=1.7320508075688772 fabs=3 floor=3 ceil=3
+1e-300 sqrt=1e-150 fabs=1e-300 floor=0 ceil=1
+1.0000000000000001e+300 sqrt=9.9999999999999998e+149 fabs=1.0000000000000001e+300 floor=1.0000000000000001e+300 ceil=1.0000000000000001e+300
+0.10000000000000001 sqrt=0.31622776601683794 fabs=0.10000000000000001 floor=0 ceil=1
+inf=inf -inf=-inf nan=nan
+isnan=1 isinf=1 signbit=1
+fmod=1.5 remainder=-0.5 copysign=-3
+ldexp=1.152921504606847e+18 frexp=0.75
+float=0.333333343 double=0.33333333333333331
+longdouble=0.33333333333333333333

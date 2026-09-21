@@ -21,6 +21,7 @@ import {
   readElf,
   readIndex,
   readLockstep,
+  readStdout,
 } from './common/fixtures.node.ts'
 import { RunState, createRetireChunk } from './common/trace.ts'
 import type { IsaBackend } from './backend.ts'
@@ -131,4 +132,27 @@ export function describeIsaConformance(options: ConformanceOptions): void {
       expect(anyDump.some((byte) => byte !== 0)).toBe(true)
     })
   })
+
+  const libc = index.libcFixtures ?? []
+  if (libc.length > 0) {
+    describe(`${backend.name}: whole programs against a real libc`, () => {
+      for (const fixture of libc) {
+        it(`prints what the reference printed: ${fixture.name}`, () => {
+          // No seeded registers: this is a real program start, so the loader
+          // builds the argc/argv/envp/auxv block a libc reads at startup.
+          const { interpreter } = backend.load(readElf(fixtureDir, fixture.name), {
+            instructionBudget: 50_000_000,
+          })
+          const chunk = createRetireChunk(8192)
+          let state: RunState = RunState.MORE
+          while (state === RunState.MORE) state = interpreter.run(chunk)
+
+          const decoder = new TextDecoder()
+          expect(decoder.decode(interpreter.stdout()))
+            .toBe(decoder.decode(readStdout(fixtureDir, fixture.name)))
+          expect(interpreter.exitCode).toBe(fixture.exitCode)
+        })
+      }
+    })
+  }
 }

@@ -73,4 +73,15 @@ export const rv64Target: FixtureTarget = {
   randomGenerator: 'tools/isa/rv64/random.ts',
   generateRandom: (seed: number) => generateRandomProgram(seed),
   parseCpuLog: parseRiscvCpuLog,
+  libc: {
+    triple: 'riscv64-unknown-linux-musl',
+    image: 'isa-bench/codegen-musl:23.1.0-1.2.5',
+    sysroot: '/sysroot/riscv64',
+    builtins: '/sysroot/builtins/libclang_rt.builtins-riscv64.a',
+    programsDir: join(TOOLS, 'rv64/libc'),
+    // musl's printf supports long double, which is binary128 on RISC-V, so
+    // the link reaches for compiler-rt's soft-float helpers whether or not
+    // the program itself mentions a long double.
+    libs: ['-lm'],
+  },
 }

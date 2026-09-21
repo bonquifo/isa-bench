@@ -7,6 +7,7 @@ import {
   UnimplementedInstruction,
   UnsupportedSyscall,
 } from '../common/errors.ts'
+import { LinuxSyscalls } from '../common/linux.ts'
 import { GuestMemory, PAGE_SIZE, Prot } from '../common/memory.ts'
 import { createRetireChunk } from '../common/trace.ts'
 import { Rv64Interpreter } from './exec.ts'
@@ -40,8 +41,10 @@ const LD_A0 = encodeI(0x03, 10, 3, 10, 0)
 const CSR_MSTATUS = encodeI(0x73, 10, 2, 0, 0x300)
 /** fadd.d fa0, fa0, fa0 with rm = 010 (round down). */
 const FADD_RDN = encodeR(0x53, 10, 2, 10, 10, 0x01)
-/** amoadd.w a0, a1, (a2) */
-const AMOADD = 0x00b6252f
+/** An atomic with a funct5 the architecture does not define. */
+const AMO_RESERVED = encodeR(0x2f, 10, 2, 12, 11, 0b0010100)
+/** fence.i, which would flush an instruction cache this model does not have. */
+const FENCE_I = encodeI(0x0f, 0, 1, 0, 0)
 
 function build(words: number[], options: { budget?: number } = {}) {
   const memory = new GuestMemory(true)
@@ -51,8 +54,14 @@ function build(words: number[], options: { budget?: number } = {}) {
   words.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true))
   memory.writeBytesRaw(BASE, bytes)
   const image = new Rv64Image(memory, BASE, bytes.length)
+  const syscalls = new LinuxSyscalls(memory, {
+    stackPointer: 0x40000n,
+    brkStart: 0x20000n,
+    mmapStart: 0x30000n,
+  })
   const interpreter = new Rv64Interpreter(image, memory, {
     instructionBudget: options.budget,
+    syscalls,
   })
   return { memory, image, interpreter }
 }
@@ -78,9 +87,23 @@ describe('the interpreter stops rather than guessing', () => {
     expect(interpreter.retired).toBe(3)
   })
 
-  it('refuses an unimplemented extension by name', () => {
-    expect(() => runAll([AMOADD, ...EXIT_OK])).toThrow(UnimplementedInstruction)
-    expect(() => runAll([AMOADD, ...EXIT_OK])).toThrow(/A extension/)
+  it('refuses an instruction outside what it implements, by name', () => {
+    expect(() => runAll([FENCE_I, ...EXIT_OK])).toThrow(UnimplementedInstruction)
+    expect(() => runAll([FENCE_I, ...EXIT_OK])).toThrow(/fence\.i/)
+  })
+
+  it('refuses an encoding inside an implemented extension that is reserved', () => {
+    // The A extension is implemented, which makes an undefined funct5 within
+    // it the more interesting case: a decoder that matched loosely would run
+    // it as some neighbouring atomic.
+    expect(() => runAll([AMO_RESERVED, ...EXIT_OK])).toThrow(UnimplementedInstruction)
+    expect(() => runAll([AMO_RESERVED, ...EXIT_OK])).toThrow(/funct5/)
+  })
+
+  it('faults on a misaligned atomic rather than performing it', () => {
+    // amoadd.d on a three-byte-aligned address. Linux raises SIGBUS here.
+    const words = [ADDI(12, 0, 3), encodeR(0x2f, 10, 3, 12, 0, 0), ...EXIT_OK]
+    expect(() => runAll(words)).toThrow(/misaligned atomic/)
   })
 
   it('refuses a control register outside the floating-point set', () => {
@@ -99,8 +122,16 @@ describe('the interpreter stops rather than guessing', () => {
   })
 
   it('refuses a syscall it does not emulate', () => {
-    // Syscall 222 is mmap; nothing here provides it.
-    expect(() => runAll([ADDI(17, 0, 222), ECALL, ...EXIT_OK])).toThrow(UnsupportedSyscall)
+    // 1000 is not a syscall at all. Returning -ENOSYS would let a libc take
+    // a fallback path and produce a plausible wrong answer instead.
+    expect(() => runAll([ADDI(17, 0, 1000), ECALL, ...EXIT_OK])).toThrow(UnsupportedSyscall)
+    expect(() => runAll([ADDI(17, 0, 1000), ECALL, ...EXIT_OK])).toThrow(/syscall 1000/)
+  })
+
+  it('refuses to pretend there is a file system', () => {
+    // 56 is openat. There are no files, and saying so beats failing later
+    // somewhere that looks unrelated.
+    expect(() => runAll([ADDI(17, 0, 56), ECALL, ...EXIT_OK])).toThrow(/no file system/)
   })
 
   it('refuses a write to a descriptor it does not model', () => {

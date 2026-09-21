@@ -18,9 +18,9 @@
 import { mulhs, mulhsu, mulhu, sext, u64, zext } from '../common/bits64.ts'
 import {
   ExecutionBudgetExceeded,
+  GuestFault,
   IsaError,
   UnimplementedInstruction,
-  UnsupportedSyscall,
 } from '../common/errors.ts'
 import {
   CANONICAL_NAN_D,
@@ -51,6 +51,7 @@ import {
   type Exact,
   type RoundingStatus,
 } from '../common/fp.ts'
+import type { LinuxSyscalls } from '../common/linux.ts'
 import type { GuestMemory, AccessWidth } from '../common/memory.ts'
 import {
   RunState,
@@ -79,9 +80,6 @@ export const FFlag = {
  */
 const ROUNDING_FLAGS = FFlag.NX | FFlag.OF | FFlag.UF
 
-const EXIT_SYSCALLS = new Set([93, 94])
-const SYS_WRITE = 64
-
 export interface Rv64Options {
   /**
    * Initial stack pointer. Fixtures seed it from the reference run so the two
@@ -91,6 +89,11 @@ export interface Rv64Options {
   initialSp?: bigint
   /** Ceiling on retired instructions, to turn a guest hang into an error. */
   instructionBudget?: number
+  /**
+   * The Linux emulation this guest runs against. Supplied by the loader,
+   * which is what knows where the heap and the mapping arena were placed.
+   */
+  syscalls?: LinuxSyscalls
 }
 
 const DEFAULT_BUDGET = 200_000_000
@@ -101,10 +104,12 @@ export class Rv64Interpreter implements Interpreter {
   private readonly x = new BigInt64Array(32)
   private readonly f = new BigInt64Array(32)
   private fcsr = 0
+  /** Address held by an outstanding load-reserved, if any. */
+  private reservation: bigint | null = null
   private pc: bigint
   private exited = false
   private readonly budget: number
-  private readonly outBytes: number[] = []
+  private readonly linux: LinuxSyscalls | undefined
   exitCode = 0
   retired = 0
 
@@ -113,6 +118,7 @@ export class Rv64Interpreter implements Interpreter {
     this.memory = memory
     this.pc = image.entry
     this.budget = options.instructionBudget ?? DEFAULT_BUDGET
+    this.linux = options.syscalls
     if (options.initialSp !== undefined) this.x[2] = options.initialSp
   }
 
@@ -143,7 +149,11 @@ export class Rv64Interpreter implements Interpreter {
   }
 
   stdout(): Uint8Array {
-    return Uint8Array.from(this.outBytes)
+    return this.linux?.stdout() ?? new Uint8Array()
+  }
+
+  stderr(): Uint8Array {
+    return this.linux?.stderr() ?? new Uint8Array()
   }
 
   run(into: RetireChunk): RunState {
@@ -406,6 +416,32 @@ export class Rv64Interpreter implements Interpreter {
       case Rv.CSRRCI:
         return this.csr(si, a)
 
+      case Rv.LR_W:
+      case Rv.LR_D:
+      case Rv.SC_W:
+      case Rv.SC_D:
+        return this.loadReservedStoreConditional(si, a, b)
+
+      case Rv.AMOSWAP_W:
+      case Rv.AMOADD_W:
+      case Rv.AMOXOR_W:
+      case Rv.AMOAND_W:
+      case Rv.AMOOR_W:
+      case Rv.AMOMIN_W:
+      case Rv.AMOMAX_W:
+      case Rv.AMOMINU_W:
+      case Rv.AMOMAXU_W:
+      case Rv.AMOSWAP_D:
+      case Rv.AMOADD_D:
+      case Rv.AMOXOR_D:
+      case Rv.AMOAND_D:
+      case Rv.AMOOR_D:
+      case Rv.AMOMIN_D:
+      case Rv.AMOMAX_D:
+      case Rv.AMOMINU_D:
+      case Rv.AMOMAXU_D:
+        return this.atomicReadModifyWrite(si, a, b)
+
       case Rv.FLW:
         return this.writeF(inst.rd, boxSingle(Number(this.loadMem(a + imm, 4, false))))
       case Rv.FLD:
@@ -419,6 +455,77 @@ export class Rv64Interpreter implements Interpreter {
 
       default:
         return this.executeFloat(si)
+    }
+  }
+
+  /**
+   * Load-reserved and store-conditional. With one hart the reservation can
+   * only be broken by another reservation, so a store-conditional succeeds
+   * exactly when it names the address the matching load-reserved did.
+   */
+  private loadReservedStoreConditional(si: RvStaticInst, address: bigint, value: bigint): void {
+    const op = si.inst.op
+    const width = si.accessWidth as AccessWidth
+    this.requireAligned(si, address, width)
+    if (op === Rv.LR_W || op === Rv.LR_D) {
+      this.reservation = address
+      return this.write(si.inst.rd, this.loadMem(address, width, true))
+    }
+    if (this.reservation !== address) {
+      this.access = address
+      this.accessWidth = width
+      return this.write(si.inst.rd, 1n)
+    }
+    this.reservation = null
+    this.storeMem(address, width, value)
+    return this.write(si.inst.rd, 0n)
+  }
+
+  /** The AMO family: return the old value, store the combined one. */
+  private atomicReadModifyWrite(si: RvStaticInst, address: bigint, operand: bigint): void {
+    const width = si.accessWidth as AccessWidth
+    const bits = width * 8
+    this.requireAligned(si, address, width)
+    const previous = this.loadMem(address, width, true)
+    const rhs = sext(operand, bits)
+    let next: bigint
+    switch (si.inst.op) {
+      case Rv.AMOSWAP_W:
+      case Rv.AMOSWAP_D: next = rhs; break
+      case Rv.AMOADD_W:
+      case Rv.AMOADD_D: next = previous + rhs; break
+      case Rv.AMOXOR_W:
+      case Rv.AMOXOR_D: next = previous ^ rhs; break
+      case Rv.AMOAND_W:
+      case Rv.AMOAND_D: next = previous & rhs; break
+      case Rv.AMOOR_W:
+      case Rv.AMOOR_D: next = previous | rhs; break
+      case Rv.AMOMIN_W:
+      case Rv.AMOMIN_D: next = previous < rhs ? previous : rhs; break
+      case Rv.AMOMAX_W:
+      case Rv.AMOMAX_D: next = previous > rhs ? previous : rhs; break
+      case Rv.AMOMINU_W:
+      case Rv.AMOMINU_D:
+        next = zext(previous, bits) < zext(rhs, bits) ? previous : rhs
+        break
+      default:
+        next = zext(previous, bits) > zext(rhs, bits) ? previous : rhs
+        break
+    }
+    this.storeMem(address, width, sext(next, bits))
+    this.write(si.inst.rd, previous)
+  }
+
+  /**
+   * Atomics must be naturally aligned. Linux raises SIGBUS otherwise, so a
+   * misaligned one is a guest bug and is reported rather than performed.
+   */
+  private requireAligned(si: RvStaticInst, address: bigint, width: number): void {
+    if (address % BigInt(width) !== 0n) {
+      throw new GuestFault(
+        'write', address, width,
+        `misaligned atomic at 0x${si.addr.toString(16)}`,
+      )
     }
   }
 
@@ -463,26 +570,26 @@ export class Rv64Interpreter implements Interpreter {
     else this.fcsr = updated & 0xff
   }
 
+  /**
+   * The RISC-V Linux convention: the syscall number is in a7, the arguments
+   * in a0..a5, and the result goes back in a0. Everything past that split is
+   * architecture-independent and lives in the shared Linux layer.
+   */
   private syscall(): void {
-    const number = Number(this.x[17]!)
-    if (EXIT_SYSCALLS.has(number)) {
+    if (!this.linux) {
+      throw new IsaError(
+        `${ISA_NAME}: guest made a system call but this program was loaded without ` +
+        'Linux emulation',
+      )
+    }
+    const args = [this.x[10]!, this.x[11]!, this.x[12]!, this.x[13]!, this.x[14]!, this.x[15]!]
+    const result = this.linux.dispatch(ISA_NAME, Number(this.x[17]!), args)
+    if (result.exited) {
       this.exited = true
-      this.exitCode = Number(BigInt.asIntN(32, this.x[10]!))
+      this.exitCode = this.linux.exitCode
       return
     }
-    if (number === SYS_WRITE) {
-      const fd = Number(this.x[10]!)
-      const buffer = this.x[11]!
-      const length = Number(this.x[12]!)
-      if (fd !== 1 && fd !== 2) {
-        throw new UnsupportedSyscall(ISA_NAME, number, `to file descriptor ${fd}`)
-      }
-      const bytes = this.memory.readBytes(buffer, length)
-      for (const byte of bytes) this.outBytes.push(byte)
-      this.write(10, BigInt(length))
-      return
-    }
-    throw new UnsupportedSyscall(ISA_NAME, number)
+    this.write(10, result.value)
   }
 
   // -------------------------------------------------------------------------

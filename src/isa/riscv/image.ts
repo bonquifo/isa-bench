@@ -187,6 +187,23 @@ const SHAPES: Shape[] = (() => {
   for (const op of [Rv.FMADD_S, Rv.FMSUB_S, Rv.FNMSUB_S, Rv.FNMADD_S,
     Rv.FMADD_D, Rv.FMSUB_D, Rv.FNMSUB_D, Rv.FNMADD_D]) fma(op)
 
+  // Atomics read and write the same location, so they occupy a memory port
+  // and serialize: an in-order model must not let a later access pass them.
+  const atomic = (op: RvOp, width: number, hasRs2: boolean) => {
+    t[op] = shape(InstClass.LD, LatencyClass.LOAD, X, X, hasRs2 ? X : 0, {
+      width,
+      reads: true,
+      writes: true,
+      serializing: true,
+    })
+  }
+  atomic(Rv.LR_W, 4, false)
+  atomic(Rv.LR_D, 8, false)
+  for (const op of [Rv.SC_W, Rv.AMOSWAP_W, Rv.AMOADD_W, Rv.AMOXOR_W, Rv.AMOAND_W,
+    Rv.AMOOR_W, Rv.AMOMIN_W, Rv.AMOMAX_W, Rv.AMOMINU_W, Rv.AMOMAXU_W]) atomic(op, 4, true)
+  for (const op of [Rv.SC_D, Rv.AMOSWAP_D, Rv.AMOADD_D, Rv.AMOXOR_D, Rv.AMOAND_D,
+    Rv.AMOOR_D, Rv.AMOMIN_D, Rv.AMOMAX_D, Rv.AMOMINU_D, Rv.AMOMAXU_D]) atomic(op, 8, true)
+
   return t
 })()
 
