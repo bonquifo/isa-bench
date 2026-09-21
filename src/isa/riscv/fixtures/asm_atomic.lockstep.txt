@@ -1,6 +1,6 @@
 # lockstep v1
 # <pc> [x<n>=<hex>]*  — registers omitted are unchanged from the step before
-11210 x0=0 x1=0 x2=7e3b33cf1da0 x3=0 x4=0 x5=0 x6=0 x7=0 x8=0 x9=0 x10=0 x11=0 x12=0 x13=0 x14=0 x15=0 x16=0 x17=0 x18=0 x19=0 x20=0 x21=0 x22=0 x23=0 x24=0 x25=0 x26=0 x27=0 x28=0 x29=0 x30=0 x31=0
+11210 x0=0 x1=0 x2=71d543d63da0 x3=0 x4=0 x5=0 x6=0 x7=0 x8=0 x9=0 x10=0 x11=0 x12=0 x13=0 x14=0 x15=0 x16=0 x17=0 x18=0 x19=0 x20=0 x21=0 x22=0 x23=0 x24=0 x25=0 x26=0 x27=0 x28=0 x29=0 x30=0 x31=0
 11214 x2=14210
 11218 x2=13ba0
 1121a x5=10000

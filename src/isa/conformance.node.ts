@@ -151,6 +151,9 @@ export function describeIsaConformance(options: ConformanceOptions): void {
           expect(decoder.decode(interpreter.stdout()))
             .toBe(decoder.decode(readStdout(fixtureDir, fixture.name)))
           expect(interpreter.exitCode).toBe(fixture.exitCode)
+          if (fixture.stderr !== undefined) {
+            expect(decoder.decode(interpreter.stderr())).toBe(fixture.stderr)
+          }
         })
       }
     })

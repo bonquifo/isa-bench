@@ -89,6 +89,12 @@ export interface LibcTier {
   programsDir: string
   /** Extra libraries, after -lc. */
   libs: string[]
+  /**
+   * Further programs supplied in memory rather than from a directory, with
+   * their own compiler flags. Used for the app's own corpus, which lives in
+   * the source tree and needs signed overflow defined.
+   */
+  extra?: { name: string; source: string; flags: string[] }[]
 }
 
 const SHARED_FLAGS = ['-O2', '-ffreestanding', '-fno-builtin', '-nostdlib', '-static']
@@ -182,13 +188,19 @@ function buildOne(target: FixtureTarget, name: string, source: string, work: str
   return steps.length
 }
 
-function buildLibcOne(target: FixtureTarget, name: string, source: string, work: string): number {
+function buildLibcOne(
+  target: FixtureTarget,
+  name: string,
+  source: string,
+  work: string,
+  flags: string[] = [],
+): { exitCode: number; stderr: string } {
   const tier = target.libc!
   writeFileSync(join(work, 'prog.c'), source)
   const s = tier.sysroot
   run(tier.image, work, [
     'sh', '-c',
-    `clang -target ${tier.triple} -O2 -static -nostdlib ` +
+    `clang -target ${tier.triple} -O2 ${flags.join(' ')} -static -nostdlib ` +
     `-fuse-ld=lld -isystem ${s}/include ` +
     `-o /work/out.elf ${s}/lib/crt1.o ${s}/lib/crti.o /work/prog.c ` +
     `-L${s}/lib -lc ${tier.libs.join(' ')} ${tier.builtins} ${s}/lib/crtn.o`,
@@ -202,16 +214,23 @@ function buildLibcOne(target: FixtureTarget, name: string, source: string, work:
 
   const elf = readFileSync(join(work, 'out.elf'))
   const stdout = readFileSync(join(work, 'out.stdout'))
+  const stderr = readFileSync(join(work, 'out.stderr'), 'utf8')
   const exitCode = Number(readFileSync(join(work, 'out.exit'), 'utf8').trim())
-  if (stdout.length === 0) throw new Error(`${name}: the reference printed nothing`)
+  // A program that produces nothing at all did not run. Printing nothing to
+  // stdout alone is legitimate: several corpus programs only return a value,
+  // which the driver writes to stderr.
+  if (stdout.length === 0 && stderr.length === 0) {
+    throw new Error(`${name}: the reference produced no output at all`)
+  }
 
   writeFileSync(join(target.outDir, `${name}.elf`), elf)
   writeFileSync(join(target.outDir, `${name}.stdout`), stdout)
+  if (stderr.length > 0) writeFileSync(join(target.outDir, `${name}.stderr`), stderr)
   console.log(
-    `${name.padEnd(14)} ${String(elf.length).padStart(6)} B elf   ` +
+    `${name.padEnd(16)} ${String(elf.length).padStart(6)} B elf   ` +
     `${String(stdout.length).padStart(7)} B stdout  exit ${exitCode}`,
   )
-  return exitCode
+  return { exitCode, stderr }
 }
 
 export function buildFixtures(target: FixtureTarget): void {
@@ -239,13 +258,17 @@ export function buildFixtures(target: FixtureTarget): void {
     index.push({ name, steps, seed })
   }
 
-  const libc: { name: string; exitCode: number }[] = []
+  const libc: { name: string; exitCode: number; stderr?: string }[] = []
   if (target.libc) {
     const libcNames = readdirSync(target.libc.programsDir).filter((f) => f.endsWith('.c')).sort()
     for (const file of libcNames) {
       const name = `libc-${file.replace(/\.c$/, '')}`
       const source = readFileSync(join(target.libc.programsDir, file), 'utf8')
-      libc.push({ name, exitCode: buildLibcOne(target, name, source, work) })
+      libc.push({ name, ...buildLibcOne(target, name, source, work) })
+    }
+    for (const program of target.libc.extra ?? []) {
+      const result = buildLibcOne(target, program.name, program.source, work, program.flags)
+      libc.push({ name: program.name, ...result })
     }
   }
 

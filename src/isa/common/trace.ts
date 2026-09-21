@@ -184,6 +184,8 @@ export interface Interpreter {
   finalState(): ArchState
   /** Bytes the guest wrote to fd 1. */
   stdout(): Uint8Array
+  /** Bytes the guest wrote to fd 2, kept apart so neither can mask the other. */
+  stderr(): Uint8Array
   readonly exitCode: number
   /** Total instructions retired so far. */
   readonly retired: number

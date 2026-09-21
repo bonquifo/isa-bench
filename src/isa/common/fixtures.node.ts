@@ -42,7 +42,7 @@ export interface FixtureIndex {
    * reference is the container's real one and under the interpreter is
    * synthetic, so the two legitimately diverge from the first instruction.
    */
-  libcFixtures: { name: string; exitCode: number }[]
+  libcFixtures: { name: string; exitCode: number; stderr?: string }[]
 }
 
 export function readIndex(dir: string): FixtureIndex {

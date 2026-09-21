@@ -8,6 +8,7 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { FixtureTarget, LockstepStep } from '../fixture-builder.ts'
+import { CORPUS_FLAGS, corpusPrograms } from '../corpus.ts'
 import { generateRandomProgram } from '../rv64/random.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -83,5 +84,12 @@ export const rv64Target: FixtureTarget = {
     // the link reaches for compiler-rt's soft-float helpers whether or not
     // the program itself mentions a long double.
     libs: ['-lm'],
+    // The app's own workloads, compiled by a real toolchain and checked
+    // against the answers the existing engine already produces for them.
+    extra: corpusPrograms().map((program) => ({
+      name: program.name,
+      source: program.source,
+      flags: CORPUS_FLAGS,
+    })),
   },
 }
