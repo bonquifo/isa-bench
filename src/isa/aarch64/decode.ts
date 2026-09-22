@@ -627,13 +627,21 @@ function decodeBranchSystem(word: number, unsupported: Fail): A64Inst {
     const op0f = bits(word, 20, 19)
     const rt = bits(word, 4, 0)
     if (op0f === 0 && rt === 0b11111) {
+      // Which of these an encoding is depends on CRn, not on CRm: CRn of
+      // 2 is the hint space, where every unallocated point is a nop by
+      // definition, and CRn of 3 is the barriers, where CRm varies the
+      // scope rather than the instruction.
+      const crn = bits(word, 15, 12)
       const crm = bits(word, 11, 8)
       const op2 = bits(word, 7, 5)
-      if (crm === 0 && op2 === 0) return make(A64.NOP, word)
-      if (crm === 2 && op2 === 1) return make(A64.CLREX, word)
-      if (crm === 3) return make(A64.BARRIER, word)
-      if (op2 <= 7 && crm !== 0) return make(A64.BARRIER, word)
-      return make(A64.NOP, word)
+      if (crn === 2) return make(A64.NOP, word)
+      if (crn === 3) {
+        if (op2 === 2) return make(A64.CLREX, word)
+        if (op2 >= 4 && op2 <= 7) return make(A64.BARRIER, word)
+        return unsupported(`system instruction crn 3 op2 ${op2}`)
+      }
+      void crm
+      return unsupported(`system instruction crn ${crn}`)
     }
     if (op0f >= 2) {
       const name = systemRegisterName(word)

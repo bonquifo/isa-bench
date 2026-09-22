@@ -4,6 +4,7 @@ import { RunState, createRetireChunk } from '../common/trace.ts'
 import { initialState, readElf } from '../common/fixtures.node.ts'
 import { describeIsaConformance } from '../conformance.node.ts'
 import { rv64Backend } from './backend.ts'
+import { rv64DecodeCheck } from './decodeCheck.node.ts'
 import { RV64_FIXTURE_DIR, decodeDump, labelRv64Dump, readDump } from './fixtures.node.ts'
 import { fixtureNames } from '../common/fixtures.node.ts'
 
@@ -14,6 +15,7 @@ describeIsaConformance({
   backend: rv64Backend,
   fixtureDir: RV64_FIXTURE_DIR,
   labelDump: labelRv64Dump,
+  decodeCheck: rv64DecodeCheck,
 })
 
 describe('RV64GC beyond the shared suite', () => {

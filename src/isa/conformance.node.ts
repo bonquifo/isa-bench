@@ -8,9 +8,12 @@
  * state byte for byte against the guest's own — rather than growing its own
  * version that checks slightly different things.
  *
- * Two tiers live here because they are genuinely ISA-independent. Decoding is
- * not: what counts as the right canonical operation for a given encoding is a
- * per-architecture question, so each backend keeps its own decode test.
+ * Four tiers live here. Three are entirely ISA-independent. The fourth,
+ * the decoder check, needs a little from each backend -- what it calls an
+ * operation, and which of the disassembler's pseudo-instruction names may
+ * stand for which real one -- but the machinery around that is shared, and
+ * having it shared is what lets a decoder be checked against LLVM's own
+ * tables before any semantics exist to check it through.
  */
 import { describe, expect, it } from 'vitest'
 import { hex64 } from './common/bits64.ts'
@@ -21,10 +24,52 @@ import {
   readElf,
   readIndex,
   readLockstep,
+  readObjdump,
   readStdout,
 } from './common/fixtures.node.ts'
+import { parseObjdump } from './common/objdump.node.ts'
 import { RunState, createRetireChunk } from './common/trace.ts'
 import type { IsaBackend } from './backend.ts'
+
+/**
+ * What a backend supplies for its decoder to be checked against the
+ * disassembler that produced the fixtures.
+ *
+ * The question this tier asks is narrow and worth stating: do the decoder
+ * and LLVM agree about which instruction a sequence of bytes *is*, and how
+ * long it is. Nothing about what it does. That is weaker than what the
+ * lockstep tier answers, and worth asking separately because it can be
+ * answered before a line of semantics exists -- which is the difference
+ * between finding a wrong encoding table immediately and finding it
+ * through a wrong answer much later.
+ */
+export interface DecodeCheck {
+  /**
+   * Decodes the bytes at an address the way the program image would,
+   * reporting the operation and how many bytes it consumed.
+   */
+  decode(bytes: Uint8Array, address: bigint): { op: number; length: number }
+  /** What this backend calls an operation, in the disassembler's spelling. */
+  name(op: number): string
+  /**
+   * What each of the disassembler's pseudo-instruction names is allowed
+   * to decode to.
+   *
+   * Membership rather than equality, because which real instruction an
+   * alias stands for usually depends on its operands: `mv` is an add on
+   * one target and an or on another, and `li` is whichever of two or
+   * three instructions could produce the constant.
+   */
+  aliases?: Readonly<Record<string, readonly number[]>>
+  /**
+   * Mnemonics the decoder must *refuse*. A disassembler prints something
+   * for words that are not instructions, and agreeing with it there would
+   * be the wrong kind of agreement.
+   */
+  refused?: readonly string[]
+  /** Mnemonics to pass over: directives rather than instructions. */
+  ignored?: readonly string[]
+}
 
 export interface ConformanceOptions {
   backend: IsaBackend
@@ -34,6 +79,12 @@ export interface ConformanceOptions {
    * a mismatch reads as `f12` rather than as byte offset 352.
    */
   labelDump?: (bytes: Uint8Array) => Map<number, string>
+  /**
+   * Optional decoder check against the disassembly captured beside each
+   * fixture. Every target captures that disassembly already; one that does
+   * not supply this simply does not use it.
+   */
+  decodeCheck?: DecodeCheck
 }
 
 function seed(options: ConformanceOptions, name: string) {
@@ -58,6 +109,61 @@ export function describeIsaConformance(options: ConformanceOptions): void {
   const { backend, fixtureDir } = options
   const index = readIndex(fixtureDir)
   const names = fixtureNames(fixtureDir)
+
+  const check = options.decodeCheck
+  if (check) {
+    describe(`${backend.name}: decoder against the disassembler`, () => {
+      const ignored = new Set(check.ignored ?? [])
+      const refused = new Set(check.refused ?? [])
+
+      it('has disassembly to check against', () => {
+        expect(names.length).toBeGreaterThan(0)
+        expect(parseObjdump(readObjdump(fixtureDir, names[0]!)).length).toBeGreaterThan(0)
+      })
+
+      for (const name of names) {
+        it(`agrees on every instruction in ${name}`, () => {
+          const lines = parseObjdump(readObjdump(fixtureDir, name))
+          expect(lines.length).toBeGreaterThan(0)
+          const problems: string[] = []
+          let checked = 0
+          for (const line of lines) {
+            if (ignored.has(line.mnemonic)) continue
+            const where = `0x${line.address.toString(16)} ${line.text}`
+            if (refused.has(line.mnemonic)) {
+              try {
+                check.decode(line.bytes, line.address)
+                problems.push(`${where}: decoded, but should have been refused`)
+              } catch {
+                checked += 1
+              }
+              continue
+            }
+            let decoded: { op: number; length: number }
+            try {
+              decoded = check.decode(line.bytes, line.address)
+            } catch (error) {
+              problems.push(`${where}: ${(error as Error).message}`)
+              continue
+            }
+            checked += 1
+            if (decoded.length !== line.bytes.length) {
+              problems.push(`${where}: length ${decoded.length} != ${line.bytes.length}`)
+            }
+            const accepted = check.aliases?.[line.mnemonic] ?? []
+            const actual = check.name(decoded.op)
+            if (actual !== line.mnemonic && !accepted.includes(decoded.op)) {
+              problems.push(`${where}: decoded as ${actual}`)
+            }
+          }
+          expect(problems.slice(0, 20).join('\n')).toBe('')
+          // A pass that checked nothing would look like a pass that
+          // checked everything.
+          expect(checked).toBeGreaterThan(0)
+        })
+      }
+    })
+  }
 
   describe(`${backend.name}: lockstep against the reference`, () => {
     it('has fixtures to compare against', () => {

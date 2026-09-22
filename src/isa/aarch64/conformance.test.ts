@@ -1,5 +1,6 @@
 import { describeIsaConformance } from '../conformance.node.ts'
 import { aarch64Backend } from './backend.ts'
+import { aarch64DecodeCheck } from './decodeCheck.node.ts'
 import { AARCH64_FIXTURE_DIR, labelAarch64Dump } from './fixtures.node.ts'
 
 // Lockstep and final-state comparison, inherited from the shared suite. On
@@ -9,4 +10,5 @@ describeIsaConformance({
   backend: aarch64Backend,
   fixtureDir: AARCH64_FIXTURE_DIR,
   labelDump: labelAarch64Dump,
+  decodeCheck: aarch64DecodeCheck,
 })

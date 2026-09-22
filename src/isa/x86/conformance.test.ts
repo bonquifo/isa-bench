@@ -1,5 +1,6 @@
 import { describeIsaConformance } from '../conformance.node.ts'
 import { x86Backend } from './backend.ts'
+import { x86DecodeCheck } from './decodeCheck.node.ts'
 import { X86_FIXTURE_DIR, labelX86Dump } from './fixtures.node.ts'
 
 // Lockstep and final-state comparison, inherited from the shared suite.
@@ -14,4 +15,5 @@ describeIsaConformance({
   backend: x86Backend,
   fixtureDir: X86_FIXTURE_DIR,
   labelDump: labelX86Dump,
+  decodeCheck: x86DecodeCheck,
 })

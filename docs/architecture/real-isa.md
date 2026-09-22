@@ -196,6 +196,27 @@ Four tiers, all running in `npm test` on any machine, with no Docker.
 | Tier | What it checks | Oracle |
 | --- | --- | --- |
 | Decode | every instruction in the corpus decodes, at the right length, to the right canonical operation | `llvm-objdump` on the same bytes |
+
+The decode tier is shared, which it was not at first. RV64 had it alone
+while three other targets captured the same disassembly and used none of
+it. Promoting it into `describeIsaConformance` cost a morning and found a
+real bug in the first backend it was pointed at: AArch64 decoded `clrex`
+as a memory barrier, because the guard keyed on the wrong field of the
+system-instruction encoding. Nothing else had noticed, because nothing in
+the corpus executes it.
+
+That is the argument for the tier in one sentence: it asks whether the
+decoder and LLVM agree about which instruction a sequence of bytes *is*,
+which is a weaker question than the lockstep tier answers and can be
+asked before a line of semantics exists. For a target still being built,
+that is the difference between finding a wrong encoding table
+immediately and finding it through a wrong answer weeks later.
+
+Each backend supplies three things: how to decode bytes at an address,
+what it calls an operation, and which of the disassembler's
+pseudo-instruction names may stand for which real one. The third is most
+of the work and is self-checking -- an alias listed wrongly fails the
+test rather than hiding anything.
 | Lockstep | PC and all 32 integer registers **before every instruction** | `qemu-riscv64 -one-insn-per-tb -d cpu` |
 | Final state | 32 integer registers, 32 FP registers as raw bits, `fcsr`, and a 1 KiB memory window | the guest's own dump, byte for byte |
 | Randomised | the same two comparisons over generated programs | the same, per recorded seed |

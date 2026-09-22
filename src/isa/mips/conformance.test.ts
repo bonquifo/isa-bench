@@ -1,5 +1,6 @@
 import { describeIsaConformance } from '../conformance.node.ts'
 import { mipsBackend } from './backend.ts'
+import { mipsDecodeCheck } from './decodeCheck.node.ts'
 import { MIPS_FIXTURE_DIR, labelMipsDump } from './fixtures.node.ts'
 
 // Lockstep and final-state comparison, inherited from the shared suite.
@@ -13,4 +14,5 @@ describeIsaConformance({
   backend: mipsBackend,
   fixtureDir: MIPS_FIXTURE_DIR,
   labelDump: labelMipsDump,
+  decodeCheck: mipsDecodeCheck,
 })
