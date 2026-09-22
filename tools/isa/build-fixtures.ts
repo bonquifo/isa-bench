@@ -10,6 +10,7 @@
 import { buildFixtures, type FixtureTarget } from './fixture-builder.ts'
 import { aarch64Target } from './targets/aarch64.ts'
 import { mipsTarget } from './targets/mips.ts'
+import { powerTarget } from './targets/power.ts'
 import { rv64Target } from './targets/rv64.ts'
 import { sparcTarget } from './targets/sparc.ts'
 import { x86Target } from './targets/x86.ts'
@@ -20,6 +21,7 @@ const TARGETS: Record<string, FixtureTarget> = {
   x86: x86Target,
   mips: mipsTarget,
   sparc: sparcTarget,
+  power: powerTarget,
 }
 
 const requested = process.argv[2]

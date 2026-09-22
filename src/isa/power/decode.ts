@@ -157,6 +157,15 @@ export const PPC = {
   /** The load-reserve and store-conditional pair. */
   LARX: 120,
   STCX: 121,
+  /**
+   * Load an integer *word* into a floating-point register.
+   *
+   * Not a floating-point load: no conversion happens, the word simply
+   * lands in the register so that a following instruction can convert
+   * it. Treating it as a single-precision load reads the bits as a
+   * float and produces a number with no relation to the integer.
+   */
+  LFIW: 122,
 
   // Floating point, the classic register file.
   FADD: 130,
@@ -438,13 +447,27 @@ const X: Readonly<Record<number, XEntry>> = {
   918: { op: PPC.STOREBR, width: 2 }, 662: { op: PPC.STOREBR, width: 4 },
   660: { op: PPC.STOREBR, width: 8 },
   20: { op: PPC.LARX, width: 4 }, 84: { op: PPC.LARX, width: 8 },
+  855: { op: PPC.LFIW, width: 4, signed: true, file: File.FPR },
+  887: { op: PPC.LFIW, width: 4, file: File.FPR },
   150: { op: PPC.STCX, width: 4 }, 214: { op: PPC.STCX, width: 8 },
 
   // VSX moves and memory, which live in the fixed-point opcode space.
-  51: { op: PPC.MFVSR }, 115: { op: PPC.MFVSR },
-  179: { op: PPC.MTVSR }, 211: { op: PPC.MTVSR }, 243: { op: PPC.MTVSR },
+  //
+  // The three move-in forms are not one instruction: `mtvsrd` moves all
+  // sixty-four bits, `mtvsrwa` sign-extends the low word and `mtvsrwz`
+  // zero-extends it. Folding them together is right until a negative
+  // number arrives, and then wrong for the rest of the program.
+  51: { op: PPC.MFVSR, width: 8 },
+  115: { op: PPC.MFVSR, width: 4 },
+  179: { op: PPC.MTVSR, width: 8 },
+  211: { op: PPC.MTVSR, width: 4, signed: true },
+  243: { op: PPC.MTVSR, width: 4 },
   844: { op: PPC.LXV, width: 16 }, 972: { op: PPC.STXV, width: 16 },
   780: { op: PPC.LXV, width: 16 }, 908: { op: PPC.STXV, width: 16 },
+  // `stxsdx` moves one doubleword, not sixteen bytes: it is the scalar
+  // form, and storing the whole register would overwrite eight bytes
+  // that belong to whatever is next in memory.
+  716: { op: PPC.STXV, width: 8 },
   12: { op: PPC.LXV, width: 4 },
   983: { op: PPC.STOREX, width: 4, file: File.FPR },
 
@@ -504,6 +527,7 @@ const XX2: Readonly<Record<number, PpcOp>> = {
   // worth generalising from.
   72: PPC.XSCVT,   // xscvdpuxws
   88: PPC.XSCVT,   // xscvdpsxws
+  344: PPC.XSCVT,  // xscvdpsxds
   360: PPC.XSCVT,  // xscvuxddp
   376: PPC.XSCVT,  // xscvsxddp
   248: PPC.XVCVT,  // xvcvsxwdp
@@ -659,8 +683,13 @@ export function decode(word: number, address: bigint): PpcInst {
       // across the word, because neither fits where it would like to.
       const xo = fld(word, 27, 29)
       const sh = fld(word, 16, 20) | (fld(word, 30, 30) << 5)
-      const mb = fld(word, 21, 26)
-      const mask = ((mb & 0x1f) << 1) | (mb >> 5)
+      // The six-bit mask boundary is split with its *most* significant
+      // bit alone in bit 26 and the other five in bits 21 to 25, which
+      // is the opposite way round from how it reads. Assembling it the
+      // other way gives a mask that is plausible, wrong, and only wrong
+      // for boundaries above 31.
+      const raw = fld(word, 21, 26)
+      const mask = ((raw & 1) << 5) | (raw >> 1)
       inst.shift = sh
       inst.recordCr = fld(word, 31, 31) === 1
       switch (xo) {
@@ -729,6 +758,15 @@ export function decode(word: number, address: bigint): PpcInst {
     case 4: {
       inst.destFile = File.VSR
       inst.sourceFile = File.VSR
+      // The Altivec registers are not a separate file either: v0 to v31
+      // *are* vector-scalar registers 32 to 63. An instruction here
+      // names `v2` and means `vs34`, and a decoder that took the field
+      // at face value would have `vspltisw` and the `xv` conversion
+      // that reads its result disagreeing about which register they
+      // were talking about.
+      inst.rd += 32
+      inst.ra += 32
+      inst.rb += 32
       // Two forms share this opcode. VA-form has four register operands
       // and a six-bit opcode at the very bottom of the word; VX-form
       // has three and an eleven-bit one. The VA opcodes occupy a narrow
@@ -736,13 +774,15 @@ export function decode(word: number, address: bigint): PpcInst {
       const va = fld(word, 26, 31)
       if (va >= 32 && va <= 47) {
         inst.op = PPC.VOP
-        inst.rc = fld(word, 21, 25)
+        inst.rc = fld(word, 21, 25) + 32
         inst.shift = va
         return inst
       }
       const xo = fld(word, 21, 31)
       if (xo === 908 || xo === 844 || xo === 780) {
         inst.op = PPC.VSPLTISW
+        // The immediate is in the field that would otherwise be a
+        // register, so it is read before the offset above applies.
         inst.imm = BigInt((fld(word, 11, 15) << 27) >> 27)
         inst.ra = -1; inst.rb = -1
         return inst
@@ -850,6 +890,7 @@ function decodeX(inst: PpcInst, word: number, address: bigint): PpcInst {
 
     case PPC.LOADX: case PPC.LOADUX: case PPC.STOREX: case PPC.STOREUX:
     case PPC.LOADBR: case PPC.STOREBR: case PPC.LARX: case PPC.STCX:
+    case PPC.LFIW:
       inst.width = entry.width ?? 0
       inst.signed = entry.signed ?? false
       inst.destFile = entry.file ?? File.GPR
@@ -871,6 +912,7 @@ function decodeX(inst: PpcInst, word: number, address: bigint): PpcInst {
       inst.rb = -1
       inst.sourceFile = File.VSR
       inst.recordCr = false
+      inst.width = entry.width ?? 8
       return inst
     case PPC.MTVSR:
       inst.rd = fld(word, 6, 10) | (fld(word, 31, 31) << 5)
@@ -878,6 +920,8 @@ function decodeX(inst: PpcInst, word: number, address: bigint): PpcInst {
       inst.rb = -1
       inst.destFile = File.VSR
       inst.recordCr = false
+      inst.width = entry.width ?? 8
+      inst.signed = entry.signed ?? false
       return inst
 
     case PPC.SYNC: case PPC.ISYNC: case PPC.NOP_CACHE:
@@ -974,9 +1018,23 @@ function decodeVsx(inst: PpcInst, word: number, address: bigint): PpcInst {
     inst.rd = xt
     inst.ra = xa
     inst.rb = xb
-    // The multiply-add family reads its destination as a third source.
+    // The multiply-add family reads its destination as a third source,
+    // and *which* role it plays is the difference between the two forms
+    // the architecture provides. In the `a` form the destination is the
+    // addend -- `XT <- (XA * XB) + XT`, which is what a saxpy wants --
+    // and in the `m` form it is a multiplicand: `XT <- (XA * XT) + XB`.
+    // They differ by eight in the opcode and by everything in the
+    // answer, and getting them the wrong way round produces a plausible
+    // number from the right three operands.
+    //
+    // Both are normalised here to the shape the classic floating-point
+    // forms already use: multiply `ra` by `rc`, add `rb`.
     if (found === PPC.XSMADD || found === PPC.XSMSUB ||
-        found === PPC.XSNMADD || found === PPC.XSNMSUB) inst.rc = xt
+        found === PPC.XSNMADD || found === PPC.XSNMSUB) {
+      const multiplyForm = (three & 8) !== 0
+      inst.rc = multiplyForm ? xt : xb
+      inst.rb = multiplyForm ? xb : xt
+    }
     if (found === PPC.XSCMP) {
       inst.crField = fld(word, 6, 8)
       inst.destFile = File.CR

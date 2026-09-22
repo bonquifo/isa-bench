@@ -156,7 +156,7 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   lxvd2x: [PPC.LXV], lxvw4x: [PPC.LXV], lxvdsx: [PPC.LXV], lxsdx: [PPC.LXV],
   lxsiwzx: [PPC.LXV], lxsiwax: [PPC.LXV],
   stxvd2x: [PPC.STXV], stxvw4x: [PPC.STXV], stxsdx: [PPC.STXV],
-  stfiwx: [PPC.STOREX],
+  stfiwx: [PPC.STOREX], lfiwax: [PPC.LFIW], lfiwzx: [PPC.LFIW],
   // The Altivec operations, which are one entry each because what they
   // compute lives in a field rather than in the operation.
   vadduwm: [PPC.VOP], vmuluwm: [PPC.VOP], vslw: [PPC.VOP], vsrw: [PPC.VOP],

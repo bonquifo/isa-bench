@@ -81,8 +81,8 @@ implementation.
 
 ## Real instruction sets
 
-Five of the eight also have a **real** backend: **RV64GC**, **AArch64**,
-**x86-64**, **MIPS32** and **MOS 6502**. These are interpreters that decode
+Seven of the eight also have a **real** backend: **RV64GC**, **AArch64**,
+**x86-64**, **MIPS32**, **MOS 6502**, **SPARC V8** and **POWER**. These are interpreters that decode
 and execute genuine machine code — the same precompiled binaries that the
 differential test suite compares against a reference. For the first four the
 comparison is instruction by instruction against `qemu-riscv64`,
@@ -106,7 +106,12 @@ Everything else on that screen — cycles, cache behavior, energy — is the sam
 deterministic model the other lanes use. **Nothing anywhere in this app is
 measured on hardware.**
 
-The remaining three targets have pseudo-backends only. An instruction a real
+SPARC and POWER are verified on architectural state -- every register
+before every instruction, and the final state byte for byte -- but do
+not yet run whole programs against a libc, and the app says so rather
+than offering them.
+
+The remaining target has a pseudo-backend only. An instruction a real
 backend does not implement is refused by name and address; it is never
 executed as an approximation. On the 6502 that extends to the 105 opcodes
 the architecture leaves undefined, and to the simulator's cycle counter,

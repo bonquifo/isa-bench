@@ -1,19 +1,21 @@
 # Real instruction-set semantics
 
-Written for engineers continuing this work on the remaining two targets.
+Written for engineers continuing this work on the remaining target.
 
 This describes the interpreters that replace the pseudo-backend lowering, the
 interface they present to the timing model, and what the remaining instruction
 sets have to implement.
 
-**Six are complete: RV64GC, AArch64, x86-64, MIPS32, MOS 6502 and
-SPARC V8.** For the first four, real C compiled by clang and linked
-against a real libc executes against a real address space and matches
-its reference on architectural state for freestanding programs and on
-output for whole programs. The last two each make a narrower claim, and
-say so: the 6502 because it has no reference it can be stepped
-alongside, and SPARC because musl has no port for it, so it has the
-architectural tiers and not yet the whole-program one.
+**Seven are complete: RV64GC, AArch64, x86-64, MIPS32, MOS 6502,
+SPARC V8 and POWER.** For the first four, real C compiled by clang and
+linked against a real libc executes against a real address space and
+matches its reference on architectural state for freestanding programs
+and on output for whole programs. The last three each make a narrower
+claim, and say so: the 6502 because it has no reference it can be
+stepped alongside, and SPARC and POWER because they have the
+architectural tiers and not yet the whole-program one -- SPARC because
+musl has no port for it at all, POWER for three specific reasons
+section 5 names.
 
 The second one is the evidence that the split in section 1 was worth making:
 AArch64 needed a decoder, a semantics file and a register map, and reused the
@@ -34,6 +36,14 @@ sequential in the obvious sense: a MIPS branch takes effect one instruction
 late, and the instruction in between runs either way. That is handled where it
 belongs, in the interpreter, and section 5 explains why nothing downstream of
 the retired trace needs to know about it.
+
+The seventh is the one where the *order* of the work was the whole
+argument. Its decoder was checked against LLVM over nine thousand
+instructions before a line of semantics existed, which found four
+encoding mistakes at the cheapest possible moment -- and then lockstep
+found five more of a kind that tier cannot see, because agreeing about
+which instruction a word is says nothing about the values in its
+fields.
 
 The fifth is the one that had to change how a backend is verified rather
 than what it implements. There is no traceable 6502 emulator to run in
@@ -436,7 +446,7 @@ for them every iteration.
 
 ---
 
-## 5. What the remaining two must implement
+## 5. What the remaining target must implement
 
 Adding an instruction set is now a bounded act: implement
 [`IsaBackend`](../../src/isa/backend.ts), register it in
@@ -463,7 +473,6 @@ takes endianness as a constructor argument for exactly this reason.
 
 | Target | The structural surprise | Notes |
 | --- | --- | --- |
-| POWER | condition-register fields | **Measured: 120 distinct mnemonics**, the widest of the five. Eight CR fields become eight resource ids. |
 | WASM | a stack machine, not a register machine | No register file to compare. The differential interface needs rethinking, not just reimplementing. |
 
 Instruction counts above are measured on the existing C corpus at `-O2`, not
@@ -478,6 +487,133 @@ quoting as the ceiling: 193 opcode-map entries statically, 168 distinct
 mnemonics actually executed. Even there the number of distinct *operations*
 is far smaller, because twenty of those mnemonics are one conditional move
 and sixteen are one conditional branch.
+
+### POWER, as built
+
+The prediction was condition-register fields, and that part was right
+and easy. What the table did not say is that this target is the one
+where writing the decoder from memory would have been fatal — and where
+doing it the other way round paid for itself twice over.
+
+#### Decode first, and it found four encoding mistakes
+
+A previous attempt at this decoder was written from recall, read back as
+confident nonsense, and was deleted. This one was checked against LLVM
+*before a line of semantics existed*, which is what the shared decode
+tier was promoted for. It agrees with `llvm-objdump` on **9,346
+instructions across four freestanding programs and a statically linked
+musl binary — 175 distinct mnemonics, zero mismatches**.
+
+Getting there found four encoding errors, and every one was fixed by
+measuring the field rather than remembering it harder:
+
+- `isel` has a five-bit extended opcode with the condition bit it tests
+  in the five above it, not a ten-bit one.
+- `sradi` has nine, because the sixth bit of its shift amount had to go
+  in bit 30.
+- `xxpermdi` has five, for the same reason — its doubleword selector
+  took the other two — and `xxswapd` is that instruction with the
+  selector set to two.
+- The VSX conversions follow no stride worth generalising from, so each
+  is listed with the disassembly it was read off. The ones that had been
+  guessed were *removed*: a missing encoding is refused loudly, a wrong
+  one decodes as some other instruction and runs.
+
+#### What the decode tier cannot catch, and what caught it
+
+The tier says which instruction a word is. It says nothing about the
+values in its fields, and the first bug after it was exactly that: the
+six-bit mask boundary in the 64-bit rotates is split with its *most*
+significant bit alone in bit 26 and the other five below, which is the
+opposite way round from how it reads. Assembling it the other way gives
+a mask that is wrong only for boundaries above 31 — so the first
+program still ran 47 instructions before diverging.
+
+Lockstep found it immediately, and four more of the same kind:
+
+- **`rlwinm` can write sixty-four bits.** `ROTL32` delivers the rotated
+  word in *both* halves of a 64-bit value and the mask is
+  `MASK(MB + 32, ME + 32)` over all 64, so when MB exceeds ME the mask
+  wraps through bit zero and covers the whole high half. Confining it to
+  the low word is right in the common case and wrong in the one that
+  matters.
+- **`xsmaddadp` has its destination as the *addend*.** `XT ← (XA × XB) + XT`,
+  which is what a saxpy wants; the `m` form is the other way round, and
+  the two differ by eight in the opcode and by everything in the answer.
+  Getting them the wrong way round produces a plausible number from the
+  right three operands.
+- **The Altivec registers are not a separate file.** `v0` to `v31` *are*
+  vector-scalar registers 32 to 63, so `vspltisw 2, 3` writes `vs34`.
+  With the offset missing, the conversion that read the result found a
+  zero and every division by that constant produced an infinity.
+- **The three move-to-vector forms are three instructions**: sixty-four
+  bits, sign-extended word, zero-extended word. Folding them together is
+  right until a negative number arrives.
+
+`XER` also carries `CA32` and `OV32` — the carry and overflow the
+operation would have produced had it been 32 bits wide — which the
+reference reports and an implementation that ignores them differs on at
+the first `addc`.
+
+#### The floating-point registers are the vector registers
+
+At `-O2` for POWER8 clang does not emit `fadd` at all. It emits
+`xsadddp`: the VSX instruction operating on one element of a 128-bit
+register whose low half *is* floating-point register 3. So there is one
+register file here, not two, and `lfd` into `f3` followed by `xsadddp`
+on `vs3` is a dependence rather than a coincidence.
+
+Unlike SPARC's windows this aliasing is exact rather than approximate,
+because it does not depend on anything dynamic — `f3` is always the top
+half of `vs3` — so the resource id is simply the VSX number and the
+image resolves it at decode time.
+
+That also decides what the guest has to dump. qemu's register dump has
+the general registers, `lr`, `ctr`, `cr` and `xer`, and **no
+floating-point registers at all**. On this target that is not a detail:
+every `double` result lives in one. The lockstep tier therefore sees a
+floating-point program's control flow and not its answers, and the
+guest's own dump is what covers them — which is the clearest case yet
+for why that mechanism exists.
+
+#### The floating-point status register is refused
+
+`FPSCR` is not modelled, and `mffs` and `mtfsf` are refused rather than
+answered.
+
+It holds two things. The sticky exception bits, which nothing the
+compiler emits ever reads — across every fixture the only `mffs` was
+the one the harness itself used to contain, which is why the harness no
+longer dumps it. And the rounding mode, which this interpreter does not
+implement: every operation rounds to nearest, so a program that set a
+different mode and carried on would get answers that were quietly wrong
+rather than loudly refused.
+
+This is the same call as the 6502's cycle counter. Modelling it from
+recall would have meant guessing bit positions and validating them
+against one oracle; refusing it costs nothing measurable and says so.
+
+#### What it does not have yet
+
+**No whole-program tier.** Eleven of the eighteen libc and corpus
+programs already run correctly end to end, and the other seven stop for
+three causes, each identified:
+
+- musl's `memcpy` and `strlen` use Altivec, and the vector operations
+  are decoded here but have no semantics. They fail loudly, which is
+  right and still a failure.
+- one program outgrows the heap, faulting on an address inside the
+  range `brk` should have mapped — which points at the page size the
+  auxiliary vector advertises rather than at the syscall.
+- printf's floating-point path produces zeroes. The value reaches it
+  correctly, traced through the variadic save area into the digit loop,
+  and the control flow matches the reference for 3,177 instructions of
+  `vfprintf` before the two diverge on a pointer comparison in the
+  big-integer loop.
+
+Enabling the tier before those are fixed would mean committing fixtures
+the suite cannot pass, so it is left off and the gap is written down
+with its three causes rather than left to be discovered.
 
 ### MOS 6502, as built
 
@@ -1060,7 +1196,17 @@ npx vite-node tools/isa/build-fixtures.ts x86
 npx vite-node tools/isa/build-fixtures.ts mips
 ```
 
-SPARC is built the same way as the four above,
+POWER is built the same way as the four above:
+
+```
+npx vite-node tools/isa/build-fixtures.ts power
+```
+
+Its sysroot is the same image as the others', built with
+`powerpc64le` in the target loop -- though the whole-program tier that
+would use it is not enabled yet; section 5 says why.
+
+SPARC is built the same way too,
 
 ```
 npx vite-node tools/isa/build-fixtures.ts sparc
