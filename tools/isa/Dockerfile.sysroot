@@ -76,7 +76,7 @@ RUN curl -sSL -o /tmp/musl.tar.gz \
 
 # One sysroot per target. Adding a target is one more entry here.
 RUN set -eux; \
-    for triple in riscv64 aarch64 x86_64 mipsel; do \
+    for triple in riscv64 aarch64 x86_64 mipsel powerpc64le; do \
       mkdir -p "/build/${triple}"; \
       cd "/build/${triple}"; \
       CC=clang \
