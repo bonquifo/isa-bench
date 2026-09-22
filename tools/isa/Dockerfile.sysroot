@@ -10,6 +10,10 @@
 # all and lld cannot link it either, so that target needs binutils and
 # picolibc and is deliberately not attempted here.
 #
+# 32-bit targets are here too. MIPS is the first of them, and the reason the
+# per-target loop says nothing about width: musl and the builtins are
+# configured from the triple, and everything that differs is inside them.
+#
 # musl alone is not enough, which is not obvious until the first link fails.
 # Its printf supports long double, and long double on RISC-V and AArch64 is
 # binary128, which no hardware here implements -- so the link asks for
@@ -72,7 +76,7 @@ RUN curl -sSL -o /tmp/musl.tar.gz \
 
 # One sysroot per target. Adding a target is one more entry here.
 RUN set -eux; \
-    for triple in riscv64 aarch64 x86_64; do \
+    for triple in riscv64 aarch64 x86_64 mipsel; do \
       mkdir -p "/build/${triple}"; \
       cd "/build/${triple}"; \
       CC=clang \

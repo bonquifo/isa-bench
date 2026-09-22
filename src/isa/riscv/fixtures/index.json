@@ -4,7 +4,7 @@
   "oracle": "isa-sim/qemu-user:11.1.0",
   "target": "riscv64-unknown-linux-gnu",
   "march": "rv64gc",
-  "flags": "-O2 -ffreestanding -fno-builtin -nostdlib -static",
+  "flags": "-O2 -fno-vectorize -fno-slp-vectorize -ffreestanding -fno-builtin -nostdlib -static",
   "randomGenerator": "tools/isa/rv64/random.ts",
   "randomSeeds": [
     1,
@@ -126,7 +126,7 @@
       "seed": 233
     }
   ],
-  "libcImage": "isa-bench/codegen-musl:23.1.0-1.2.5",
+  "libcImage": "isa-bench/codegen-musl:23.1.0-1.2.5-r2",
   "libcFixtures": [
     {
       "name": "libc-alloc",

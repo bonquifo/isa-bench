@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AARCH64_FIXTURE_DIR } from '../isa/aarch64/fixtures.node.ts'
 import { RV64_FIXTURE_DIR } from '../isa/riscv/fixtures.node.ts'
+import { MIPS_FIXTURE_DIR } from '../isa/mips/fixtures.node.ts'
 import { X86_FIXTURE_DIR } from '../isa/x86/fixtures.node.ts'
 
 /**
@@ -51,6 +52,19 @@ vi.mock('../isa/x86/shipped.ts', async () => {
     loadShippedElf: async (url: string) => {
       const name = url.slice(url.lastIndexOf('corpus-'))
       return new Uint8Array(readFileSync(join(X86_FIXTURE_DIR, name)))
+    },
+  }
+})
+
+vi.mock('../isa/mips/shipped.ts', async () => {
+  const actual = await vi.importActual<typeof import('../isa/mips/shipped.ts')>(
+    '../isa/mips/shipped.ts',
+  )
+  return {
+    ...actual,
+    loadShippedElf: async (url: string) => {
+      const name = url.slice(url.lastIndexOf('corpus-'))
+      return new Uint8Array(readFileSync(join(MIPS_FIXTURE_DIR, name)))
     },
   }
 })
@@ -148,6 +162,21 @@ describe('the real-ISA lane', () => {
     }, { timeout: 20_000 })
     expect(screen.getByText('fib(10) = 55')).toBeInTheDocument()
     expect(screen.getByText('Executed · x86-64')).toBeInTheDocument()
+  }, 30_000)
+
+  it('runs the same program on a fourth, whose branches have delay slots', async () => {
+    const user = userEvent.setup()
+    render(<RealIsaLane />)
+    await user.selectOptions(screen.getByLabelText('Instruction set'), 'mips')
+    expect(screen.getByText(/executes real MIPS32 instructions/i)).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Program'), 'fib')
+    await user.click(screen.getByRole('button', { name: 'RUN MODEL' }))
+    await waitFor(() => {
+      expect(screen.getByText(/Matches the answer the app records/i)).toBeInTheDocument()
+    }, { timeout: 20_000 })
+    expect(screen.getByText('fib(10) = 55')).toBeInTheDocument()
+    expect(screen.getByText('Executed · MIPS32')).toBeInTheDocument()
   }, 30_000)
 
   it('does not carry a result across a change of instruction set', async () => {

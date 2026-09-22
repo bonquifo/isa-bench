@@ -89,7 +89,7 @@ export const aarch64Target: FixtureTarget = {
   parseCpuLog: parseAarch64CpuLog,
   libc: {
     triple: 'aarch64-unknown-linux-musl',
-    image: 'isa-bench/codegen-musl:23.1.0-1.2.5',
+    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r2',
     sysroot: '/sysroot/aarch64',
     builtins: '/sysroot/builtins/libclang_rt.builtins-aarch64.a',
     programsDir: join(TOOLS, 'libc'),

@@ -81,11 +81,12 @@ implementation.
 
 ## Real instruction sets
 
-Three of the eight also have a **real** backend: **RV64GC**, **AArch64** and
-**x86-64**. These are interpreters that decode and execute genuine machine
-code — the same precompiled binaries that the differential test suite
-compares, instruction by instruction, against `qemu-riscv64`, `qemu-aarch64`
-and, for x86-64, against the host processor itself. They live in their own
+Four of the eight also have a **real** backend: **RV64GC**, **AArch64**,
+**x86-64** and **MIPS32**. These are interpreters that decode and execute
+genuine machine code — the same precompiled binaries that the differential
+test suite compares, instruction by instruction, against `qemu-riscv64`,
+`qemu-aarch64`, `qemu-mipsel` and, for x86-64, against the host processor
+itself. They live in their own
 lane and are never mixed into the eight-way comparison, because putting a real
 instruction stream in the same table as a lowering would invite reading both as
 equally real.
@@ -95,7 +96,7 @@ Everything else on that screen — cycles, cache behavior, energy — is the sam
 deterministic model the other lanes use. **Nothing anywhere in this app is
 measured on hardware.**
 
-The remaining five targets have pseudo-backends only. An instruction a real
+The remaining four targets have pseudo-backends only. An instruction a real
 backend does not implement is refused by name and address; it is never
 executed as an approximation.
 

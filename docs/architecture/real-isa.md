@@ -1,15 +1,15 @@
 # Real instruction-set semantics
 
-Written for engineers continuing this work on the remaining five targets.
+Written for engineers continuing this work on the remaining four targets.
 
 This describes the interpreters that replace the pseudo-backend lowering, the
 interface they present to the timing model, and what the remaining instruction
 sets have to implement.
 
-**Three are complete: RV64GC, AArch64 and x86-64.** For each, real C compiled
-by clang and linked against a real libc executes against a real address space
-and matches its reference on architectural state for freestanding programs and
-on output for whole programs.
+**Four are complete: RV64GC, AArch64, x86-64 and MIPS32.** For each, real C
+compiled by clang and linked against a real libc executes against a real
+address space and matches its reference on architectural state for
+freestanding programs and on output for whole programs.
 
 The second one is the evidence that the split in section 1 was worth making:
 AArch64 needed a decoder, a semantics file and a register map, and reused the
@@ -24,6 +24,12 @@ the first architecture whose specification leaves some of its own state
 *undefined* after particular instructions, which the comparison had to be
 taught about; section 4 says what that means and what stops it being a way to
 hide a difference.
+
+The fourth is the first 32-bit one, and the first whose control flow is not
+sequential in the obvious sense: a MIPS branch takes effect one instruction
+late, and the instruction in between runs either way. That is handled where it
+belongs, in the interpreter, and section 5 explains why nothing downstream of
+the retired trace needs to know about it.
 
 ---
 
@@ -196,10 +202,10 @@ Four tiers, all running in `npm test` on any machine, with no Docker.
 | Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
 | The app's corpus | the same, for the fourteen C programs the app ships | qemu **and** the answers the app already records |
 
-Per target: 40 fixtures for RV64, 40 for AArch64 and 37 for x86-64 —
-hand-written, randomised, written against musl, and the app's fourteen.
-Together, roughly 100,000 instructions compared register by register and
-fifty-four whole programs compared on output.
+Per target: 40 fixtures for RV64, 40 for AArch64, 37 for x86-64 and 35 for
+MIPS32 — hand-written, randomised, written against musl, and the app's
+fourteen. Together, roughly 130,000 instructions compared register by
+register and seventy-two whole programs compared on output.
 
 ### The x86-64 reference is not an emulator
 
@@ -383,7 +389,7 @@ for them every iteration.
 
 ---
 
-## 5. What the remaining five must implement
+## 5. What the remaining four must implement
 
 Adding an instruction set is now a bounded act: implement
 [`IsaBackend`](../../src/isa/backend.ts), register it in
@@ -405,7 +411,6 @@ takes endianness as a constructor argument for exactly this reason.
 
 | Target | The structural surprise | Notes |
 | --- | --- | --- |
-| MIPS32 | branch delay slots | The instruction after a branch retires *before* the branch takes effect. `nextPc` in the trace already carries this; the timing model needs no change. |
 | POWER | condition-register fields | **Measured: 120 distinct mnemonics**, the widest of the five. Eight CR fields become eight resource ids. |
 | SPARC V8 | register windows | Resolve window-relative to absolute register numbers in the interpreter, so `reads`/`writes` reaching timing are already absolute. See the toolchain warning below. |
 | WASM | a stack machine, not a register machine | No register file to compare. The differential interface needs rethinking, not just reimplementing. |
@@ -423,6 +428,54 @@ quoting as the ceiling: 193 opcode-map entries statically, 168 distinct
 mnemonics actually executed. Even there the number of distinct *operations*
 is far smaller, because twenty of those mnemonics are one conditional move
 and sixteen are one conditional branch.
+
+### MIPS32, as built
+
+The prediction was the delay slot, and for once the prediction was the
+whole story — but not in the way the table suggested. It said `nextPc`
+already carries it and the timing model needs no change, and both turned
+out to be true: the interpreter retires the branch and the instruction
+after it as two entries in execution order, each with its own successor,
+and nothing downstream has any notion of a delay slot at all.
+
+What the table did not say is that this is the one architectural feature
+in the project that an implementation can get *wrong* while still
+producing the right answer. A program whose delay slots are all `nop` —
+which is most compiled code at `-O0` — behaves identically whether the
+slot runs before or after the branch. So the lockstep tier is doing more
+work here than anywhere else, and the randomised generator puts something
+observable in every slot it emits rather than leaving the choice to the
+assembler.
+
+Three things beyond the delay slot were not obvious:
+
+- **`-mno-abicalls` does the opposite of what it sounds like.** A
+  freestanding binary cannot use the position-independent convention,
+  because that expects the caller to have left the callee's address in
+  `t9` for it to compute the global pointer from, and a hand-written
+  entry stub has not. `-fno-pic` fixes it. Adding `-mno-abicalls`
+  *enables* gp-relative addressing of small data, so the code then needs
+  the global pointer it was previously only computing — the same crash,
+  arrived at from the other side.
+- **The o32 ABI passes a syscall's fifth and sixth arguments on the
+  stack**, in slots the caller reserves. Reading them unconditionally
+  faults for every four-argument call made with the stack pointer at the
+  top of its mapping, which is exactly where a freestanding program's
+  is. Only `mmap` has them.
+- **A 32-bit target makes pointer width visible in the syscall layer.**
+  Arguments arrive in registers whatever their width, so almost nothing
+  changed — but an `iovec` is two pointers read out of memory, and
+  reading it at eight bytes apiece gives an address assembled from half
+  of one field and half of the next. That, and the initial stack, are
+  the only two places the shared code needed to learn the difference.
+
+The floating-point unit was the piece the measurement got wrong.
+Statically the eighteen binaries contain 89 distinct mnemonics, of which
+a quarter are coprocessor 1: `long double` is the same as `double` here,
+so musl's printf uses the hardware unit rather than a software format.
+Including a multiply-add, which needs a fourth register field and
+therefore an escape opcode of its own, and which rounds once rather than
+twice.
 
 ### x86-64, as built
 
@@ -619,7 +672,7 @@ Three consequences worth knowing:
   rebuild of them. A test asserts that.
 - **They are inlined, and the lane is code-split.** The packaged app loads
   over `file://`, where fetching a sibling file is blocked, so the binaries
-  become `data:` URIs in the bundle. Three targets' worth is 1.59 MB, which
+  become `data:` URIs in the bundle. Four targets' worth is 2.18 MB, which
   would be dead weight for anyone who never opens the lane, so the lane is a
   lazy chunk and the main bundle is unchanged at 657 KB.
 
@@ -630,6 +683,7 @@ npm test                                         # includes the full differentia
 npx vite-node tools/isa/build-fixtures.ts rv64     # regenerate fixtures; needs Docker
 npx vite-node tools/isa/build-fixtures.ts aarch64
 npx vite-node tools/isa/build-fixtures.ts x86
+npx vite-node tools/isa/build-fixtures.ts mips
 ```
 
 The x86-64 target needs one more image, which is built here rather than

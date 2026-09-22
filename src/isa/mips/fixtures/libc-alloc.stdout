@@ -1,0 +1,5 @@
+alloc hash=3835887275
+sorted -7743 -7325 22056 24300
+total=1132640
+hello, world|1|12|0
+memcmp=0 strchr=world strstr=lo, world

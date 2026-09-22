@@ -11,12 +11,13 @@ describe('real-ISA registry', () => {
 
   it('reports the targets that still run a pseudo-backend', () => {
     const pending = ALL_ISAS.filter((isa) => !hasRealBackend(isa))
-    // Five remain. This number is expected to fall; it is asserted so that
+    // Four remain. This number is expected to fall; it is asserted so that
     // adding a backend is a deliberate act that updates the count here.
-    expect(pending).toHaveLength(5)
+    expect(pending).toHaveLength(4)
     expect(pending).not.toContain(IsaId.RISCV)
     expect(pending).not.toContain(IsaId.ARM)
     expect(pending).not.toContain(IsaId.X86)
+    expect(pending).not.toContain(IsaId.MIPS)
     for (const isa of pending) expect(backendFor(isa)).toBeUndefined()
   })
 

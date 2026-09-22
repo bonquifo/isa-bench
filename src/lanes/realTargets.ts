@@ -17,6 +17,8 @@ import { IsaId } from '../engine/types.ts'
 import { aarch64Backend } from '../isa/aarch64/backend.ts'
 import * as aarch64Shipped from '../isa/aarch64/shipped.ts'
 import type { IsaBackend } from '../isa/backend.ts'
+import { mipsBackend } from '../isa/mips/backend.ts'
+import * as mipsShipped from '../isa/mips/shipped.ts'
 import { rv64Backend } from '../isa/riscv/backend.ts'
 import * as rv64Shipped from '../isa/riscv/shipped.ts'
 import { x86Backend } from '../isa/x86/backend.ts'
@@ -73,5 +75,16 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     oracle: 'the host processor',
     verified: 'register by register and flag by flag, before every instruction',
     shipped: x86Shipped,
+  },
+  {
+    id: IsaId.MIPS,
+    backend: mipsBackend,
+    label: 'MIPS32',
+    instructions: 'MIPS32',
+    oracle: 'qemu-mipsel',
+    // The HI and LO pair is in the trace too, which matters here: they
+    // are written by one instruction and read by another several later.
+    verified: 'register by register, before every instruction',
+    shipped: mipsShipped,
   },
 ]

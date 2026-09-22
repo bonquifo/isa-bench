@@ -1,8 +1,8 @@
 /**
  * Which targets can execute real compiled code, and how to reach them.
  *
- * The app compares eight targets. Five are still pseudo-backends driven by
- * the engine's own lowering; three execute real instructions. Rather than
+ * The app compares eight targets. Four are still pseudo-backends driven by
+ * the engine's own lowering; four execute real instructions. Rather than
  * scatter that distinction through the UI and the comparison path, it is
  * asked for here: a target with a backend runs real code, and a target
  * without one continues to run exactly as it does today.
@@ -14,10 +14,13 @@
 import type { IsaId } from '../engine/types.ts'
 import type { IsaBackend } from './backend.ts'
 import { aarch64Backend } from './aarch64/backend.ts'
+import { mipsBackend } from './mips/backend.ts'
 import { rv64Backend } from './riscv/backend.ts'
 import { x86Backend } from './x86/backend.ts'
 
-const BACKENDS: readonly IsaBackend[] = [rv64Backend, aarch64Backend, x86Backend]
+const BACKENDS: readonly IsaBackend[] = [
+  rv64Backend, aarch64Backend, x86Backend, mipsBackend,
+]
 
 const BY_ID = new Map<IsaId, IsaBackend>(BACKENDS.map((backend) => [backend.id, backend]))
 

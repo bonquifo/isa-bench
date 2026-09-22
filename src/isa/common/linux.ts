@@ -103,6 +103,47 @@ export const X86_SYSCALL_NUMBERS: Readonly<Record<number, number>> = {
   334: Sys.RSEQ,
 }
 
+/**
+ * MIPS o32 syscall numbers, mapped onto the asm-generic ones.
+ *
+ * o32 numbers its calls from 4000 rather than from zero, which is the
+ * clearest signal in this project that a syscall number is an ABI
+ * property and not an architectural one.
+ */
+export const MIPS_SYSCALL_NUMBERS: Readonly<Record<number, number>> = {
+  4003: Sys.READ,
+  4004: Sys.WRITE,
+  4006: Sys.CLOSE,
+  4019: Sys.LSEEK,
+  4020: Sys.GETPID,
+  4024: Sys.GETUID,
+  4045: Sys.BRK,
+  4047: Sys.GETGID,
+  4049: Sys.GETEUID,
+  4050: Sys.GETEGID,
+  4054: Sys.IOCTL,
+  4085: Sys.READLINKAT,
+  4090: Sys.MMAP,
+  4091: Sys.MUNMAP,
+  4125: Sys.MPROTECT,
+  4146: Sys.WRITEV,
+  4194: Sys.RT_SIGACTION,
+  4195: Sys.RT_SIGPROCMASK,
+  4210: Sys.MMAP,
+  4218: Sys.MADVISE,
+  4222: Sys.GETTID,
+  4246: Sys.EXIT_GROUP,
+  4252: Sys.SET_TID_ADDRESS,
+  4263: Sys.CLOCK_GETTIME,
+  4288: Sys.OPENAT,
+  4298: Sys.FACCESSAT,
+  4309: Sys.SET_ROBUST_LIST,
+  4338: Sys.PRLIMIT64,
+  4353: Sys.GETRANDOM,
+  4367: Sys.RSEQ,
+  4001: Sys.EXIT,
+}
+
 const EBADF = 9n
 const ENOSYS = 38n
 const ENOTTY = 25n
@@ -134,6 +175,16 @@ export interface ProcessLayout {
   brkStart: bigint
   /** First address anonymous mappings are placed at. */
   mmapStart: bigint
+  /**
+   * Bytes per pointer: 8 for a 64-bit target and 4 for a 32-bit one.
+   *
+   * Almost nothing here needs it, because a syscall's arguments arrive
+   * in registers whatever their width. What does need it is every
+   * structure a syscall reads out of memory -- an iovec is two pointers,
+   * and reading it at the wrong width gives an address assembled from
+   * half of one field and half of the next.
+   */
+  wordBytes?: 4 | 8
 }
 
 export interface ProcessImage {
@@ -147,6 +198,14 @@ export interface ProcessImage {
 export interface StackSetup {
   argv?: readonly string[]
   envp?: readonly string[]
+  /**
+   * Bytes per word on the stack: 8 for a 64-bit target and 4 for a
+   * 32-bit one. Everything on the initial stack is a pointer or a
+   * pointer-sized number, so this is the only thing that differs between
+   * the two -- which is why there is one of these functions rather than
+   * two.
+   */
+  wordBytes?: 4 | 8
 }
 
 /**
@@ -202,12 +261,13 @@ export function buildInitialStack(
   ]
 
   // argc + argv + NULL + envp + NULL + 2 words per aux entry.
+  const wordBytes = setup.wordBytes ?? 8
   const words = 1 + argv.length + 1 + envp.length + 1 + aux.length * 2
-  let sp = (cursor - BigInt(words * 8)) & ~15n
+  let sp = (cursor - BigInt(words * wordBytes)) & ~15n
   const base = sp
   const put = (value: bigint): void => {
-    memory.store(sp, 8, value)
-    sp += 8n
+    memory.store(sp, wordBytes, value)
+    sp += BigInt(wordBytes)
   }
   put(BigInt(argv.length))
   for (const address of argvAddrs) put(address)
@@ -239,11 +299,15 @@ export class LinuxSyscalls {
   private randomState = 0x2545f4914f6cdd1dn
   exitCode = 0
 
+  /** Bytes per pointer, for the structures a syscall reads from memory. */
+  private readonly wordBytes: 4 | 8
+
   constructor(memory: GuestMemory, layout: ProcessLayout) {
     this.memory = memory
     this.brk = layout.brkStart
     this.brkLimit = layout.mmapStart
     this.mmapNext = layout.mmapStart
+    this.wordBytes = layout.wordBytes ?? 8
   }
 
   stdout(): Uint8Array {
@@ -267,10 +331,17 @@ export class LinuxSyscalls {
       case Sys.WRITEV: {
         const fd = Number(args[0]!)
         let total = 0n
+        // An iovec is two pointers, so its size and the offset of its
+        // second field both depend on how wide a pointer is. Reading it
+        // at the wrong width gives an address assembled from half of one
+        // field and half of the next.
+        const stride = BigInt(this.wordBytes * 2)
         for (let i = 0; i < Number(args[2]!); i++) {
-          const entry = args[1]! + BigInt(i * 16)
-          const base = this.memory.load(entry, 8, false)
-          const length = Number(this.memory.load(entry + 8n, 8, false))
+          const entry = args[1]! + BigInt(i) * stride
+          const base = this.memory.load(entry, this.wordBytes, false)
+          const length = Number(
+            this.memory.load(entry + BigInt(this.wordBytes), this.wordBytes, false),
+          )
           if (length > 0) total += this.write(isa, fd, base, length)
         }
         return { value: total }
@@ -338,8 +409,9 @@ export class LinuxSyscalls {
         // Frozen. A simulator that reported the wall clock could not be
         // differentially tested, because two runs would disagree.
         const out = args[1]!
-        this.memory.store(out, 8, 1_700_000_000n)
-        this.memory.store(out + 8n, 8, 0n)
+        // A timespec is two pointer-sized fields on both widths here.
+        this.memory.store(out, this.wordBytes, 1_700_000_000n)
+        this.memory.store(out + BigInt(this.wordBytes), this.wordBytes, 0n)
         return { value: 0n }
       }
 

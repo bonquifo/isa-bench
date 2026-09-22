@@ -17,12 +17,13 @@ SRC=$1
 OUT=$2
 mkdir -p "$OUT"
 
-for triple in riscv64 aarch64 x86_64; do
+for triple in riscv64 aarch64 x86_64 mipsel; do
   arch_dir=""
   case "$triple" in
     riscv64) arch_dir="riscv" ;;
     aarch64) arch_dir="aarch64" ;;
     x86_64) arch_dir="x86_64" ;;
+    mipsel) arch_dir="mips" ;;
   esac
 
   work="/tmp/builtins-$triple"
