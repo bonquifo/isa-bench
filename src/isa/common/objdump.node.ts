@@ -34,11 +34,21 @@ export interface DisassembledLine {
  * whose raw column is space-separated pairs is already in memory order.
  * Everything that is neither -- headers, symbol names, `...` for elided
  * runs of zeroes -- is skipped.
+ *
+ * The address is not required to be indented, and that is not
+ * cosmetic. `llvm-objdump` pads the address column to a fixed width, so
+ * an object file or a program linked low leaves spaces in front of it
+ * and a program linked high does not. POWER links its text above four
+ * gigabytes, so its addresses fill the column exactly and every line of
+ * a linked binary begins at the first character. A parser that required
+ * the indentation read those files as containing no instructions at
+ * all, and said so by reporting that the decoder agreed with the
+ * disassembler about all zero of them.
  */
 export function parseObjdump(text: string): DisassembledLine[] {
   const out: DisassembledLine[] = []
   for (const line of text.split('\n')) {
-    const match = /^\s+([0-9a-f]+):\s+((?:[0-9a-f]{2} )+|[0-9a-f]{4,16})\s+(\S.*)$/.exec(line)
+    const match = /^\s*([0-9a-f]+):\s+((?:[0-9a-f]{2} )+|[0-9a-f]{4,16})\s+(\S.*)$/.exec(line)
     if (!match) continue
     const raw = match[2]!.trim()
     const bytes = raw.includes(' ')

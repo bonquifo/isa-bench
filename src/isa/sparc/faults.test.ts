@@ -203,7 +203,9 @@ describe('sparc: images that are not SPARC', () => {
 describe('sparc: running out of budget', () => {
   it('stops a guest that will not finish', () => {
     //   ba .  with a nop in the delay slot: the idiom for hanging.
-    const ba = (((0 << 30) | (8 << 25) | (2 << 22)) >>> 0) | (0x3fffff & 0)
+    //   op 0, cond 8 (always), op2 2 (Bicc), displacement 0 -- which is
+    //   this instruction's own address, so it branches to itself.
+    const ba = (((0 << 30) | (8 << 25) | (2 << 22)) >>> 0)
     const { cpu } = machine([ba, 0x01000000], 5000)
     const chunk = createRetireChunk(64)
     expect(() => {
