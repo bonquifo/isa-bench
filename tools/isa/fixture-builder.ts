@@ -77,6 +77,20 @@ export function nativeOracle(image: string): Oracle {
   }
 }
 
+/**
+ * How to link, for a target whose codegen image cannot.
+ *
+ * `lld` does not support 32-bit SPARC -- it refuses with `unknown
+ * emulation: elf32_sparc` -- so that target compiles in one image and
+ * links in another with GNU binutils. Everything else links in place
+ * and leaves this undefined.
+ */
+export interface ExternalLinker {
+  image: string
+  /** Command that links the named objects into `out`. */
+  command(objects: readonly string[], out: string): string
+}
+
 export interface FixtureTarget {
   /** Short name, used for messages only. */
   id: string
@@ -85,7 +99,15 @@ export interface FixtureTarget {
   /** How to obtain reference behaviour. */
   oracle: Oracle
   triple: string
+  /**
+   * Architecture selector. Usually the value for `-march=`; a target
+   * whose clang wants a different flag leaves this empty and puts the
+   * flag in `extraFlags`, which is what SPARC does since clang rejects
+   * `-march=` for it outright.
+   */
   march: string
+  /** Set when the codegen image's linker cannot handle this target. */
+  linker?: ExternalLinker
   /** Extra clang arguments beyond the shared freestanding set. */
   extraFlags?: string[]
   /** Directory holding harness.h, harness.c and harness.S. */
@@ -227,13 +249,34 @@ function buildOne(target: FixtureTarget, name: string, source: string, work: str
     writeFileSync(join(work, file), readFileSync(join(target.harnessDir, file)))
   }
 
-  run(target.codegen, work, [
-    'clang', '-target', target.triple, `-march=${target.march}`,
-    ...SHARED_FLAGS, ...(target.extraFlags ?? []),
-    '-fuse-ld=lld', '-I/work',
-    '-o', '/work/out.elf',
-    '/work/harness.S', '/work/harness.c', '/work/prog.c',
-  ])
+  const sources = ['/work/harness.S', '/work/harness.c', '/work/prog.c']
+  const archFlags = target.march ? [`-march=${target.march}`] : []
+  if (target.linker) {
+    // Compile to objects here and link in the other image. Each source
+    // is named explicitly rather than compiled as a batch, because
+    // harness.S and harness.c would otherwise both want harness.o.
+    // The flags that belong to linking are dropped, since clang would
+    // hand them to a linker it is not going to run.
+    const objects = sources.map((source) =>
+      source.replace(/\.[cS]$/, source.endsWith('.S') ? '-asm.o' : '.o'))
+    for (let i = 0; i < sources.length; i++) {
+      run(target.codegen, work, [
+        'clang', '-target', target.triple, ...archFlags,
+        ...SHARED_FLAGS.filter((flag) => flag !== '-static' && flag !== '-nostdlib'),
+        ...(target.extraFlags ?? []), '-I/work', '-c',
+        '-o', objects[i]!, sources[i]!,
+      ])
+    }
+    sh(target.linker.image, work, target.linker.command(objects, '/work/out.elf'))
+  } else {
+    run(target.codegen, work, [
+      'clang', '-target', target.triple, ...archFlags,
+      ...SHARED_FLAGS, ...(target.extraFlags ?? []),
+      '-fuse-ld=lld', '-I/work',
+      '-o', '/work/out.elf',
+      ...sources,
+    ])
+  }
 
   const objdump = sh(target.codegen, work, 'llvm-objdump -d /work/out.elf')
 

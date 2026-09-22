@@ -1,0 +1,103 @@
+{
+  "generator": "tools/isa/fixture-builder.ts",
+  "codegen": "isa-bench/codegen-min:23.1.0",
+  "oracle": "isa-sim/qemu-user:11.1.0",
+  "target": "sparc-unknown-linux-gnu",
+  "march": "",
+  "flags": "-O2 -fno-vectorize -fno-slp-vectorize -ffreestanding -fno-builtin -nostdlib -static",
+  "randomGenerator": "tools/isa/sparc/random.ts",
+  "randomSeeds": [
+    1,
+    2,
+    3,
+    5,
+    8,
+    13,
+    21,
+    34,
+    55,
+    89,
+    144,
+    233
+  ],
+  "fixtures": [
+    {
+      "name": "alu",
+      "steps": 184
+    },
+    {
+      "name": "call",
+      "steps": 11167
+    },
+    {
+      "name": "dot",
+      "steps": 3167
+    },
+    {
+      "name": "loops",
+      "steps": 2345
+    },
+    {
+      "name": "random-1",
+      "steps": 1149,
+      "seed": 1
+    },
+    {
+      "name": "random-2",
+      "steps": 1265,
+      "seed": 2
+    },
+    {
+      "name": "random-3",
+      "steps": 1030,
+      "seed": 3
+    },
+    {
+      "name": "random-5",
+      "steps": 1325,
+      "seed": 5
+    },
+    {
+      "name": "random-8",
+      "steps": 1167,
+      "seed": 8
+    },
+    {
+      "name": "random-13",
+      "steps": 1224,
+      "seed": 13
+    },
+    {
+      "name": "random-21",
+      "steps": 1090,
+      "seed": 21
+    },
+    {
+      "name": "random-34",
+      "steps": 1129,
+      "seed": 34
+    },
+    {
+      "name": "random-55",
+      "steps": 1082,
+      "seed": 55
+    },
+    {
+      "name": "random-89",
+      "steps": 848,
+      "seed": 89
+    },
+    {
+      "name": "random-144",
+      "steps": 1295,
+      "seed": 144
+    },
+    {
+      "name": "random-233",
+      "steps": 1210,
+      "seed": 233
+    }
+  ],
+  "libcImage": null,
+  "libcFixtures": []
+}

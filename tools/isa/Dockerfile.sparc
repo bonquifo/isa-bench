@@ -1,0 +1,27 @@
+# The SPARC linker, which is the one thing the codegen image cannot do.
+#
+# `lld` has no 32-bit SPARC support and says so plainly -- `unknown
+# emulation: elf32_sparc` -- so this target compiles with clang in
+# isa-bench/codegen-min and links with GNU binutils here. That is why the
+# fixture builder has an ExternalLinker at all, and this is its only user.
+#
+# Only the linker is needed, not a compiler: clang produces the objects.
+# The Debian package is for the sparc64 target and supports both word
+# widths, which is why an image named for 64-bit links 32-bit output.
+#
+# The base is pinned by digest and the package by version, so the image
+# a rebuild produces is the image the fixtures were produced with.
+FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      binutils-sparc64-linux-gnu=2.40-2 \
+ && rm -rf /var/lib/apt/lists/*
+
+# Fails the build rather than the fixtures if the emulation this exists
+# for is ever missing from the package.
+RUN sparc64-linux-gnu-ld -V | grep -q elf32_sparc
+
+LABEL org.opencontainers.image.title="ISA Sim SPARC linker"
+
+WORKDIR /work

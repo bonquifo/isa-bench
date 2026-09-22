@@ -1,18 +1,19 @@
 # Real instruction-set semantics
 
-Written for engineers continuing this work on the remaining three targets.
+Written for engineers continuing this work on the remaining two targets.
 
 This describes the interpreters that replace the pseudo-backend lowering, the
 interface they present to the timing model, and what the remaining instruction
 sets have to implement.
 
-**Five are complete: RV64GC, AArch64, x86-64, MIPS32 and MOS 6502.** For
-the first four, real C compiled by clang and linked against a real libc
-executes against a real address space and matches its reference on
-architectural state for freestanding programs and on output for whole
-programs. The fifth makes a different claim, stated in section 4 and
-section 5, because it is the one target with no reference it can be
-stepped alongside.
+**Six are complete: RV64GC, AArch64, x86-64, MIPS32, MOS 6502 and
+SPARC V8.** For the first four, real C compiled by clang and linked
+against a real libc executes against a real address space and matches
+its reference on architectural state for freestanding programs and on
+output for whole programs. The last two each make a narrower claim, and
+say so: the 6502 because it has no reference it can be stepped
+alongside, and SPARC because musl has no port for it, so it has the
+architectural tiers and not yet the whole-program one.
 
 The second one is the evidence that the split in section 1 was worth making:
 AArch64 needed a decoder, a semantics file and a register map, and reused the
@@ -160,10 +161,19 @@ interface Interpreter {
 Three properties matter:
 
 - **`reads` and `writes` are resolved architectural resource ids** in a flat
-  per-ISA space. Resolving them in the interpreter is what lets one hazard
-  model serve every ISA: SPARC's window rotation and ARM's predication are
-  decided before timing sees anything, and x86 flags and POWER CR fields are
-  simply more ids. RV64 uses 0–31 for `x`, 32–63 for `f`, and 64 for `fcsr`.
+  per-ISA space. Resolving them in the backend is what lets one hazard
+  model serve every ISA: ARM's predication is decided before timing sees
+  anything, and x86 flags, SPARC condition codes and POWER CR fields are
+  simply more ids.
+
+  SPARC is the one place this does not resolve all the way, and the
+  reason is a real limit rather than an omission. Which *physical*
+  register `%l0` names depends on the current window, which is dynamic,
+  and these ids belong to a statically decoded instruction the image
+  caches by address. So that target identifies window registers
+  window-relative and makes the window pointer a resource of its own,
+  which every instruction naming one reads. Section 5 says what stays
+  approximate and why the contract was not reopened for it. RV64 uses 0–31 for `x`, 32–63 for `f`, and 64 for `fcsr`.
   `x0` appears in neither list, because it can never carry a dependency.
 - **Byte addresses throughout.** `inst.target` being an instruction index was
   an artifact of the pseudo-backend. The image maps address to instruction.
@@ -426,7 +436,7 @@ for them every iteration.
 
 ---
 
-## 5. What the remaining three must implement
+## 5. What the remaining two must implement
 
 Adding an instruction set is now a bounded act: implement
 [`IsaBackend`](../../src/isa/backend.ts), register it in
@@ -454,7 +464,6 @@ takes endianness as a constructor argument for exactly this reason.
 | Target | The structural surprise | Notes |
 | --- | --- | --- |
 | POWER | condition-register fields | **Measured: 120 distinct mnemonics**, the widest of the five. Eight CR fields become eight resource ids. |
-| SPARC V8 | register windows | Resolve window-relative to absolute register numbers in the interpreter, so `reads`/`writes` reaching timing are already absolute. See the toolchain warning below. |
 | WASM | a stack machine, not a register machine | No register file to compare. The differential interface needs rethinking, not just reimplementing. |
 
 Instruction counts above are measured on the existing C corpus at `-O2`, not
@@ -650,6 +659,122 @@ program with a cleared status register. A probe measured `S = $FD` and
 all flags clear, and the interpreter matches that — which mattered,
 because a guest that pushes its status word at startup can see the
 difference, and the first version of the decimal probe did.
+
+### SPARC V8, as built
+
+The prediction was register windows, and register windows were indeed
+the work — but not the part that was hard. Resolving a window-relative
+register to a physical one is ten lines. What took the time was
+everything around it: where the spill goes, what the reference does
+while it happens, and what the frozen contract can say about any of it.
+
+#### The window, and the one place the contract does not fit
+
+A SPARC program sees 24 registers — eight `in`, eight `local`, eight
+`out` — and `save` rotates that view rather than pushing anything. The
+rotation *overlaps*: the caller's `out` registers are the callee's `in`
+registers, the same physical registers under two names, which is how
+arguments are passed without touching memory. The interpreter keeps the
+physical file and resolves the window on every access, so execution is
+exact.
+
+The timing model is where it stops being exact, and the reason is worth
+stating rather than hiding. `reads` and `writes` belong to a statically
+decoded instruction, which the image caches by address; the physical
+register an instruction names depends on the current window, which is
+dynamic. The contract has nowhere to put that — the image is addressed
+by program counter, and a retired chunk spans many windows before the
+timing model walks it.
+
+The contract was frozen deliberately and has now survived five backends
+with one documented addition, so it was not reopened for a refinement to
+a model whose output is already declared not to be measured. Instead,
+**window registers are identified window-relative, and the window
+pointer is itself a resource** that every instruction naming one reads.
+That much is true of the hardware. What remains approximate is confined
+to a window boundary, with the `save` between as a dependence both sides
+carry.
+
+#### What the reference does during a trap, and what it looks like
+
+Eight windows run out. The ninth nested `save` traps, and on Linux the
+kernel spills the oldest window to its stack frame. qemu-user emulates
+that *inside the emulator* rather than by running guest code, so the
+trace contains no handler — what it contains is the same instruction
+dumped twice in a row with only `wim` changed, because qemu restarts
+the translation block after taking the trap.
+
+The parser collapses each pair and keeps the **first**, which is the
+state before the trap and therefore what an interpreter has before
+executing the instruction that traps, since the spill happens inside it.
+Keeping the second instead fails on `wim` at the first recursion deeper
+than eight frames, which is how this came to be understood.
+
+The first end-to-end run was a useful confirmation of all of it at once:
+qemu emitted 5,415 dumps for a recursive program, the interpreter
+retired 5,377 instructions, and the difference was exactly the 38
+duplicate pairs.
+
+#### Four things measured rather than assumed
+
+Each of these was read off the reference, and each would have been wrong
+if guessed.
+
+- **The initial window mask is 1, with `cwp` 0** — the window the
+  process starts in is itself marked invalid, which is what stops `save`
+  wrapping the whole way round and reusing the entry frame. Assuming the
+  mask protected the window *below* instead makes the very first `save`
+  trap.
+- **The floating-point status register does not start at zero.** Its
+  version field reads 1 from the first instruction, and a guest that
+  stores `%fsr` sees it.
+- **`-fno-pic` is required**, for the same reason MIPS needs it and by a
+  different route: this target defaults to position-independent code,
+  and there the assembler turns `%hi(sym)` into a GOT reference, so the
+  entry stub loads a GOT *offset* into `%sp` and the first store faults.
+- **The syscall numbers are the classic Unix ones** — `exit` is 1 and
+  `write` is 4 — confirmed with `qemu-sparc -strace` rather than
+  recalled.
+
+#### The toolchain is three containers
+
+`lld` cannot link 32-bit SPARC; it refuses with `unknown emulation:
+elf32_sparc`. So clang compiles to objects in the codegen image, GNU
+binutils links them in another, and qemu runs the result in a third.
+That is what `ExternalLinker` in the fixture builder exists for, and it
+is the first target to need it. clang also rejects `-march=` for this
+target outright and wants `-mcpu=v8`.
+
+#### What the randomised programs found
+
+The decoder agreed with LLVM on all 702 instructions of the corpus at
+the first attempt, and lockstep over a compiled program was clean once
+the initial window mask was right. Neither of those exercised floating
+point, because nothing the corpus compiles branches on a float.
+
+The generated programs did, and found a real bug: **the floating-point
+branch conditions were wrong in nine of sixteen cases.** The encoding is
+not the integer one with different names on it — bit 3 selects "equal,
+plus the condition" and the low three bits are a mask over less,
+greater and unordered, so `fbul` is less-or-unordered and has nothing to
+do with unsigned. They also found that this architecture's quiet NaN is
+all mantissa bits set, `0x7fffffff`, where x86, ARM and JavaScript all
+produce only the top bit.
+
+Extending the generator to cover the tagged arithmetic, `mulscc`, the
+two read-modify-write instructions and the whole floating-point set took
+this backend's line coverage from 79% to 91% — and every line of that is
+covered by comparison against qemu rather than by a unit test asserting
+what the code already does.
+
+#### What it does not have yet
+
+**No libc tier, and so no corpus programs and no entry in the app's
+lane.** musl has no SPARC port at all. Whole programs on this target
+need picolibc or a freestanding subset, which is separate work; until
+then the claim is the architectural one — decode, lockstep and final
+state over sixteen freestanding programs — and the target is registered
+as a real backend without being offered as something to run.
 
 ### MIPS32, as built
 
@@ -933,6 +1058,18 @@ npx vite-node tools/isa/build-fixtures.ts rv64     # regenerate fixtures; needs 
 npx vite-node tools/isa/build-fixtures.ts aarch64
 npx vite-node tools/isa/build-fixtures.ts x86
 npx vite-node tools/isa/build-fixtures.ts mips
+```
+
+SPARC is built the same way as the four above,
+
+```
+npx vite-node tools/isa/build-fixtures.ts sparc
+```
+
+but needs one more image than they do, because `lld` cannot link it:
+
+```
+docker build -f tools/isa/Dockerfile.sparc -t isa-sim/sparc-linker:2.40-2 tools/isa
 ```
 
 The 6502 is regenerated by two scripts of its own rather than by
