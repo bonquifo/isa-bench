@@ -81,24 +81,36 @@ implementation.
 
 ## Real instruction sets
 
-Four of the eight also have a **real** backend: **RV64GC**, **AArch64**,
-**x86-64** and **MIPS32**. These are interpreters that decode and execute
-genuine machine code — the same precompiled binaries that the differential
-test suite compares, instruction by instruction, against `qemu-riscv64`,
+Five of the eight also have a **real** backend: **RV64GC**, **AArch64**,
+**x86-64**, **MIPS32** and **MOS 6502**. These are interpreters that decode
+and execute genuine machine code — the same precompiled binaries that the
+differential test suite compares against a reference. For the first four the
+comparison is instruction by instruction against `qemu-riscv64`,
 `qemu-aarch64`, `qemu-mipsel` and, for x86-64, against the host processor
-itself. They live in their own
-lane and are never mixed into the eight-way comparison, because putting a real
-instruction stream in the same table as a lowering would invite reading both as
-equally real.
+itself.
+
+The 6502 is verified differently and says so: no 6502 simulator can be
+traced, so instead of a lockstep run it is checked against 23,502
+single-instruction cases recorded from hardware — every documented opcode,
+from arbitrary machine state — and then on whole programs against
+`mos-sim`. That is stronger than lockstep for one instruction and weaker
+for a sequence, and the app states the pair rather than borrowing the
+other targets' sentence.
+
+They live in their own lane and are never mixed into the eight-way
+comparison, because putting a real instruction stream in the same table as a
+lowering would invite reading both as equally real.
 
 What is real there is the instruction stream and the program's own output.
 Everything else on that screen — cycles, cache behavior, energy — is the same
 deterministic model the other lanes use. **Nothing anywhere in this app is
 measured on hardware.**
 
-The remaining four targets have pseudo-backends only. An instruction a real
+The remaining three targets have pseudo-backends only. An instruction a real
 backend does not implement is refused by name and address; it is never
-executed as an approximation.
+executed as an approximation. On the 6502 that extends to the 105 opcodes
+the architecture leaves undefined, and to the simulator's cycle counter,
+which this app will not answer because it has no measured number to give.
 
 ## The two models
 

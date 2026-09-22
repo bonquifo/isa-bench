@@ -14,6 +14,19 @@
  */
 import { C_EXAMPLES, type CExample } from '../engine/c/programs.ts'
 
+/**
+ * The byte that separates a program's output from its return value, on a
+ * target whose platform has only one output stream.
+ *
+ * Most targets put the corpus driver's return value on stderr, where it
+ * cannot disturb stdout. The 6502's platform is a single byte-wide port
+ * -- its libc sends both streams to the same address -- so there the two
+ * are framed instead, and this is the frame. Defined here rather than in
+ * the fixture tooling because both sides need it: the tooling emits it
+ * and the app reads it back.
+ */
+export const RETURN_SEPARATOR = '\x1e'
+
 /** A corpus program paired with the binary built from it. */
 export interface ShippedProgram {
   id: string

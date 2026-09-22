@@ -19,6 +19,8 @@ import * as aarch64Shipped from '../isa/aarch64/shipped.ts'
 import type { IsaBackend } from '../isa/backend.ts'
 import { mipsBackend } from '../isa/mips/backend.ts'
 import * as mipsShipped from '../isa/mips/shipped.ts'
+import { mosBackend } from '../isa/mos/backend.ts'
+import * as mosShipped from '../isa/mos/shipped.ts'
 import { rv64Backend } from '../isa/riscv/backend.ts'
 import * as rv64Shipped from '../isa/riscv/shipped.ts'
 import { x86Backend } from '../isa/x86/backend.ts'
@@ -42,6 +44,27 @@ export interface RealTarget {
   oracle: string
   /** One clause saying how far that comparison goes. */
   verified: string
+  /** What the binaries are linked against, named rather than assumed. */
+  libc: string
+  /**
+   * How the corpus driver reports the program's return value.
+   *
+   * Every target with two output streams puts it on stderr, where it
+   * cannot disturb the program's own output. The 6502's platform is one
+   * byte-wide port, so there the two share a stream and are framed apart
+   * by RETURN_SEPARATOR instead.
+   */
+  returnChannel: 'stderr' | 'framed'
+  /**
+   * How wide a C `int` is on this target.
+   *
+   * The corpus was written where it is thirty-two, and several of the
+   * programs accumulate past what sixteen holds. On a target where it is
+   * narrower those programs compute a different value and are right to,
+   * so the lane has to be able to say that rather than report a
+   * mismatch.
+   */
+  intBits: 16 | 32
   shipped: ShippedModule
 }
 
@@ -53,6 +76,9 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     instructions: 'RISC-V',
     oracle: 'qemu-riscv64',
     verified: 'register by register, before every instruction',
+    libc: 'musl',
+    returnChannel: 'stderr',
+    intBits: 32,
     shipped: rv64Shipped,
   },
   {
@@ -62,6 +88,9 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     instructions: 'AArch64',
     oracle: 'qemu-aarch64',
     verified: 'register by register and flag by flag, before every instruction',
+    libc: 'musl',
+    returnChannel: 'stderr',
+    intBits: 32,
     shipped: aarch64Shipped,
   },
   {
@@ -74,6 +103,9 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     // the processor itself, single-stepped through ptrace.
     oracle: 'the host processor',
     verified: 'register by register and flag by flag, before every instruction',
+    libc: 'musl',
+    returnChannel: 'stderr',
+    intBits: 32,
     shipped: x86Shipped,
   },
   {
@@ -85,6 +117,28 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     // The HI and LO pair is in the trace too, which matters here: they
     // are written by one instruction and read by another several later.
     verified: 'register by register, before every instruction',
+    libc: 'musl',
+    returnChannel: 'stderr',
+    intBits: 32,
     shipped: mipsShipped,
+  },
+  {
+    id: IsaId.MOS,
+    backend: mosBackend,
+    label: 'MOS 6502',
+    instructions: '6502',
+    // The only target with no emulator to step alongside: mos-sim cannot
+    // be traced. So the comparison is made per instruction instead of per
+    // step, against cases recorded from the hardware itself, and then
+    // whole programs are compared against the simulator end to end. Both
+    // halves are named here because neither alone is what the others do.
+    oracle: 'hardware-recorded opcode vectors, then mos-sim',
+    verified: 'every documented opcode from arbitrary machine state, ' +
+      'then whole programs end to end',
+    libc: "llvm-mos's libc",
+    // One output port, so stdout and stderr are the same stream here.
+    returnChannel: 'framed',
+    intBits: 16,
+    shipped: mosShipped,
   },
 ]

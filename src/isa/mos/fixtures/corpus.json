@@ -1,0 +1,129 @@
+{
+  "generator": "tools/isa/mos/build-corpus.ts",
+  "codegen": "isa-sim/mos:23.0.1",
+  "oracle": "isa-sim/mos:23.0.1 (mos-sim)",
+  "target": "mos-sim",
+  "flags": "-Os -fwrapv",
+  "note": "This target has no lockstep oracle: mos-sim has no tracing interface. Single-instruction conformance is covered by fixtures/vectors.json instead, and these fixtures cover whole programs. Programs the machine cannot hold are recorded as skipped with the reason rather than omitted.",
+  "ran": [
+    {
+      "name": "asm_decimal",
+      "exit": 0,
+      "imageBytes": 191,
+      "stdoutBytes": 6656,
+      "stderrBytes": 0
+    },
+    {
+      "name": "asm_pointers",
+      "exit": 0,
+      "imageBytes": 4659,
+      "stdoutBytes": 97,
+      "stderrBytes": 0
+    },
+    {
+      "name": "asm_flags",
+      "exit": 0,
+      "imageBytes": 4641,
+      "stdoutBytes": 32,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-fib",
+      "exit": 0,
+      "imageBytes": 4736,
+      "stdoutBytes": 16,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-hello",
+      "exit": 0,
+      "imageBytes": 4555,
+      "stdoutBytes": 14,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-sum",
+      "exit": 0,
+      "imageBytes": 4527,
+      "stdoutBytes": 4,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-ptr",
+      "exit": 0,
+      "imageBytes": 5750,
+      "stdoutBytes": 6,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-mandelbrot",
+      "exit": 0,
+      "imageBytes": 4711,
+      "stdoutBytes": 408,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-wolf",
+      "exit": 0,
+      "imageBytes": 5372,
+      "stdoutBytes": 17,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-life",
+      "exit": 0,
+      "imageBytes": 5420,
+      "stdoutBytes": 18,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-cube",
+      "exit": 0,
+      "imageBytes": 6580,
+      "stdoutBytes": 7,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-fire",
+      "exit": 0,
+      "imageBytes": 5741,
+      "stdoutBytes": 19,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-nbody",
+      "exit": 0,
+      "imageBytes": 5760,
+      "stdoutBytes": 18,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-queens",
+      "exit": 0,
+      "imageBytes": 5094,
+      "stdoutBytes": 13,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-fft",
+      "exit": 0,
+      "imageBytes": 5349,
+      "stdoutBytes": 19,
+      "stderrBytes": 0
+    },
+    {
+      "name": "corpus-pi",
+      "exit": 0,
+      "imageBytes": 5258,
+      "stdoutBytes": 17,
+      "stderrBytes": 0
+    }
+  ],
+  "skipped": [
+    {
+      "name": "corpus-struct",
+      "built": false,
+      "reason": "static assertion failed due to requirement 'sizeof(struct Point) == 8': point"
+    }
+  ]
+}

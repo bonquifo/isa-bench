@@ -1,15 +1,18 @@
 # Real instruction-set semantics
 
-Written for engineers continuing this work on the remaining four targets.
+Written for engineers continuing this work on the remaining three targets.
 
 This describes the interpreters that replace the pseudo-backend lowering, the
 interface they present to the timing model, and what the remaining instruction
 sets have to implement.
 
-**Four are complete: RV64GC, AArch64, x86-64 and MIPS32.** For each, real C
-compiled by clang and linked against a real libc executes against a real
-address space and matches its reference on architectural state for
-freestanding programs and on output for whole programs.
+**Five are complete: RV64GC, AArch64, x86-64, MIPS32 and MOS 6502.** For
+the first four, real C compiled by clang and linked against a real libc
+executes against a real address space and matches its reference on
+architectural state for freestanding programs and on output for whole
+programs. The fifth makes a different claim, stated in section 4 and
+section 5, because it is the one target with no reference it can be
+stepped alongside.
 
 The second one is the evidence that the split in section 1 was worth making:
 AArch64 needed a decoder, a semantics file and a register map, and reused the
@@ -30,6 +33,14 @@ sequential in the obvious sense: a MIPS branch takes effect one instruction
 late, and the instruction in between runs either way. That is handled where it
 belongs, in the interpreter, and section 5 explains why nothing downstream of
 the retired trace needs to know about it.
+
+The fifth is the one that had to change how a backend is verified rather
+than what it implements. There is no traceable 6502 emulator to run in
+lockstep, so the middle tier is replaced by per-opcode cases recorded
+from hardware -- which for a single instruction says more than lockstep
+does, and for a sequence of them says nothing. It is also the first
+target whose whole-program oracle was found to be *wrong*, in a way the
+hardware vectors could prove; section 5 says what was done about that.
 
 ---
 
@@ -191,7 +202,9 @@ workloads.
 
 ## 4. Correctness: what is verified, and against what
 
-Four tiers, all running in `npm test` on any machine, with no Docker.
+Five tiers, all running in `npm test` on any machine, with no Docker. Four
+of them apply to every target; the fifth exists because one target could
+not have the others.
 
 | Tier | What it checks | Oracle |
 | --- | --- | --- |
@@ -222,11 +235,14 @@ test rather than hiding anything.
 | Randomised | the same two comparisons over generated programs | the same, per recorded seed |
 | Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
 | The app's corpus | the same, for the fourteen C programs the app ships | qemu **and** the answers the app already records |
+| Per-opcode | the whole machine before and after **one** instruction, from arbitrary state | cases recorded from 6502 hardware |
 
 Per target: 40 fixtures for RV64, 40 for AArch64, 37 for x86-64 and 35 for
 MIPS32 — hand-written, randomised, written against musl, and the app's
 fourteen. Together, roughly 130,000 instructions compared register by
-register and seventy-two whole programs compared on output.
+register and seventy-two whole programs compared on output. The 6502 adds
+23,502 single-instruction cases and 16 whole programs, and no lockstep;
+section 5 says why, and what that does and does not let it claim.
 
 ### The x86-64 reference is not an emulator
 
@@ -410,7 +426,7 @@ for them every iteration.
 
 ---
 
-## 5. What the remaining four must implement
+## 5. What the remaining three must implement
 
 Adding an instruction set is now a bounded act: implement
 [`IsaBackend`](../../src/isa/backend.ts), register it in
@@ -419,6 +435,11 @@ Adding an instruction set is now a bounded act: implement
 captured, and call `describeIsaConformance` from a test file. The backend then
 inherits the entire differential suite — lockstep and final-state comparison —
 rather than growing its own version that checks slightly less.
+
+A target with no traceable reference takes a different route, which the
+6502 opened: call `describeDecodeTier` directly for the tier that only
+needs a disassembly, and bring its own oracle for the rest. WASM will
+almost certainly take that route too.
 
 ```
 per ISA     decode, semantics, register file and numbering, ELF machine and
@@ -435,7 +456,6 @@ takes endianness as a constructor argument for exactly this reason.
 | POWER | condition-register fields | **Measured: 120 distinct mnemonics**, the widest of the five. Eight CR fields become eight resource ids. |
 | SPARC V8 | register windows | Resolve window-relative to absolute register numbers in the interpreter, so `reads`/`writes` reaching timing are already absolute. See the toolchain warning below. |
 | WASM | a stack machine, not a register machine | No register file to compare. The differential interface needs rethinking, not just reimplementing. |
-| MOS 6502 | 64 KiB, 8-bit accumulator, no OS | Cannot support a C library. Define honestly what it can claim. |
 
 Instruction counts above are measured on the existing C corpus at `-O2`, not
 estimated. RV64 needed 49 for that corpus, and 90 across four statically
@@ -449,6 +469,187 @@ quoting as the ceiling: 193 opcode-map entries statically, 168 distinct
 mnemonics actually executed. Even there the number of distinct *operations*
 is far smaller, because twenty of those mnemonics are one conditional move
 and sixteen are one conditional branch.
+
+### MOS 6502, as built
+
+The prediction in the table was "cannot support a C library; define
+honestly what it can claim". Half of that was wrong and the other half
+turned out to be the entire job.
+
+**It supports a C library.** llvm-mos ships a `sim` target with a real
+`printf`, and thirteen of the app's fourteen corpus programs compile,
+link and run on it. The one that does not is refused for a reason that
+belongs to the architecture rather than to the backend: `int` is sixteen
+bits here, so the program's own `sizeof(struct Point) == 8` assertion is
+false, and the compiler is right to stop. That is recorded in
+`fixtures/corpus.json` with its reason and asserted in a test, so it is a
+stated fact rather than a program that quietly vanishes from the menu.
+
+**Defining what it can claim was the whole job**, because this is the
+only target with no reference it can be stepped alongside.
+
+#### There is no lockstep, and what replaces it is better in one direction
+
+`mos-sim` has no tracing interface — no flag, no hook, 72 KB of binary
+with nothing to ask. So the tier every other backend leans on, PC and
+registers compared before every instruction, cannot exist here.
+
+What exists instead is the SingleStepTests vectors: for each of the 256
+opcodes, ten thousand cases recorded from hardware, each giving the
+entire machine before, one instruction, and the entire machine after.
+For a single instruction that is a *stronger* statement than lockstep. A
+lockstep run only ever reaches the states a compiler's output happens to
+produce, and a compiler emits `sed` never, `adc` with overflow already
+set rarely, and `jmp` through a pointer at `$xxFF` not at all. These
+cases set the whole status register at random, so they reach
+combinations no corpus program would.
+
+For a *sequence* of instructions it says nothing at all, which is why
+the whole-program tier carries more weight here than elsewhere. The
+claim this target makes is stated in those two halves, not as "verified
+against a reference", which would be borrowing the other targets'
+sentence.
+
+#### The sample, and why it is not uniform
+
+All 256 files are 840 MB, so a deterministic sample is committed —
+23,502 cases, 1008 KiB — and
+[`build-vectors.ts`](../../tools/isa/mos/build-vectors.ts) regenerates
+it. Downloading at test time was rejected outright: a suite whose result
+depends on the network is not a conformance suite.
+
+The sample is uniform *plus* a targeted pass, and the targeted pass
+earns its place. The cases that catch bugs are structural edges — a zero
+page pointer wrapping at `$FF`, an indexed address crossing a page, a
+stack pointer at either end, an indirect jump through the address the
+hardware gets wrong — and each is rare enough that 128 uniform draws
+usually contain none. When the tier was deliberately broken to check it
+could fail, removing the indirect jump's page-carry defect failed
+**exactly 8 of 159 cases for opcode `6c`**: the eight the targeted pass
+had put there. A uniform-only sample would have passed.
+
+#### The whole-program oracle is wrong, and the vectors proved it
+
+This is the part worth carrying to the next target. `mos-sim` does not
+implement decimal mode the way the hardware does:
+
+- **N and V** are taken from the plain binary sum. On an NMOS 6502 they
+  come from the partly corrected value — the sum after the low nibble is
+  adjusted and before the high one is — which is a value that is never
+  stored anywhere.
+- **Operands with a nibble above nine** produce the wrong accumulator,
+  because the correction is applied as though the input were valid BCD.
+
+That was not inferred from reading. Sixty-four decimal cases were taken
+from the hardware vectors, assembled into a program and run under the
+simulator: **eight wrong accumulators and one wrong flag pair**, with
+this interpreter matching hardware on all sixty-four.
+
+The response was not to make the interpreter agree with the simulator.
+It was to bound what the whole-program tier compares — the decimal probe
+stays inside valid BCD and reports the accumulator and carry, which is
+the part the simulator gets right — and to add a test pinning the
+divergence so nobody later "fixes" the backend to match the oracle. That
+test is in
+[`conformance.test.ts`](../../src/isa/mos/conformance.test.ts) and its
+comment says exactly which mistake it guards against.
+
+The general lesson: an oracle is evidence, not authority. Where two
+oracles disagree, the one recorded from hardware wins, and the
+disagreement gets a test rather than a workaround.
+
+#### The 105 encodings that are not instructions
+
+The opcode map has 151 entries and 256 slots. The other 105 do something
+on real silicon — they are the "undocumented" instructions, undocumented
+because they fall out of the decode logic rather than because anyone
+designed them — and this decoder refuses every one. That is a deliberate
+narrowing, it is asserted for all 105, and it costs nothing measurable:
+across 41,443 instructions of disassembly over the fixture set, LLVM
+printed only documented mnemonics, so nothing a compiler emits is
+affected.
+
+#### What was different in the substrate
+
+Three things, each small and each for a reason:
+
+- **The address space is not `GuestMemory`.** This machine has no MMU.
+  Every address responds, there is no such thing as a segmentation
+  fault, and the conformance vectors poke arbitrary addresses and expect
+  an answer. A page table with faults would model behaviour the hardware
+  does not have. `MosBus` is 64 KiB and a device list.
+- **Each status flag is its own resource id**, where other targets treat
+  the condition register as one. With three registers and no barrel
+  shifter, *everything* here is done through flags: a 16-bit add is four
+  instructions chained through carry, and a loop is a decrement whose
+  zero flag is read six instructions later while carry is being used for
+  something else. Collapsing them would make the timing model report
+  dependence stalls that do not exist.
+- **The decode cache can be invalidated.** Self-modifying code is not a
+  curiosity on a machine with three registers; rewriting an
+  instruction's operand is an ordinary way to index. A store checks
+  whether it landed inside the decoded range — which stores to page zero
+  and the stack never do — and drops the three addresses that could have
+  been affected.
+
+#### The platform is ten addresses
+
+There are no syscalls on a 6502. Where other targets have several
+hundred lines of Linux emulation, this one has a device occupying
+`$FFF0`–`$FFF9`. Every address in it was read off the simulator by
+compiling code that uses the facility, disassembling what the platform's
+libc emits, and confirming with a probe program; none of it came from
+documentation.
+
+`$FFF8` exits with a status and `$FFF9` writes a byte to stdout. `$FFF5`
+and `$FFF6` are input and its end-of-file flag. **`$FFF0`–`$FFF3` are a
+cycle counter, and this backend refuses to answer them.** That is the
+one deliberate refusal of a facility the reference provides, and the
+reason is section 1's split: execution here produces architectural
+state, and cycles are the timing model's answer against a hardware
+profile. There is no count inside the interpreter to return. The two
+ways to invent one are both worse than failing — a retired-instruction
+count would be a fabricated number wearing real units, and feeding the
+timing model's answer back to the guest would let a simulated program's
+*output* depend on the profile it was simulated under.
+
+#### `int` is sixteen bits, and the corpus noticed
+
+The strongest tier on every other target is the app's own recorded
+answers: expectations produced by the in-house Guest C compiler and the
+pseudo-backend, which share nothing with clang or an interpreter. Here
+it splits in two, and the split is exact.
+
+`int` is sixteen bits on this machine, and the corpus was written where
+it is thirty-two. Eight of the thirteen buildable programs accumulate
+past 32767 — `pi` returns pi scaled by 100000, `fft` a checksum in the
+hundreds of millions — and those eight compute a different value here.
+They are right to: same C, same compiler, narrower type.
+
+What makes this a finding rather than an excuse is that the line falls
+in exactly one place. **Every program whose expected answer fits in a
+sixteen-bit `int` matches the app completely, return value and output;
+every program whose answer does not fit differs, and its own answer
+always fits.** Nothing is in between. The test derives that split from
+the expected value rather than from a list of program names, so a
+program that started disagreeing for some *other* reason would fail.
+
+Two of the eight, `life` and `cube`, return a different value and still
+print byte-identical output, because what they print does not depend on
+the accumulator that overflows.
+
+The lane says this in the UI rather than reporting a mismatch, since a
+red "does not match" on eight of thirteen programs would be describing
+the C type system as a bug in the interpreter.
+
+#### The initial state was measured, not assumed
+
+A real 6502 sets the interrupt-disable flag during reset. This platform
+has no reset sequence: the simulator loads the image and enters the
+program with a cleared status register. A probe measured `S = $FD` and
+all flags clear, and the interpreter matches that — which mattered,
+because a guest that pushes its status word at startup can see the
+difference, and the first version of the decimal probe did.
 
 ### MIPS32, as built
 
@@ -706,6 +907,19 @@ npx vite-node tools/isa/build-fixtures.ts aarch64
 npx vite-node tools/isa/build-fixtures.ts x86
 npx vite-node tools/isa/build-fixtures.ts mips
 ```
+
+The 6502 is regenerated by two scripts of its own rather than by
+`build-fixtures.ts`, because it has neither a lockstep oracle to drive
+nor a qemu register dump to parse:
+
+```
+npx vite-node tools/isa/mos/build-vectors.ts    # per-opcode cases; needs network
+npx vite-node tools/isa/mos/build-corpus.ts     # whole programs; needs Docker
+```
+
+The first downloads about 500 MB from the SingleStepTests repository,
+pinned to a commit, and writes a 1 MB sample. The second needs
+`isa-sim/mos:23.0.1`, which carries llvm-mos and `mos-sim`.
 
 The x86-64 target needs one more image, which is built here rather than
 pulled because the thing being trusted is the tracer:

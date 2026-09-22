@@ -23,6 +23,12 @@ export const ElfMachine = {
   X86_64: 62,
   AARCH64: 183,
   RISCV: 243,
+  /**
+   * Not a registered value. LLVM picked 6502 for the 6502 -- the decimal
+   * number, which as hex is 0x1966 -- and since llvm-mos is the only
+   * toolchain that emits these objects, it is the value that exists.
+   */
+  MOS: 6502,
 } as const
 
 const ET_EXEC = 2

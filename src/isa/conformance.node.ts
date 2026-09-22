@@ -105,64 +105,85 @@ function popcount(value: bigint): number {
   return n
 }
 
+/**
+ * The decode tier on its own, for a backend that has this much of a
+ * reference and no more.
+ *
+ * Separated from the suite below because the two need different things.
+ * Everything else here compares against an oracle *executing*, so a
+ * backend without one inherits nothing -- but a disassembly is produced
+ * by the toolchain that built the fixture, and a decoder can be checked
+ * against LLVM's own tables whether or not anything can run the program
+ * afterwards. The 6502 is exactly that case: no simulator it could be
+ * stepped alongside, and tens of thousands of instructions of
+ * disassembly its decoder has to agree with.
+ */
+export function describeDecodeTier(
+  label: string,
+  fixtureDir: string,
+  names: readonly string[],
+  check: DecodeCheck,
+): void {
+  describe(`${label}: decoder against the disassembler`, () => {
+    const ignored = new Set(check.ignored ?? [])
+    const refused = new Set(check.refused ?? [])
+
+    it('has disassembly to check against', () => {
+      expect(names.length).toBeGreaterThan(0)
+      expect(parseObjdump(readObjdump(fixtureDir, names[0]!)).length).toBeGreaterThan(0)
+    })
+
+    for (const name of names) {
+      it(`agrees on every instruction in ${name}`, () => {
+        const lines = parseObjdump(readObjdump(fixtureDir, name))
+        expect(lines.length).toBeGreaterThan(0)
+        const problems: string[] = []
+        let checked = 0
+        for (const line of lines) {
+          if (ignored.has(line.mnemonic)) continue
+          const where = `0x${line.address.toString(16)} ${line.text}`
+          if (refused.has(line.mnemonic)) {
+            try {
+              check.decode(line.bytes, line.address)
+              problems.push(`${where}: decoded, but should have been refused`)
+            } catch {
+              checked += 1
+            }
+            continue
+          }
+          let decoded: { op: number; length: number }
+          try {
+            decoded = check.decode(line.bytes, line.address)
+          } catch (error) {
+            problems.push(`${where}: ${(error as Error).message}`)
+            continue
+          }
+          checked += 1
+          if (decoded.length !== line.bytes.length) {
+            problems.push(`${where}: length ${decoded.length} != ${line.bytes.length}`)
+          }
+          const accepted = check.aliases?.[line.mnemonic] ?? []
+          const actual = check.name(decoded.op)
+          if (actual !== line.mnemonic && !accepted.includes(decoded.op)) {
+            problems.push(`${where}: decoded as ${actual}`)
+          }
+        }
+        expect(problems.slice(0, 20).join('\n')).toBe('')
+        // A pass that checked nothing would look like a pass that
+        // checked everything.
+        expect(checked).toBeGreaterThan(0)
+      })
+    }
+  })
+}
+
 export function describeIsaConformance(options: ConformanceOptions): void {
   const { backend, fixtureDir } = options
   const index = readIndex(fixtureDir)
   const names = fixtureNames(fixtureDir)
 
-  const check = options.decodeCheck
-  if (check) {
-    describe(`${backend.name}: decoder against the disassembler`, () => {
-      const ignored = new Set(check.ignored ?? [])
-      const refused = new Set(check.refused ?? [])
-
-      it('has disassembly to check against', () => {
-        expect(names.length).toBeGreaterThan(0)
-        expect(parseObjdump(readObjdump(fixtureDir, names[0]!)).length).toBeGreaterThan(0)
-      })
-
-      for (const name of names) {
-        it(`agrees on every instruction in ${name}`, () => {
-          const lines = parseObjdump(readObjdump(fixtureDir, name))
-          expect(lines.length).toBeGreaterThan(0)
-          const problems: string[] = []
-          let checked = 0
-          for (const line of lines) {
-            if (ignored.has(line.mnemonic)) continue
-            const where = `0x${line.address.toString(16)} ${line.text}`
-            if (refused.has(line.mnemonic)) {
-              try {
-                check.decode(line.bytes, line.address)
-                problems.push(`${where}: decoded, but should have been refused`)
-              } catch {
-                checked += 1
-              }
-              continue
-            }
-            let decoded: { op: number; length: number }
-            try {
-              decoded = check.decode(line.bytes, line.address)
-            } catch (error) {
-              problems.push(`${where}: ${(error as Error).message}`)
-              continue
-            }
-            checked += 1
-            if (decoded.length !== line.bytes.length) {
-              problems.push(`${where}: length ${decoded.length} != ${line.bytes.length}`)
-            }
-            const accepted = check.aliases?.[line.mnemonic] ?? []
-            const actual = check.name(decoded.op)
-            if (actual !== line.mnemonic && !accepted.includes(decoded.op)) {
-              problems.push(`${where}: decoded as ${actual}`)
-            }
-          }
-          expect(problems.slice(0, 20).join('\n')).toBe('')
-          // A pass that checked nothing would look like a pass that
-          // checked everything.
-          expect(checked).toBeGreaterThan(0)
-        })
-      }
-    })
+  if (options.decodeCheck) {
+    describeDecodeTier(backend.name, fixtureDir, names, options.decodeCheck)
   }
 
   describe(`${backend.name}: lockstep against the reference`, () => {

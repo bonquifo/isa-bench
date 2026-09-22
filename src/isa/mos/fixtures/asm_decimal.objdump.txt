@@ -1,0 +1,120 @@
+
+asm_decimal.bin.elf:	file format elf32-mos
+
+Disassembly of section .text:
+
+00000200 <_start>:
+     200: a9 f0        	lda	#$f0
+     202: 85 00        	sta	$0                      ; 0x0 <__zp_data_size>
+     204: a9 ff        	lda	#$ff
+     206: 85 01        	sta	$1                      ; 0x1 <__rc1>
+     208: 20 0f 02     	jsr	$20f <main>
+
+0000020b <__after_main>:
+     20b: 4c a0 02     	jmp	$2a0 <exit>
+
+0000020e <_fini>:
+     20e: 60           	rts
+
+0000020f <main>:
+     20f: a9 00        	lda	#$0
+     211: 85 20        	sta	$20                     ; 0x20 <lhs>
+     213: a2 10        	ldx	#$10
+
+00000215 <outer>:
+     215: a9 00        	lda	#$0
+     217: 85 21        	sta	$21                     ; 0x21 <rhs>
+     219: a0 10        	ldy	#$10
+
+0000021b <inner>:
+     21b: a9 00        	lda	#$0
+     21d: 85 24        	sta	$24                     ; 0x24 <cin>
+     21f: 18           	clc
+     220: 20 49 02     	jsr	$249 <report>
+     223: a9 01        	lda	#$1
+     225: 85 24        	sta	$24                     ; 0x24 <cin>
+     227: 38           	sec
+     228: 20 49 02     	jsr	$249 <report>
+     22b: a5 21        	lda	$21                     ; 0x21 <rhs>
+     22d: f8           	sed
+     22e: 18           	clc
+     22f: 69 29        	adc	#$29
+     231: d8           	cld
+     232: 85 21        	sta	$21                     ; 0x21 <rhs>
+     234: 88           	dey
+     235: d0 e4        	bne	$21b <inner>
+     237: a5 20        	lda	$20                     ; 0x20 <lhs>
+     239: f8           	sed
+     23a: 18           	clc
+     23b: 69 17        	adc	#$17
+     23d: d8           	cld
+     23e: 85 20        	sta	$20                     ; 0x20 <lhs>
+     240: ca           	dex
+     241: d0 d2        	bne	$215 <outer>
+     243: a9 00        	lda	#$0
+     245: 8d f8 ff     	sta	$fff8                   ; 0xfff8 <__heap_start+0xfd46>
+     248: 60           	rts
+
+00000249 <report>:
+     249: a5 20        	lda	$20                     ; 0x20 <lhs>
+     24b: f8           	sed
+     24c: 65 21        	adc	$21                     ; 0x21 <rhs>
+     24e: 08           	php
+     24f: d8           	cld
+     250: 85 22        	sta	$22                     ; 0x22 <res>
+     252: 68           	pla
+     253: 85 23        	sta	$23                     ; 0x23 <st>
+     255: a5 20        	lda	$20                     ; 0x20 <lhs>
+     257: 20 89 02     	jsr	$289 <hex>
+     25a: a9 2b        	lda	#$2b
+     25c: 20 9c 02     	jsr	$29c <putc>
+     25f: a5 21        	lda	$21                     ; 0x21 <rhs>
+     261: 20 89 02     	jsr	$289 <hex>
+     264: a9 2b        	lda	#$2b
+     266: 20 9c 02     	jsr	$29c <putc>
+     269: a5 24        	lda	$24                     ; 0x24 <cin>
+     26b: 20 94 02     	jsr	$294 <digit>
+     26e: a9 3d        	lda	#$3d
+     270: 20 9c 02     	jsr	$29c <putc>
+     273: a5 22        	lda	$22                     ; 0x22 <res>
+     275: 20 89 02     	jsr	$289 <hex>
+     278: a9 2c        	lda	#$2c
+     27a: 20 9c 02     	jsr	$29c <putc>
+     27d: a5 23        	lda	$23                     ; 0x23 <st>
+     27f: 29 01        	and	#$1
+     281: 20 94 02     	jsr	$294 <digit>
+     284: a9 0a        	lda	#$a
+     286: 4c 9c 02     	jmp	$29c <putc>
+
+00000289 <hex>:
+     289: 48           	pha
+     28a: 4a           	lsr
+     28b: 4a           	lsr
+     28c: 4a           	lsr
+     28d: 4a           	lsr
+     28e: 20 94 02     	jsr	$294 <digit>
+     291: 68           	pla
+     292: 29 0f        	and	#$f
+
+00000294 <digit>:
+     294: c9 0a        	cmp	#$a
+     296: 90 02        	bcc	$29a <under>
+     298: 69 06        	adc	#$6
+
+0000029a <under>:
+     29a: 69 30        	adc	#$30
+
+0000029c <putc>:
+     29c: 8d f9 ff     	sta	$fff9                   ; 0xfff9 <__heap_start+0xfd47>
+     29f: 60           	rts
+
+000002a0 <exit>:
+     2a0: 85 14        	sta	$14                     ; 0x14 <__rc20>
+     2a2: 86 15        	stx	$15                     ; 0x15 <__rc21>
+     2a4: 20 0e 02     	jsr	$20e <_fini>
+     2a7: a6 15        	ldx	$15                     ; 0x15 <__rc21>
+     2a9: a5 14        	lda	$14                     ; 0x14 <__rc20>
+     2ab: 20 ae 02     	jsr	$2ae <_Exit>
+
+000002ae <_Exit>:
+     2ae: 8d f8 ff     	sta	$fff8                   ; 0xfff8 <__heap_start+0xfd46>

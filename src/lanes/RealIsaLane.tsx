@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { HARDWARE_PROFILES, type HardwareProfile, type Metrics } from '../engine/index.ts'
 import { simulateTrace } from '../engine/simulateTrace.ts'
+import { RETURN_SEPARATOR } from '../isa/shipped.ts'
 import { LaneToolbar } from './LaneToolbar.tsx'
 import { REAL_TARGETS } from './realTargets.ts'
 
@@ -12,7 +13,12 @@ interface RealRun {
   stdout: string
   returned: number
   expectedReturn: number
-  matchesExpected: boolean
+  /**
+   * `unreachable` means the app's recorded answer needs a wider `int`
+   * than this target has, so the program cannot produce it and a
+   * mismatch says nothing about the interpreter.
+   */
+  verdict: 'match' | 'differs' | 'unreachable'
 }
 
 /**
@@ -29,6 +35,12 @@ function fnv1a(text: string): number {
     hash = Math.imul(hash, 16777619)
   }
   return hash | 0
+}
+
+/** Whether a value is one this target's C `int` can hold. */
+function fitsInInt(value: number, bits: 16 | 32): boolean {
+  const limit = 2 ** (bits - 1)
+  return value >= -limit && value < limit
 }
 
 function stdoutMatches(text: string, expected: { exact: string } | { fnv1a: number; length: number }): boolean {
@@ -62,10 +74,20 @@ export function RealIsaLane() {
       const { interpreter } = target.backend.load(bytes, { instructionBudget: 200_000_000 })
       const metrics = simulateTrace(interpreter, profile, target.id)
       const decoder = new TextDecoder()
-      const stdout = decoder.decode(interpreter.stdout())
-      // The corpus driver prints the full 32-bit return value to stderr,
-      // because a process exit status carries only eight bits of it.
-      const returned = Number(decoder.decode(interpreter.stderr()))
+      // The corpus driver reports the full 32-bit return value separately
+      // from the program's own output, because a process exit status
+      // carries only eight bits of it. Where the platform has two output
+      // streams that means stderr; where it has one -- the 6502's port is
+      // a single address -- the two share a stream and are framed apart.
+      const raw = decoder.decode(interpreter.stdout())
+      const framed = target.returnChannel === 'framed'
+      const split = framed ? raw.lastIndexOf(RETURN_SEPARATOR) : -1
+      const stdout = split >= 0 ? raw.slice(0, split) : raw
+      const returned = Number(
+        framed
+          ? (split >= 0 ? raw.slice(split + 1) : '')
+          : decoder.decode(interpreter.stderr()),
+      )
       setRun({
         programId: program.id,
         targetLabel: target.label,
@@ -74,9 +96,12 @@ export function RealIsaLane() {
         stdout,
         returned,
         expectedReturn: program.example.expectedReturn,
-        matchesExpected:
-          returned === program.example.expectedReturn &&
-          stdoutMatches(stdout, program.example.expectedStdout),
+        verdict: !fitsInInt(program.example.expectedReturn, target.intBits)
+          ? 'unreachable'
+          : returned === program.example.expectedReturn &&
+              stdoutMatches(stdout, program.example.expectedStdout)
+            ? 'match'
+            : 'differs',
       })
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason))
@@ -104,9 +129,9 @@ export function RealIsaLane() {
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
           <li>
             <strong>Real:</strong> the instructions. These binaries were compiled by clang,
-            linked against musl, and are executed here by an {target.label} interpreter that
-            is verified against <span className="font-mono">{target.oracle}</span>{' '}
-            {target.verified}.
+            linked against {target.libc}, and are executed here by an {target.label}{' '}
+            interpreter that is verified against{' '}
+            <span className="font-mono">{target.oracle}</span> {target.verified}.
           </li>
           <li>
             <strong>Modelled:</strong> every number below except the program&apos;s own output
@@ -206,10 +231,29 @@ export function RealIsaLane() {
                   <dt className="text-white/55">Expected</dt>
                   <dd className="font-mono">{run.expectedReturn}</dd>
                 </dl>
-                <p className={`mt-2 text-sm ${run.matchesExpected ? 'text-emerald-200' : 'text-pink-200'}`}>
-                  {run.matchesExpected
-                    ? 'Matches the answer the app records for this program, which was produced by a different compiler and a different engine.'
-                    : 'Does NOT match the answer the app records for this program.'}
+                <p
+                  className={`mt-2 text-sm ${
+                    run.verdict === 'match'
+                      ? 'text-emerald-200'
+                      : run.verdict === 'unreachable'
+                        ? 'text-amber-200'
+                        : 'text-pink-200'
+                  }`}
+                >
+                  {run.verdict === 'match' &&
+                    'Matches the answer the app records for this program, which was produced by a different compiler and a different engine.'}
+                  {run.verdict === 'differs' &&
+                    'Does NOT match the answer the app records for this program.'}
+                  {run.verdict === 'unreachable' && (
+                    <>
+                      The app&apos;s recorded answer needs a 32-bit <code>int</code>, and{' '}
+                      <code>int</code> is {target.intBits} bits on {target.label}. This
+                      program cannot reach that value, and computes a different one for
+                      that reason rather than because anything is wrong. What verifies it
+                      here is the whole-program comparison against{' '}
+                      <span className="font-mono">{target.oracle}</span>.
+                    </>
+                  )}
                 </p>
               </div>
 
