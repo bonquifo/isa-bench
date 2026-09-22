@@ -79,6 +79,25 @@ stream, not executable machine code or vendor disassembly. The RISC-V-style
 backend includes floating-point pseudo-operations and is not an RV32IM
 implementation.
 
+## Real instruction sets
+
+Two of the eight also have a **real** backend: **RV64GC** and **AArch64**.
+These are interpreters that decode and execute genuine machine code — the same
+precompiled binaries that the differential test suite compares, instruction by
+instruction, against `qemu-riscv64` and `qemu-aarch64`. They live in their own
+lane and are never mixed into the eight-way comparison, because putting a real
+instruction stream in the same table as a lowering would invite reading both as
+equally real.
+
+What is real there is the instruction stream and the program's own output.
+Everything else on that screen — cycles, cache behavior, energy — is the same
+deterministic model the other lanes use. **Nothing anywhere in this app is
+measured on hardware.**
+
+The remaining six targets have pseudo-backends only. An instruction a real
+backend does not implement is refused by name and address; it is never
+executed as an approximation.
+
 ## The two models
 
 **In-order** is the default. A deterministic scoreboarded in-order pipeline with
@@ -154,8 +173,9 @@ npm run verify       # typecheck + lint + test + build
 Source layout:
 
 ```text
-src/engine/   ISA backends, C compiler, IR, timing models, cache/memory
-src/lanes/    The two model lanes and their navigation
+src/engine/   Pseudo-backends, C compiler, IR, timing models, cache/memory
+src/isa/      Real instruction-set interpreters and their differential suite
+src/lanes/    The three lanes and their navigation
 src/ui/       Report rendering, saved runs, exports
 src/index.css All styling
 desktop/      Electron shell

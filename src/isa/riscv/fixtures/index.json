@@ -30,6 +30,10 @@
       "steps": 619
     },
     {
+      "name": "asm_branch",
+      "steps": 298
+    },
+    {
       "name": "asm_divmul",
       "steps": 401
     },
@@ -38,16 +42,12 @@
       "steps": 238
     },
     {
-      "name": "branch",
-      "steps": 748
-    },
-    {
       "name": "call",
       "steps": 17317
     },
     {
       "name": "dot",
-      "steps": 2501
+      "steps": 2499
     },
     {
       "name": "fp_bin",
@@ -56,6 +56,10 @@
     {
       "name": "fp_cvt",
       "steps": 481
+    },
+    {
+      "name": "loops",
+      "steps": 5225
     },
     {
       "name": "mem",

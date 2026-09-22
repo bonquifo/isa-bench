@@ -64,6 +64,7 @@ export const rv64Target: FixtureTarget = {
   triple: 'riscv64-unknown-linux-gnu',
   march: 'rv64gc',
   harnessDir: join(TOOLS, 'rv64'),
+  sharedProgramsDir: join(TOOLS, 'programs'),
   programsDir: join(TOOLS, 'rv64/programs'),
   outDir: join(ROOT, 'src/isa/riscv/fixtures'),
   workDir: join(ROOT, 'node_modules/.tmp/isa-fixtures/rv64'),
@@ -79,7 +80,7 @@ export const rv64Target: FixtureTarget = {
     image: 'isa-bench/codegen-musl:23.1.0-1.2.5',
     sysroot: '/sysroot/riscv64',
     builtins: '/sysroot/builtins/libclang_rt.builtins-riscv64.a',
-    programsDir: join(TOOLS, 'rv64/libc'),
+    programsDir: join(TOOLS, 'libc'),
     // musl's printf supports long double, which is binary128 on RISC-V, so
     // the link reaches for compiler-rt's soft-float helpers whether or not
     // the program itself mentions a long double.

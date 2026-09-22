@@ -26,7 +26,7 @@ export const LANES: ReadonlyArray<{
   },
   {
     id: 'realisa',
-    title: 'Real RV64GC',
+    title: 'Real instruction sets',
     short: 'REAL ISA',
     // Deliberately a different category from the other two. These lanes
     // execute a lowering the engine invents; this one executes instructions a
@@ -34,7 +34,7 @@ export const LANES: ReadonlyArray<{
     // anyone reads a number.
     category: 'EXECUTION + MODEL',
     runLabel: 'RUN MODEL',
-    runHint: 'Executes real RISC-V instructions from a precompiled binary, then times them with the same deterministic model. One target only: it is not a comparison.',
+    runHint: 'Executes the real instructions of one chosen target from a precompiled binary, then times them with the same deterministic model. One target at a time: it is not a comparison.',
   },
 ]
 

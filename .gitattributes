@@ -1,7 +1,7 @@
 # Differential-test fixtures are byte-exact reference output captured from a
 # real oracle. Line-ending translation would corrupt them, and on a Windows
 # checkout it silently changes what the test suite is comparing against.
-src/isa/riscv/fixtures/** -text
+src/isa/*/fixtures/** -text
 
-# The guest harness is assembled by clang; keep it byte-stable too.
-tools/isa/rv64/harness.S -text
+# The guest harnesses are assembled by clang; keep them byte-stable too.
+tools/isa/*/harness.S -text

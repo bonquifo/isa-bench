@@ -93,7 +93,7 @@ Disassembly of section .text:
    1134c: 00012597     	auipc	a1, 0x12
    11350: 00002697     	auipc	a3, 0x2
    11354: e6d50613     	addi	a2, a0, -0x193
-   11358: 1486a503     	lw	a0, 0x148(a3)
+   11358: 1406a503     	lw	a0, 0x140(a3)
    1135c: 0ff00693     	li	a3, 0xff
    11360: 00801737     	lui	a4, 0x801
    11364: 16da         	slli	a3, a3, 0x36
@@ -158,7 +158,7 @@ Disassembly of section .text:
    11432: 0589         	addi	a1, a1, 0x2
    11434: fef599e3     	bne	a1, a5, 0x11426 <kernel+0xde>
    11438: 00001597     	auipc	a1, 0x1
-   1143c: 0585b583     	ld	a1, 0x58(a1)
+   1143c: 0505b583     	ld	a1, 0x50(a1)
    11440: 1502         	slli	a0, a0, 0x20
    11442: 00012717     	auipc	a4, 0x12
    11446: 9101         	srli	a0, a0, 0x20
@@ -166,14 +166,12 @@ Disassembly of section .text:
    1144c: 20c5b823     	sd	a2, 0x210(a1)
    11450: 20d5bc23     	sd	a3, 0x218(a1)
    11454: 22a5b023     	sd	a0, 0x220(a1)
-   11458: e20787d3     	fmv.x.d	a5, fa5
-   1145c: 07e71803     	lh	a6, 0x7e(a4)
-   11460: 0fe71883     	lh	a7, 0xfe(a4)
-   11464: 4f873787     	fld	fa5, 0x4f8(a4)
+   11458: 22f5b427     	fsd	fa5, 0x228(a1)
+   1145c: 07e71783     	lh	a5, 0x7e(a4)
+   11460: 4f873787     	fld	fa5, 0x4f8(a4)
+   11464: 0fe71703     	lh	a4, 0xfe(a4)
    11468: 00c6c533     	xor	a0, a3, a2
-   1146c: 22f5b423     	sd	a5, 0x228(a1)
-   11470: 2305b823     	sd	a6, 0x230(a1)
-   11474: 2315bc23     	sd	a7, 0x238(a1)
-   11478: e2078653     	fmv.x.d	a2, fa5
-   1147c: 24c5b023     	sd	a2, 0x240(a1)
-   11480: 8082         	ret
+   1146c: 22f5b823     	sd	a5, 0x230(a1)
+   11470: 22e5bc23     	sd	a4, 0x238(a1)
+   11474: 24f5b027     	fsd	fa5, 0x240(a1)
+   11478: 8082         	ret

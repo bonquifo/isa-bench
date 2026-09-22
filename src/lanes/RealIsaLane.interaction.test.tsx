@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { AARCH64_FIXTURE_DIR } from '../isa/aarch64/fixtures.node.ts'
 import { RV64_FIXTURE_DIR } from '../isa/riscv/fixtures.node.ts'
 
 /**
@@ -23,6 +24,19 @@ vi.mock('../isa/riscv/shipped.ts', async () => {
     loadShippedElf: async (url: string) => {
       const name = url.slice(url.lastIndexOf('corpus-'))
       return new Uint8Array(readFileSync(join(RV64_FIXTURE_DIR, name)))
+    },
+  }
+})
+
+vi.mock('../isa/aarch64/shipped.ts', async () => {
+  const actual = await vi.importActual<typeof import('../isa/aarch64/shipped.ts')>(
+    '../isa/aarch64/shipped.ts',
+  )
+  return {
+    ...actual,
+    loadShippedElf: async (url: string) => {
+      const name = url.slice(url.lastIndexOf('corpus-'))
+      return new Uint8Array(readFileSync(join(AARCH64_FIXTURE_DIR, name)))
     },
   }
 })
@@ -76,7 +90,10 @@ describe('the real-ISA lane', () => {
     const user = userEvent.setup()
     render(<RealIsaLane />)
     await user.click(screen.getByRole('button', { name: 'RUN MODEL' }))
-    await waitFor(() => expect(screen.getByText('Executed')).toBeInTheDocument(), { timeout: 20_000 })
+    await waitFor(
+      () => expect(screen.getByText('Executed · RV64GC')).toBeInTheDocument(),
+      { timeout: 20_000 },
+    )
 
     expect(screen.getByText('Counted, not modelled.')).toBeInTheDocument()
     expect(screen.getByText(/Deterministic software model/i)).toBeInTheDocument()
@@ -84,6 +101,37 @@ describe('the real-ISA lane', () => {
     expect(screen.getByText('Model cycles')).toBeInTheDocument()
     // The disassembly is read from the real encoding, so it must be present.
     expect(screen.getByText('Decoded instructions')).toBeInTheDocument()
+  }, 30_000)
+
+  it('runs the same program on a second real instruction set', async () => {
+    // The two backends share nothing but the contract: different decoders,
+    // different interpreters, different binaries built by different
+    // compilations. Agreeing on the answer is the point of running both.
+    const user = userEvent.setup()
+    render(<RealIsaLane />)
+    await user.selectOptions(screen.getByLabelText('Instruction set'), 'arm')
+    expect(screen.getByText(/executes real AArch64 instructions/i)).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Program'), 'fib')
+    await user.click(screen.getByRole('button', { name: 'RUN MODEL' }))
+    await waitFor(() => {
+      expect(screen.getByText(/Matches the answer the app records/i)).toBeInTheDocument()
+    }, { timeout: 20_000 })
+    expect(screen.getByText('fib(10) = 55')).toBeInTheDocument()
+    expect(screen.getByText('Executed · AArch64')).toBeInTheDocument()
+  }, 30_000)
+
+  it('does not carry a result across a change of instruction set', async () => {
+    const user = userEvent.setup()
+    render(<RealIsaLane />)
+    await user.click(screen.getByRole('button', { name: 'RUN MODEL' }))
+    await waitFor(
+      () => expect(screen.getByText('Executed · RV64GC')).toBeInTheDocument(),
+      { timeout: 20_000 },
+    )
+    await user.selectOptions(screen.getByLabelText('Instruction set'), 'arm')
+    expect(screen.queryByText('Executed · RV64GC')).not.toBeInTheDocument()
+    expect(screen.queryByText('Executed · AArch64')).not.toBeInTheDocument()
   }, 30_000)
 
   it('reports a failure to load rather than showing nothing', async () => {

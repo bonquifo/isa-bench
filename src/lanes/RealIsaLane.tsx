@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { HARDWARE_PROFILES, IsaId, type HardwareProfile, type Metrics } from '../engine/index.ts'
+import { HARDWARE_PROFILES, type HardwareProfile, type Metrics } from '../engine/index.ts'
 import { simulateTrace } from '../engine/simulateTrace.ts'
-import { rv64Backend } from '../isa/riscv/backend.ts'
-import { loadShippedElf, shippedPrograms, unshippedProgramIds } from '../isa/riscv/shipped.ts'
 import { LaneToolbar } from './LaneToolbar.tsx'
+import { REAL_TARGETS } from './realTargets.ts'
 
 interface RealRun {
   programId: string
+  targetLabel: string
   profileName: string
   metrics: Metrics
   stdout: string
@@ -38,13 +38,16 @@ function stdoutMatches(text: string, expected: { exact: string } | { fnv1a: numb
 }
 
 export function RealIsaLane() {
-  const programs = useMemo(() => shippedPrograms(), [])
-  const missing = useMemo(() => unshippedProgramIds(), [])
-  const [programId, setProgramId] = useState(programs[0]?.id ?? '')
+  const [targetId, setTargetId] = useState(REAL_TARGETS[0]!.id)
+  const [programId, setProgramId] = useState(REAL_TARGETS[0]!.shipped.shippedPrograms()[0]?.id ?? '')
   const [profileId, setProfileId] = useState(HARDWARE_PROFILES[0]!.id)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [run, setRun] = useState<RealRun | null>(null)
+
+  const target = REAL_TARGETS.find((item) => item.id === targetId) ?? REAL_TARGETS[0]!
+  const programs = useMemo(() => target.shipped.shippedPrograms(), [target])
+  const missing = useMemo(() => target.shipped.unshippedProgramIds(), [target])
 
   const program = programs.find((item) => item.id === programId)
   const profile = HARDWARE_PROFILES.find((item) => item.id === profileId) as HardwareProfile
@@ -55,9 +58,9 @@ export function RealIsaLane() {
     setError(null)
     setRun(null)
     try {
-      const bytes = await loadShippedElf(program.url)
-      const { interpreter } = rv64Backend.load(bytes, { instructionBudget: 200_000_000 })
-      const metrics = simulateTrace(interpreter, profile, IsaId.RISCV)
+      const bytes = await target.shipped.loadShippedElf(program.url)
+      const { interpreter } = target.backend.load(bytes, { instructionBudget: 200_000_000 })
+      const metrics = simulateTrace(interpreter, profile, target.id)
       const decoder = new TextDecoder()
       const stdout = decoder.decode(interpreter.stdout())
       // The corpus driver prints the full 32-bit return value to stderr,
@@ -65,6 +68,7 @@ export function RealIsaLane() {
       const returned = Number(decoder.decode(interpreter.stderr()))
       setRun({
         programId: program.id,
+        targetLabel: target.label,
         profileName: profile.name,
         metrics,
         stdout,
@@ -84,7 +88,7 @@ export function RealIsaLane() {
   return (
     <div>
       <LaneToolbar
-        title="Real RV64GC"
+        title={`Real ${target.label}`}
         kicker="EXECUTION + MODEL"
         running={running}
         disabled={!program}
@@ -94,14 +98,15 @@ export function RealIsaLane() {
 
       <div className="brief brief-warn mt-4" role="note">
         <p className="brief-lead">
-          This lane executes real RISC-V instructions. It does not compare targets.
+          This lane executes real {target.instructions} instructions. It does not compare
+          targets.
         </p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
           <li>
             <strong>Real:</strong> the instructions. These binaries were compiled by clang,
-            linked against musl, and are executed here by an RV64GC interpreter that is
-            verified against <span className="font-mono">qemu-riscv64</span> register by
-            register, before every instruction.
+            linked against musl, and are executed here by an {target.label} interpreter that
+            is verified against <span className="font-mono">{target.oracle}</span>{' '}
+            {target.verified}.
           </li>
           <li>
             <strong>Modelled:</strong> every number below except the program&apos;s own output
@@ -109,10 +114,10 @@ export function RealIsaLane() {
             deterministic model the other lanes use. Nothing here is measured on hardware.
           </li>
           <li>
-            <strong>Not comparable to the other lanes.</strong> The seven other targets are
+            <strong>Not comparable to the other lanes.</strong> The remaining targets are
             pseudo-backends driven by the engine&apos;s own lowering. Putting a real
             instruction stream beside a lowering in one table would invite reading them as
-            equivalent, so this lane runs one target and says so.
+            equivalent, so this lane runs one target at a time and says which.
           </li>
           <li>
             <strong>Fixed programs.</strong> The app cannot compile at runtime, so these are
@@ -124,6 +129,25 @@ export function RealIsaLane() {
       <div className="lane-grid mt-4">
         <aside className="hud-panel space-y-4 p-4">
           <span className="category-label">EXECUTION</span>
+          <label className="block">
+            <span className="hud-kicker">Instruction set</span>
+            <select
+              className="hud-input mt-1"
+              aria-label="Instruction set"
+              value={targetId}
+              onChange={(event) => {
+                setTargetId(event.target.value as typeof targetId)
+                // A result belongs to the target that produced it, and every
+                // target ships the same corpus, so the program stays put.
+                setRun(null)
+                setError(null)
+              }}
+            >
+              {REAL_TARGETS.map((item) => (
+                <option key={item.id} value={item.id}>{item.label}</option>
+              ))}
+            </select>
+          </label>
           <label className="block">
             <span className="hud-kicker">Program</span>
             <select
@@ -165,7 +189,9 @@ export function RealIsaLane() {
           )}
           {!run && !error && (
             <div className="hud-panel p-4 font-mono text-xs" aria-live="polite" aria-busy={running}>
-              {running ? 'EXECUTING · real RV64GC instructions' : 'IDLE · choose a program and run'}
+              {running
+                ? `EXECUTING · real ${target.label} instructions`
+                : 'IDLE · choose a program and run'}
             </div>
           )}
 
@@ -188,7 +214,7 @@ export function RealIsaLane() {
               </div>
 
               <div className="hud-panel p-4">
-                <h3 className="hud-title">Executed</h3>
+                <h3 className="hud-title">Executed · {run.targetLabel}</h3>
                 <p className="text-sm text-white/55">Counted, not modelled.</p>
                 <dl className="mt-2 grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
                   <Figure label="Instructions" value={count(run.metrics.instructions)} />

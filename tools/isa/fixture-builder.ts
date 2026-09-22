@@ -40,7 +40,13 @@ export interface FixtureTarget {
   extraFlags?: string[]
   /** Directory holding harness.h, harness.c and harness.S. */
   harnessDir: string
-  /** Directory of hand-written programs, one per .c file. */
+  /**
+   * Programs every target compiles: ordinary C that prescribes no encoding.
+   * What each target emits for them is the difference being compared, so the
+   * source must be the same one.
+   */
+  sharedProgramsDir: string
+  /** Programs written for this architecture, naming its instructions. */
   programsDir: string
   /** Where the four artefacts per program are written. */
   outDir: string
@@ -97,7 +103,20 @@ export interface LibcTier {
   extra?: { name: string; source: string; flags: string[] }[]
 }
 
-const SHARED_FLAGS = ['-O2', '-ffreestanding', '-fno-builtin', '-nostdlib', '-static']
+/**
+ * Flags for the architectural tier.
+ *
+ * Auto-vectorisation is off here and only here. These programs exist to pin
+ * down named instructions, and a compiler that turns a run of stores into a
+ * vector one is substituting its own choice for the thing under test. The
+ * corpus and libc tiers keep plain -O2, so whatever a compiler really emits
+ * for ordinary code -- vector instructions included -- still has to be
+ * implemented and is still compared against the reference.
+ */
+const SHARED_FLAGS = [
+  '-O2', '-fno-vectorize', '-fno-slp-vectorize',
+  '-ffreestanding', '-fno-builtin', '-nostdlib', '-static',
+]
 
 /** Docker on Windows needs a drive-letter path, not the MSYS translation. */
 function mountPath(path: string): string {
@@ -238,14 +257,19 @@ export function buildFixtures(target: FixtureTarget): void {
   const work = target.workDir
   mkdirSync(work, { recursive: true })
 
-  const names = readdirSync(target.programsDir).filter((f) => f.endsWith('.c')).sort()
-  if (names.length === 0) throw new Error(`no programs in ${target.programsDir}`)
+  const sources: { name: string; path: string }[] = []
+  for (const [dir, prefix] of [[target.sharedProgramsDir, ''], [target.programsDir, '']] as const) {
+    for (const file of readdirSync(dir).filter((f) => f.endsWith('.c')).sort()) {
+      sources.push({ name: prefix + file.replace(/\.c$/, ''), path: join(dir, file) })
+    }
+  }
+  if (sources.length === 0) throw new Error(`no programs for ${target.id}`)
+  sources.sort((a, b) => a.name.localeCompare(b.name))
 
   const index: { name: string; steps: number; seed?: number }[] = []
-  for (const file of names) {
-    const name = file.replace(/\.c$/, '')
-    const steps = buildOne(target, name, readFileSync(join(target.programsDir, file), 'utf8'), work)
-    index.push({ name, steps })
+  for (const source of sources) {
+    const steps = buildOne(target, source.name, readFileSync(source.path, 'utf8'), work)
+    index.push({ name: source.name, steps })
   }
 
   for (const seed of target.randomSeeds) {

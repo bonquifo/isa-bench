@@ -8,10 +8,12 @@
  * not as part of the test suite, which reads what is already captured.
  */
 import { buildFixtures, type FixtureTarget } from './fixture-builder.ts'
+import { aarch64Target } from './targets/aarch64.ts'
 import { rv64Target } from './targets/rv64.ts'
 
 const TARGETS: Record<string, FixtureTarget> = {
   rv64: rv64Target,
+  aarch64: aarch64Target,
 }
 
 const requested = process.argv[2]

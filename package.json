@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:deep": "vitest run --config vitest.deep.config.ts",
-    "coverage": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text --coverage.include='src/**' --coverage.exclude='src/**/*.test.*' --coverage.exclude='src/main.tsx' --coverage.exclude='src/**/*.worker.ts' --coverage.exclude='src/isa/riscv/fixtures/**' --testTimeout=60000",
+    "coverage": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text --coverage.include='src/**' --coverage.exclude='src/**/*.test.*' --coverage.exclude='src/main.tsx' --coverage.exclude='src/**/*.worker.ts' --coverage.exclude='src/isa/*/fixtures/**' --testTimeout=60000",
     "verify": "npm run typecheck && npm run lint && npm test && npm run build",
     "desktop:compile": "tsc -b desktop/tsconfig.json --pretty false",
     "desktop:dev": "npm run desktop:compile && concurrently -k -n web,desktop \"vite\" \"electron . --dev\"",

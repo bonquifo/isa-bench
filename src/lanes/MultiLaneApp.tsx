@@ -66,7 +66,7 @@ export default function MultiLaneApp() {
           {lane === item.id && item.id === 'inorder' && <ControlledInOrderApp />}
           {lane === item.id && item.id === 'ooo' && <OoOLane />}
           {lane === item.id && item.id === 'realisa' && (
-            <Suspense fallback={<div className="hud-panel p-4 font-mono text-xs">LOADING · real RV64GC binaries</div>}>
+            <Suspense fallback={<div className="hud-panel p-4 font-mono text-xs">LOADING · real instruction sets</div>}>
               <RealIsaLane />
             </Suspense>
           )}

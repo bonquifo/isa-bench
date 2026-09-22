@@ -1,0 +1,218 @@
+{
+  "generator": "tools/isa/fixture-builder.ts",
+  "codegen": "isa-bench/codegen-min:23.1.0",
+  "oracle": "isa-sim/qemu-user:11.1.0",
+  "target": "aarch64-unknown-linux-gnu",
+  "march": "armv8-a",
+  "flags": "-O2 -fno-vectorize -fno-slp-vectorize -ffreestanding -fno-builtin -nostdlib -static",
+  "randomGenerator": "tools/isa/aarch64/random.ts",
+  "randomSeeds": [
+    1,
+    2,
+    3,
+    5,
+    8,
+    13,
+    21,
+    34,
+    55,
+    89,
+    144,
+    233
+  ],
+  "fixtures": [
+    {
+      "name": "alu",
+      "steps": 156
+    },
+    {
+      "name": "asm_alu",
+      "steps": 636
+    },
+    {
+      "name": "asm_atomic",
+      "steps": 166
+    },
+    {
+      "name": "asm_branch",
+      "steps": 935
+    },
+    {
+      "name": "asm_fp",
+      "steps": 1031
+    },
+    {
+      "name": "asm_mem",
+      "steps": 810
+    },
+    {
+      "name": "asm_simd",
+      "steps": 5488
+    },
+    {
+      "name": "call",
+      "steps": 14053
+    },
+    {
+      "name": "dot",
+      "steps": 2421
+    },
+    {
+      "name": "loops",
+      "steps": 6034
+    },
+    {
+      "name": "random-1",
+      "steps": 2611,
+      "seed": 1
+    },
+    {
+      "name": "random-2",
+      "steps": 2635,
+      "seed": 2
+    },
+    {
+      "name": "random-3",
+      "steps": 2597,
+      "seed": 3
+    },
+    {
+      "name": "random-5",
+      "steps": 2594,
+      "seed": 5
+    },
+    {
+      "name": "random-8",
+      "steps": 2584,
+      "seed": 8
+    },
+    {
+      "name": "random-13",
+      "steps": 2614,
+      "seed": 13
+    },
+    {
+      "name": "random-21",
+      "steps": 2592,
+      "seed": 21
+    },
+    {
+      "name": "random-34",
+      "steps": 2622,
+      "seed": 34
+    },
+    {
+      "name": "random-55",
+      "steps": 2592,
+      "seed": 55
+    },
+    {
+      "name": "random-89",
+      "steps": 2606,
+      "seed": 89
+    },
+    {
+      "name": "random-144",
+      "steps": 2574,
+      "seed": 144
+    },
+    {
+      "name": "random-233",
+      "steps": 2611,
+      "seed": 233
+    }
+  ],
+  "libcImage": "isa-bench/codegen-musl:23.1.0-1.2.5",
+  "libcFixtures": [
+    {
+      "name": "libc-alloc",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "libc-mathfmt",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "libc-stdio",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "libc-structs",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "corpus-fib",
+      "exitCode": 0,
+      "stderr": "55"
+    },
+    {
+      "name": "corpus-hello",
+      "exitCode": 0,
+      "stderr": "0"
+    },
+    {
+      "name": "corpus-sum",
+      "exitCode": 0,
+      "stderr": "820"
+    },
+    {
+      "name": "corpus-ptr",
+      "exitCode": 0,
+      "stderr": "30"
+    },
+    {
+      "name": "corpus-struct",
+      "exitCode": 0,
+      "stderr": "16"
+    },
+    {
+      "name": "corpus-mandelbrot",
+      "exitCode": 0,
+      "stderr": "-322095334"
+    },
+    {
+      "name": "corpus-wolf",
+      "exitCode": 0,
+      "stderr": "1968457438"
+    },
+    {
+      "name": "corpus-life",
+      "exitCode": 0,
+      "stderr": "212766499"
+    },
+    {
+      "name": "corpus-cube",
+      "exitCode": 0,
+      "stderr": "1274204170"
+    },
+    {
+      "name": "corpus-fire",
+      "exitCode": 0,
+      "stderr": "-1938390215"
+    },
+    {
+      "name": "corpus-nbody",
+      "exitCode": 0,
+      "stderr": "-975672083"
+    },
+    {
+      "name": "corpus-queens",
+      "exitCode": 0,
+      "stderr": "92"
+    },
+    {
+      "name": "corpus-fft",
+      "exitCode": 0,
+      "stderr": "476065557"
+    },
+    {
+      "name": "corpus-pi",
+      "exitCode": 0,
+      "stderr": "314168"
+    }
+  ]
+}

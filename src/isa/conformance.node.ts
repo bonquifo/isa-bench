@@ -66,6 +66,17 @@ export function describeIsaConformance(options: ConformanceOptions): void {
         const chunk = createRetireChunk(1)
         let steps = 0
         let state: RunState = RunState.MORE
+        // A divergence is almost never caused by the instruction it is
+        // noticed at: a register is wrong because something earlier wrote it
+        // wrongly. Keeping the recent history turns "these two numbers
+        // differ" into a short list containing the culprit.
+        const recent: string[] = []
+        const remember = (pc: bigint): void => {
+          recent.push(`    0x${pc.toString(16)}  ${image.at(pc).mnemonic}`)
+          if (recent.length > 12) recent.shift()
+        }
+        const history = (): string =>
+          ['', '  last executed:', ...recent].join('\n')
 
         for (const expected of readLockstep(fixtureDir, name, backend.gprCount)) {
           const pc = expected.pc
@@ -73,7 +84,7 @@ export function describeIsaConformance(options: ConformanceOptions): void {
           if (actualPc !== pc) {
             expect.fail(
               `step ${steps}: pc is 0x${actualPc.toString(16)}, reference says ` +
-              `0x${pc.toString(16)}`,
+              `0x${pc.toString(16)}${history()}`,
             )
           }
           for (let r = 0; r < backend.gprCount; r++) {
@@ -82,10 +93,11 @@ export function describeIsaConformance(options: ConformanceOptions): void {
               expect.fail(
                 `step ${steps} at 0x${pc.toString(16)} (${image.at(pc).mnemonic}): ` +
                 `${backend.naming.name(r)} is ${hex64(mine)}, reference says ` +
-                `${hex64(expected.x[r]!)}`,
+                `${hex64(expected.x[r]!)}${history()}`,
               )
             }
           }
+          remember(pc)
           state = interpreter.run(chunk)
           steps += 1
         }

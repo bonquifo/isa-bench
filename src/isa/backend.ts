@@ -6,6 +6,9 @@
  * to be needed to run one instruction set end to end and verify it against a
  * reference; nothing is speculative.
  *
+ * AArch64 was then built against it without changing it, which is the only
+ * evidence that freezing early was right rather than lucky.
+ *
  * The division of labour that this encodes:
  *
  *   per ISA     decode, semantics, the register file and its numbering, and

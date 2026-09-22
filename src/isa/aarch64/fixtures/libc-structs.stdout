@@ -1,0 +1,6 @@
+point 1.750 1.500
+packed 5 -7 1000000 size=4
+union c002000000000000
+varargs 12
+depth 3 head 1
+bool 1 short 25536 char 56

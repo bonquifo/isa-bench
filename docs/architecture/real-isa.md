@@ -1,13 +1,19 @@
 # Real instruction-set semantics
 
-Written for engineers continuing this work on the remaining seven targets.
+Written for engineers continuing this work on the remaining six targets.
 
-This describes the RV64GC interpreter that replaces the pseudo-backend lowering
-for RISC-V, the interface it presents to the timing model, and what the other
-seven instruction sets have to implement. RV64GC is complete: real C, compiled
-by clang and linked against a real libc, executes against a real address space
-and matches `qemu-riscv64` byte for byte -- on architectural state for
-freestanding programs, and on output for whole programs.
+This describes the interpreters that replace the pseudo-backend lowering, the
+interface they present to the timing model, and what the remaining instruction
+sets have to implement.
+
+**Two are complete: RV64GC and AArch64.** For each, real C compiled by clang
+and linked against a real libc executes against a real address space and
+matches its qemu on architectural state for freestanding programs and on
+output for whole programs. The second one is the evidence that the split in
+section 1 was worth making: AArch64 needed a decoder, a semantics file and a
+register map, and reused the address space, the ELF loader, the IEEE-754
+layer, the Linux process emulation, the timing model, the fixture builder and
+the conformance suite without changing any of them.
 
 ---
 
@@ -180,9 +186,20 @@ Four tiers, all running in `npm test` on any machine, with no Docker.
 | Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
 | The app's corpus | the same, for the fourteen C programs the app ships | qemu **and** the answers the app already records |
 
-40 fixtures: ten hand-written, twelve randomised, four written against musl,
-and the app's fourteen. Roughly 24,000 instructions compared register by
-register, plus eighteen whole programs compared on output.
+Per target: 40 fixtures for RV64 and 40 for AArch64 — hand-written,
+randomised, written against musl, and the app's fourteen. Together, roughly
+60,000 instructions compared register by register and thirty-six whole
+programs compared on output.
+
+The AArch64 tiers are the same suite, inherited rather than rewritten:
+`describeIsaConformance` takes a backend and a fixture directory, so a target
+cannot accidentally be held to a weaker standard than the one before it. Two
+differences are architectural rather than a choice. AArch64's condition flags
+appear in qemu's trace, so NZCV is compared **before every instruction** and
+not only at the end — the strongest per-step check either target gets, since
+RISC-V's `fcsr` is invisible until the guest reads it. And the final-state
+dump covers all 32 vector registers at their full 128 bits, because the guest
+writes them out itself.
 
 **The last tier has the most independent oracle of the four.** Every other
 comparison is against qemu, which is a different implementation of the same
@@ -214,7 +231,7 @@ exits with, which is the property anything downstream depends on.
 ### Why the oracle output is committed
 
 Fixtures are generated against the real oracle by
-[tools/isa/build-rv64-fixtures.ts](../../tools/isa/build-rv64-fixtures.ts) and
+[tools/isa/build-fixtures.ts](../../tools/isa/build-fixtures.ts) and
 then checked in. Differential coverage therefore runs in CI and on machines
 with no Docker. *Regenerating* needs the oracle; trusting the result does not.
 `src/isa/riscv/fixtures/index.json` records the toolchain image, the oracle
@@ -300,7 +317,7 @@ for them every iteration.
 
 ---
 
-## 5. What the remaining seven must implement
+## 5. What the remaining six must implement
 
 Adding an instruction set is now a bounded act: implement
 [`IsaBackend`](../../src/isa/backend.ts), register it in
@@ -322,7 +339,6 @@ takes endianness as a constructor argument for exactly this reason.
 
 | Target | The structural surprise | Notes |
 | --- | --- | --- |
-| AArch64 | condition flags (NZCV) and conditional select | Flags are one more architectural resource id. Regular encoding; no `decompress` step. |
 | x86-64 | variable-length decode, flags on nearly everything | Scope to what clang emits at `-O2` — **measured: 76 distinct mnemonics** for the existing corpus — and make the unimplemented set loud. |
 | MIPS32 | branch delay slots | The instruction after a branch retires *before* the branch takes effect. `nextPc` in the trace already carries this; the timing model needs no change. |
 | POWER | condition-register fields | **Measured: 120 distinct mnemonics**, the widest of the six. Eight CR fields become eight resource ids. |
@@ -336,6 +352,52 @@ linked musl binaries, which is the whole of musl and not only the parts a
 program reaches; the interpreter that covers it is about a thousand lines of
 semantics. "Real ISAs have hundreds of instructions" is true of the
 architectures and not of what a compiler emits for this corpus.
+
+### AArch64, as built
+
+The prediction in the table above was that the condition flags would be the
+structural surprise. They were the *expected* difficulty and were dealt with
+as predicted: NZCV is one more architectural resource id, read by the
+conditional selects and the conditional compares and written by the
+flag-setting forms, so the existing hazard model handles it with no change.
+
+Three things were harder than the flags, and all three are decode rather than
+semantics:
+
+- **Bitfield masks.** `ubfm` and its aliases are defined by `DecodeBitMasks`,
+  which produces two masks from `immN:immr:imms`. An implementation that masks
+  by the register width instead is right for the common aliases and wrong for
+  the general form.
+- **Which register 31 is.** It is the zero register in the shifted-register
+  forms and the stack pointer in the immediate and extended ones, and which
+  it is depends on the operand position as well as the instruction.
+- **Advanced SIMD.** Not optional on this architecture: the ABI assumes it, so
+  clang emits vector instructions for scalar-looking C and musl's string and
+  memory routines are written in them. Sixteen forms were needed to run the
+  corpus at all, listed by statically decoding every word of `.text` in all
+  eighteen binaries and collecting what the decoder refused — which bounds
+  the work up front rather than discovering it one stopped program at a time.
+  A libc's `memset` also reaches past the instruction set entirely and asks
+  the hardware to zero a cache line, which means `DCZID_EL0` and `dc zva`.
+
+The block size `DCZID_EL0` reports is implementation-defined, and the
+temptation is to pick a convenient one. That would be wrong in a way that
+would not show up as a wrong answer: a `memset` clears the block size it was
+told about, so a different size is a different number of iterations and the
+two sides of the differential test stop comparing the same execution. The
+fixture reads the register and records what it said; the reference says 512
+bytes, so that is what the interpreter reports and what `dc zva` clears.
+
+Because the corpus tier is compared on output rather than on state, a vector
+instruction it happens not to depend on could be wrong and still pass. So the
+SIMD subset has an architectural fixture of its own,
+[asm_simd.c](../../tools/isa/aarch64/programs/asm_simd.c), whose inputs hold a
+different value in every lane at every element size — which is what makes a
+wrong lane index, a wrong element size or the wrong half of a widening
+operation show up rather than merely be possible. It found a real one
+immediately: `xtn` was truncating each lane to the *source* element width
+instead of the narrowed one, so the packed lanes overlapped. Every corpus
+program still printed the right answer with that bug in place.
 
 ### What an AArch64 target descriptor needs, measured
 
@@ -412,15 +474,21 @@ claims FP support needs the same.
 
 ## 6. How it reaches the app
 
-RV64 appears as its own lane, **Real RV64GC**, beside the two modelling
-lanes. It is deliberately not a ninth column in the eight-way comparison.
+The real backends appear in a lane of their own, beside the two modelling
+lanes, with an instruction-set selector at the top of it. They are
+deliberately not extra columns in the eight-way comparison.
 
-Putting one real instruction stream next to seven pseudo-backends in a single
-table would invite reading all eight as equally real, and the project's
-honesty guarantees are the thing that would pay for that. The lane therefore
-runs one target, says at the top what is executed and what is modelled, and
-states that it is not comparable to the other lanes. Existing RISC-V numbers,
-saved runs and exported reports are untouched.
+Putting a real instruction stream next to a pseudo-backend in a single table
+would invite reading both as equally real, and the project's honesty
+guarantees are the thing that would pay for that. The lane therefore runs one
+target at a time, says at the top which one and what about it is executed
+versus modelled, and states that it is not comparable to the other lanes.
+Existing numbers, saved runs and exported reports are untouched.
+
+The claims the lane makes about a target are data rather than prose:
+[realTargets.ts](../../src/lanes/realTargets.ts) carries the oracle's name and
+how far the comparison against it goes, so a target cannot be added to the
+menu without saying what verified it.
 
 Three consequences worth knowing:
 
@@ -432,15 +500,16 @@ Three consequences worth knowing:
   rebuild of them. A test asserts that.
 - **They are inlined, and the lane is code-split.** The packaged app loads
   over `file://`, where fetching a sibling file is blocked, so the binaries
-  become `data:` URIs in the bundle. That is 538 KB, which would be dead
-  weight for anyone who never opens the lane, so the lane is a lazy chunk and
-  the main bundle is unchanged at 657 KB.
+  become `data:` URIs in the bundle. Two targets' worth is 1.09 MB, which
+  would be dead weight for anyone who never opens the lane, so the lane is a
+  lazy chunk and the main bundle is unchanged at 657 KB.
 
 ## 7. Running it
 
 ```
-npm test                                      # includes the full differential suite
-npx vite-node tools/isa/build-fixtures.ts rv64  # regenerate fixtures; needs Docker
+npm test                                         # includes the full differential suite
+npx vite-node tools/isa/build-fixtures.ts rv64     # regenerate fixtures; needs Docker
+npx vite-node tools/isa/build-fixtures.ts aarch64
 ```
 
 Regeneration requires `isa-bench/codegen-min:23.1.0`,
