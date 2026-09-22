@@ -2,14 +2,19 @@
  * Generic driver for capturing differential fixtures from a real oracle.
  *
  * Everything that differs between architectures is in a FixtureTarget: the
- * compiler triple, which qemu binary to run, where the guest harness lives,
+ * compiler triple, how to run the reference, where the guest harness lives,
  * how big its state dump is, and — the one that is easy to overlook — how to
- * parse that architecture's register dump out of qemu's log. RISC-V prints
- * ` pc  <hex>` followed by `x0/zero 0 x1/ra 0 ...`; AArch64 prints
+ * parse that architecture's register dump out of the reference's log. RISC-V
+ * prints ` pc  <hex>` followed by `x0/zero 0 x1/ra 0 ...`; AArch64 prints
  * `PC=<16 hex> X00=<16 hex> ...` with the stack pointer separate from the
  * numbered registers and PSTATE on the end. One parser cannot serve both, and
  * pretending otherwise would produce a trace that looked plausible and
  * compared nothing.
+ *
+ * The reference itself is not assumed to be qemu either. x86-64 is compared
+ * against the processor the tests are running on, single-stepped through
+ * ptrace, so an oracle is a pair of shell commands and the image to run them
+ * in rather than a path to an emulator.
  *
  * What is *not* per-target: the four artefacts, the delta encoding, the
  * two-run capture, and the index. Those are the shared contract that
@@ -25,15 +30,60 @@ export interface LockstepStep {
   x: bigint[]
 }
 
+/**
+ * How to obtain reference behaviour for a target.
+ *
+ * Two commands rather than one binary, because running a program and
+ * recording what every instruction did are separate operations with
+ * separate requirements, and for one target they are not even the same
+ * tool.
+ */
+export interface Oracle {
+  /** Docker image the commands run in. */
+  image: string
+  /** Extra `docker run` arguments this oracle needs, if any. */
+  dockerArgs?: string[]
+  /** Command that runs the guest, with nothing redirected. */
+  run(elf: string): string
+  /** Command that runs it and writes a register log to `log`. */
+  trace(elf: string, log: string): string
+}
+
+/** An oracle that is a qemu linux-user emulator at a known path. */
+export function qemuOracle(image: string, qemu: string): Oracle {
+  return {
+    image,
+    run: (elf) => `${qemu} ${elf}`,
+    trace: (elf, log) =>
+      `${qemu} -one-insn-per-tb -d in_asm,cpu,nochain -D ${log} ${elf} > /dev/null`,
+  }
+}
+
+/**
+ * An oracle that is the host processor, single-stepped through ptrace.
+ *
+ * Turning off address-space randomisation needs a system call Docker's
+ * default seccomp profile rejects, so the container is run without it. That
+ * is a real relaxation, and it is confined to fixture generation: the
+ * committed output is what the test suite reads, and nothing about running
+ * the tests needs Docker at all.
+ */
+export function nativeOracle(image: string): Oracle {
+  return {
+    image,
+    dockerArgs: ['--security-opt', 'seccomp=unconfined'],
+    run: (elf) => elf,
+    trace: (elf, log) => `isa-trace ${log} ${elf} > /dev/null`,
+  }
+}
+
 export interface FixtureTarget {
   /** Short name, used for messages only. */
   id: string
   /** Docker image providing clang, lld and llvm-objdump. */
   codegen: string
-  /** Docker image providing the reference emulator. */
-  oracle: string
-  /** Path to the emulator inside that image. */
-  qemu: string
+  /** How to obtain reference behaviour. */
+  oracle: Oracle
   triple: string
   march: string
   /** Extra clang arguments beyond the shared freestanding set. */
@@ -123,11 +173,17 @@ function mountPath(path: string): string {
   return resolve(path).replace(/\\/g, '/')
 }
 
-function run(image: string, workdir: string, argv: string[]): Buffer {
+function run(
+  image: string,
+  workdir: string,
+  argv: string[],
+  dockerArgs: readonly string[] = [],
+): Buffer {
   return execFileSync(
     'docker',
     [
       'run', '--rm', '--network', 'none',
+      ...dockerArgs,
       '-v', `${mountPath(workdir)}:/work`,
       '--entrypoint', argv[0]!,
       image,
@@ -139,6 +195,11 @@ function run(image: string, workdir: string, argv: string[]): Buffer {
 
 function sh(image: string, workdir: string, script: string): string {
   return run(image, workdir, ['sh', '-c', script]).toString('utf8')
+}
+
+/** Runs a command in the oracle's image, with whatever it needs to work. */
+function oracleSh(oracle: Oracle, workdir: string, script: string): string {
+  return run(oracle.image, workdir, ['sh', '-c', script], oracle.dockerArgs ?? []).toString('utf8')
 }
 
 /** Step 0 lists every register; later steps list only what changed. */
@@ -178,13 +239,8 @@ function buildOne(target: FixtureTarget, name: string, source: string, work: str
 
   // Two runs: one clean, so the state dump on fd 1 is not interleaved with
   // anything, and one logging the lockstep trace to a file.
-  sh(target.oracle, work, `${target.qemu} /work/out.elf > /work/final.bin`)
-  sh(
-    target.oracle,
-    work,
-    `${target.qemu} -one-insn-per-tb -d in_asm,cpu,nochain ` +
-    '-D /work/trace.log /work/out.elf > /dev/null',
-  )
+  oracleSh(target.oracle, work, `${target.oracle.run('/work/out.elf')} > /work/final.bin`)
+  oracleSh(target.oracle, work, target.oracle.trace('/work/out.elf', '/work/trace.log'))
 
   const elf = readFileSync(join(work, 'out.elf'))
   const final = readFileSync(join(work, 'final.bin'))
@@ -224,10 +280,10 @@ function buildLibcOne(
     `-o /work/out.elf ${s}/lib/crt1.o ${s}/lib/crti.o /work/prog.c ` +
     `-L${s}/lib -lc ${tier.libs.join(' ')} ${tier.builtins} ${s}/lib/crtn.o`,
   ])
-  sh(
+  oracleSh(
     target.oracle,
     work,
-    `${target.qemu} /work/out.elf > /work/out.stdout 2>/work/out.stderr; ` +
+    `${target.oracle.run('/work/out.elf')} > /work/out.stdout 2>/work/out.stderr; ` +
     'echo $? > /work/out.exit',
   )
 
@@ -302,7 +358,7 @@ export function buildFixtures(target: FixtureTarget): void {
       {
         generator: 'tools/isa/fixture-builder.ts',
         codegen: target.codegen,
-        oracle: target.oracle,
+        oracle: target.oracle.image,
         target: target.triple,
         march: target.march,
         flags: SHARED_FLAGS.join(' '),

@@ -47,6 +47,13 @@ function seed(options: ConformanceOptions, name: string) {
 }
 
 /** Registers the shared suite for one backend. Call from a *.test.ts file. */
+/** Bits set, for bounding what a backend excludes from comparison. */
+function popcount(value: bigint): number {
+  let n = 0
+  for (let v = value; v !== 0n; v >>= 1n) if ((v & 1n) === 1n) n += 1
+  return n
+}
+
 export function describeIsaConformance(options: ConformanceOptions): void {
   const { backend, fixtureDir } = options
   const index = readIndex(fixtureDir)
@@ -65,6 +72,11 @@ export function describeIsaConformance(options: ConformanceOptions): void {
 
         const chunk = createRetireChunk(1)
         let steps = 0
+        // Which bits a backend declined to claim, anywhere in the run.
+        // Collected rather than merely allowed, so a backend cannot widen
+        // what it excuses itself from without it showing.
+        let excluded = 0n
+        let excludedRegisters = 0
         let state: RunState = RunState.MORE
         // A divergence is almost never caused by the instruction it is
         // noticed at: a register is wrong because something earlier wrote it
@@ -89,11 +101,23 @@ export function describeIsaConformance(options: ConformanceOptions): void {
           }
           for (let r = 0; r < backend.gprCount; r++) {
             const mine = BigInt.asUintN(64, interpreter.gpr(r))
-            if (mine !== expected.x[r]) {
+            // Bits the architecture leaves undefined after the instruction
+            // that last wrote them are not compared, because the reference
+            // is an implementation and an implementation puts something
+            // there regardless. Every other bit is compared exactly.
+            const unspecified = interpreter.undefinedBits?.(r) ?? 0n
+            if (unspecified !== 0n) {
+              excluded |= unspecified
+              excludedRegisters |= 1 << r
+            }
+            if (((mine ^ expected.x[r]!) & ~unspecified) !== 0n) {
+              const note = unspecified === 0n
+                ? ''
+                : ` (ignoring ${hex64(unspecified)}, undefined here)`
               expect.fail(
                 `step ${steps} at 0x${pc.toString(16)} (${image.at(pc).mnemonic}): ` +
                 `${backend.naming.name(r)} is ${hex64(mine)}, reference says ` +
-                `${hex64(expected.x[r]!)}${history()}`,
+                `${hex64(expected.x[r]!)}${note}${history()}`,
               )
             }
           }
@@ -105,6 +129,13 @@ export function describeIsaConformance(options: ConformanceOptions): void {
         expect(steps).toBe(index.fixtures.find((f) => f.name === name)?.steps)
         expect(state).toBe(RunState.EXITED)
         expect(interpreter.exitCode).toBe(0)
+        // Whatever a backend declines to claim has to stay small and stay
+        // where it said it would be. Six bits of one status register is
+        // the architecture's list of undefined flags; anything wider, or
+        // anywhere else, means the comparison is checking less than it
+        // looks like it is.
+        expect(popcount(excluded)).toBeLessThanOrEqual(6)
+        expect(popcount(BigInt(excludedRegisters))).toBeLessThanOrEqual(1)
       })
     }
   })

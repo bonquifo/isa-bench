@@ -59,6 +59,50 @@ export const Sys = {
   RSEQ: 293,
 } as const
 
+/**
+ * x86-64 syscall numbers, mapped onto the asm-generic ones above.
+ *
+ * x86-64 predates the generic numbering and keeps its own, so the same call
+ * has a different number there. Translating at the boundary rather than
+ * branching inside each implementation keeps one copy of what `write`
+ * means, which is the part worth being sure about.
+ *
+ * A number missing from this table is refused by name rather than guessed
+ * at, the same as any other unimplemented call.
+ */
+export const X86_SYSCALL_NUMBERS: Readonly<Record<number, number>> = {
+  0: Sys.READ,
+  1: Sys.WRITE,
+  3: Sys.CLOSE,
+  8: Sys.LSEEK,
+  9: Sys.MMAP,
+  10: Sys.MPROTECT,
+  11: Sys.MUNMAP,
+  12: Sys.BRK,
+  13: Sys.RT_SIGACTION,
+  14: Sys.RT_SIGPROCMASK,
+  16: Sys.IOCTL,
+  20: Sys.WRITEV,
+  28: Sys.MADVISE,
+  39: Sys.GETPID,
+  60: Sys.EXIT,
+  102: Sys.GETUID,
+  104: Sys.GETGID,
+  107: Sys.GETEUID,
+  108: Sys.GETEGID,
+  186: Sys.GETTID,
+  218: Sys.SET_TID_ADDRESS,
+  228: Sys.CLOCK_GETTIME,
+  231: Sys.EXIT_GROUP,
+  257: Sys.OPENAT,
+  267: Sys.READLINKAT,
+  269: Sys.FACCESSAT,
+  273: Sys.SET_ROBUST_LIST,
+  302: Sys.PRLIMIT64,
+  318: Sys.GETRANDOM,
+  334: Sys.RSEQ,
+}
+
 const EBADF = 9n
 const ENOSYS = 38n
 const ENOTTY = 25n

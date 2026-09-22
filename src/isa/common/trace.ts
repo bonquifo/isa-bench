@@ -180,6 +180,24 @@ export interface Interpreter {
    */
   readonly programCounter: bigint
   gpr(index: number): bigint
+  /**
+   * Bits of `gpr(index)` the architecture leaves unspecified right now, and
+   * which a comparison against a reference must therefore ignore.
+   *
+   * This exists for exactly one reason. x86 defines several instructions to
+   * leave particular flags *undefined* rather than unchanged -- a divide
+   * leaves all six, a shift by more than one leaves the overflow flag --
+   * and the reference for that target is a real processor, which of course
+   * puts something there anyway. Comparing those bits would be comparing
+   * against behaviour no specification promises and no program may rely on.
+   *
+   * It is not a way to excuse a difference. A backend that returns anything
+   * here is claiming the architecture does not define those bits, and the
+   * conformance suite reports how often it is used so the claim stays
+   * visible. Omitting it means claiming every bit, which is what the other
+   * targets do.
+   */
+  undefinedBits?(index: number): bigint
   /** Valid once `run` has returned EXITED. */
   finalState(): ArchState
   /** Bytes the guest wrote to fd 1. */

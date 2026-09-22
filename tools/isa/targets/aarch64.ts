@@ -19,7 +19,7 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CORPUS_FLAGS, corpusPrograms } from '../corpus.ts'
-import type { FixtureTarget, LockstepStep } from '../fixture-builder.ts'
+import { qemuOracle, type FixtureTarget, type LockstepStep } from '../fixture-builder.ts'
 import { generateRandomProgram } from '../aarch64/random.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -72,8 +72,7 @@ const RANDOM_SEEDS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
 export const aarch64Target: FixtureTarget = {
   id: 'aarch64',
   codegen: 'isa-bench/codegen-min:23.1.0',
-  oracle: 'isa-sim/qemu-user:11.1.0',
-  qemu: '/opt/qemu/bin/qemu-aarch64',
+  oracle: qemuOracle('isa-sim/qemu-user:11.1.0', '/opt/qemu/bin/qemu-aarch64'),
   triple: 'aarch64-unknown-linux-gnu',
   march: 'armv8-a',
   harnessDir: join(TOOLS, 'aarch64'),

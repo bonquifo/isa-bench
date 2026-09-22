@@ -1,0 +1,207 @@
+
+/work/out.elf:	file format elf64-x86-64
+
+Disassembly of section .text:
+
+00000000002011d0 <_start>:
+  2011d0: 48 8d 25 89 44 00 00         	leaq	0x4489(%rip), %rsp      # 0x205660 <isa_stack>
+  2011d7: 48 81 c4 00 00 01 00         	addq	$0x10000, %rsp          # imm = 0x10000
+  2011de: e8 2d 01 00 00               	callq	0x201310 <kernel>
+  2011e3: 4c 8d 3d e6 22 00 00         	leaq	0x22e6(%rip), %r15      # 0x2034d0 <isa_dump>
+  2011ea: 49 89 07                     	movq	%rax, (%r15)
+  2011ed: 49 89 4f 08                  	movq	%rcx, 0x8(%r15)
+  2011f1: 49 89 57 10                  	movq	%rdx, 0x10(%r15)
+  2011f5: 49 89 5f 18                  	movq	%rbx, 0x18(%r15)
+  2011f9: 49 89 67 20                  	movq	%rsp, 0x20(%r15)
+  2011fd: 49 89 6f 28                  	movq	%rbp, 0x28(%r15)
+  201201: 49 89 77 30                  	movq	%rsi, 0x30(%r15)
+  201205: 49 89 7f 38                  	movq	%rdi, 0x38(%r15)
+  201209: 4d 89 47 40                  	movq	%r8, 0x40(%r15)
+  20120d: 4d 89 4f 48                  	movq	%r9, 0x48(%r15)
+  201211: 4d 89 57 50                  	movq	%r10, 0x50(%r15)
+  201215: 4d 89 5f 58                  	movq	%r11, 0x58(%r15)
+  201219: 4d 89 67 60                  	movq	%r12, 0x60(%r15)
+  20121d: 4d 89 6f 68                  	movq	%r13, 0x68(%r15)
+  201221: 4d 89 77 70                  	movq	%r14, 0x70(%r15)
+  201225: 4d 89 7f 78                  	movq	%r15, 0x78(%r15)
+  201229: 48 39 c8                     	cmpq	%rcx, %rax
+  20122c: 0f 90 c0                     	seto	%al
+  20122f: 9f                           	lahf
+  201230: 0f b6 cc                     	movzbl	%ah, %ecx
+  201233: 81 e1 d5 00 00 00            	andl	$0xd5, %ecx
+  201239: 83 e0 01                     	andl	$0x1, %eax
+  20123c: c1 e0 0b                     	shll	$0xb, %eax
+  20123f: 09 c1                        	orl	%eax, %ecx
+  201241: 49 89 8f 80 00 00 00         	movq	%rcx, 0x80(%r15)
+  201248: 49 c7 87 88 00 00 00 00 00 00 00     	movq	$0x0, 0x88(%r15)
+  201253: 41 0f 11 87 90 00 00 00      	movups	%xmm0, 0x90(%r15)
+  20125b: 41 0f 11 8f a0 00 00 00      	movups	%xmm1, 0xa0(%r15)
+  201263: 41 0f 11 97 b0 00 00 00      	movups	%xmm2, 0xb0(%r15)
+  20126b: 41 0f 11 9f c0 00 00 00      	movups	%xmm3, 0xc0(%r15)
+  201273: 41 0f 11 a7 d0 00 00 00      	movups	%xmm4, 0xd0(%r15)
+  20127b: 41 0f 11 af e0 00 00 00      	movups	%xmm5, 0xe0(%r15)
+  201283: 41 0f 11 b7 f0 00 00 00      	movups	%xmm6, 0xf0(%r15)
+  20128b: 41 0f 11 bf 00 01 00 00      	movups	%xmm7, 0x100(%r15)
+  201293: 45 0f 11 87 10 01 00 00      	movups	%xmm8, 0x110(%r15)
+  20129b: 45 0f 11 8f 20 01 00 00      	movups	%xmm9, 0x120(%r15)
+  2012a3: 45 0f 11 97 30 01 00 00      	movups	%xmm10, 0x130(%r15)
+  2012ab: 45 0f 11 9f 40 01 00 00      	movups	%xmm11, 0x140(%r15)
+  2012b3: 45 0f 11 a7 50 01 00 00      	movups	%xmm12, 0x150(%r15)
+  2012bb: 45 0f 11 af 60 01 00 00      	movups	%xmm13, 0x160(%r15)
+  2012c3: 45 0f 11 b7 70 01 00 00      	movups	%xmm14, 0x170(%r15)
+  2012cb: 45 0f 11 bf 80 01 00 00      	movups	%xmm15, 0x180(%r15)
+  2012d3: 48 c7 c0 01 00 00 00         	movq	$0x1, %rax
+  2012da: 48 c7 c7 01 00 00 00         	movq	$0x1, %rdi
+  2012e1: 4c 89 fe                     	movq	%r15, %rsi
+  2012e4: 48 c7 c2 90 21 00 00         	movq	$0x2190, %rdx           # imm = 0x2190
+  2012eb: 48 39 e4                     	cmpq	%rsp, %rsp
+  2012ee: 0f 05                        	syscall
+  2012f0: 48 c7 c0 3c 00 00 00         	movq	$0x3c, %rax
+  2012f7: 48 c7 c7 00 00 00 00         	movq	$0x0, %rdi
+  2012fe: 48 39 e4                     	cmpq	%rsp, %rsp
+  201301: 0f 05                        	syscall
+  201303: 0f 0b                        	ud2
+  201305: cc                           	int3
+  201306: cc                           	int3
+  201307: cc                           	int3
+  201308: cc                           	int3
+  201309: cc                           	int3
+  20130a: cc                           	int3
+  20130b: cc                           	int3
+  20130c: cc                           	int3
+  20130d: cc                           	int3
+  20130e: cc                           	int3
+  20130f: cc                           	int3
+
+0000000000201310 <kernel>:
+  201310: 41 57                        	pushq	%r15
+  201312: 41 56                        	pushq	%r14
+  201314: 41 54                        	pushq	%r12
+  201316: 53                           	pushq	%rbx
+  201317: 50                           	pushq	%rax
+  201318: 8b 3d 82 21 00 00            	movl	0x2182(%rip), %edi      # 0x2034a0 <depth>
+  20131e: e8 dd 00 00 00               	callq	0x201400 <fib>
+  201323: 4c 8d 3d a6 21 00 00         	leaq	0x21a6(%rip), %r15      # 0x2034d0 <isa_dump>
+  20132a: 49 89 87 90 01 00 00         	movq	%rax, 0x190(%r15)
+  201331: bf 02 00 00 00               	movl	$0x2, %edi
+  201336: be 03 00 00 00               	movl	$0x3, %esi
+  20133b: e8 00 01 00 00               	callq	0x201440 <ackermann_ish>
+  201340: 49 89 87 98 01 00 00         	movq	%rax, 0x198(%r15)
+  201347: 31 c0                        	xorl	%eax, %eax
+  201349: 48 8d 1d 60 21 00 00         	leaq	0x2160(%rip), %rbx      # 0x2034b0 <table>
+  201350: 45 31 f6                     	xorl	%r14d, %r14d
+  201353: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       	nopw	%cs:(%rax,%rax)
+  201360: 8b 0d 3e 21 00 00            	movl	0x213e(%rip), %ecx      # 0x2034a4 <selector>
+  201366: 44 01 f1                     	addl	%r14d, %ecx
+  201369: 48 63 c9                     	movslq	%ecx, %rcx
+  20136c: 48 69 d1 56 55 55 55         	imulq	$0x55555556, %rcx, %rdx # imm = 0x55555556
+  201373: 48 89 d6                     	movq	%rdx, %rsi
+  201376: 48 c1 ee 3f                  	shrq	$0x3f, %rsi
+  20137a: 48 c1 ea 20                  	shrq	$0x20, %rdx
+  20137e: 01 f2                        	addl	%esi, %edx
+  201380: 8d 14 52                     	leal	(%rdx,%rdx,2), %edx
+  201383: 29 d1                        	subl	%edx, %ecx
+  201385: 48 63 c9                     	movslq	%ecx, %rcx
+  201388: 48 8b 0c cb                  	movq	(%rbx,%rcx,8), %rcx
+  20138c: 4c 01 f0                     	addq	%r14, %rax
+  20138f: 48 89 c7                     	movq	%rax, %rdi
+  201392: ff d1                        	callq	*%rcx
+  201394: 49 ff c6                     	incq	%r14
+  201397: 49 83 fe 0c                  	cmpq	$0xc, %r14
+  20139b: 75 c3                        	jne	0x201360 <kernel+0x50>
+  20139d: 49 89 87 a0 01 00 00         	movq	%rax, 0x1a0(%r15)
+  2013a4: bf 06 00 00 00               	movl	$0x6, %edi
+  2013a9: 49 89 c4                     	movq	%rax, %r12
+  2013ac: e8 4f 00 00 00               	callq	0x201400 <fib>
+  2013b1: 48 89 c3                     	movq	%rax, %rbx
+  2013b4: bf 07 00 00 00               	movl	$0x7, %edi
+  2013b9: e8 42 00 00 00               	callq	0x201400 <fib>
+  2013be: 49 89 c6                     	movq	%rax, %r14
+  2013c1: 49 01 de                     	addq	%rbx, %r14
+  2013c4: bf 08 00 00 00               	movl	$0x8, %edi
+  2013c9: e8 32 00 00 00               	callq	0x201400 <fib>
+  2013ce: 48 89 c3                     	movq	%rax, %rbx
+  2013d1: bf 09 00 00 00               	movl	$0x9, %edi
+  2013d6: e8 25 00 00 00               	callq	0x201400 <fib>
+  2013db: 48 01 d8                     	addq	%rbx, %rax
+  2013de: 4c 01 f0                     	addq	%r14, %rax
+  2013e1: 49 89 87 a8 01 00 00         	movq	%rax, 0x1a8(%r15)
+  2013e8: 4d 33 a7 90 01 00 00         	xorq	0x190(%r15), %r12
+  2013ef: 4c 31 e0                     	xorq	%r12, %rax
+  2013f2: 48 83 c4 08                  	addq	$0x8, %rsp
+  2013f6: 5b                           	popq	%rbx
+  2013f7: 41 5c                        	popq	%r12
+  2013f9: 41 5e                        	popq	%r14
+  2013fb: 41 5f                        	popq	%r15
+  2013fd: c3                           	retq
+  2013fe: 66 90                        	nop
+
+0000000000201400 <fib>:
+  201400: 41 56                        	pushq	%r14
+  201402: 53                           	pushq	%rbx
+  201403: 50                           	pushq	%rax
+  201404: 31 db                        	xorl	%ebx, %ebx
+  201406: 83 ff 02                     	cmpl	$0x2, %edi
+  201409: 7c 1e                        	jl	0x201429 <fib+0x29>
+  20140b: 41 89 fe                     	movl	%edi, %r14d
+  20140e: 66 90                        	nop
+  201410: 41 8d 7e ff                  	leal	-0x1(%r14), %edi
+  201414: e8 e7 ff ff ff               	callq	0x201400 <fib>
+  201419: 41 8d 7e fe                  	leal	-0x2(%r14), %edi
+  20141d: 48 01 c3                     	addq	%rax, %rbx
+  201420: 41 83 fe 04                  	cmpl	$0x4, %r14d
+  201424: 41 89 fe                     	movl	%edi, %r14d
+  201427: 73 e7                        	jae	0x201410 <fib+0x10>
+  201429: 48 63 c7                     	movslq	%edi, %rax
+  20142c: 48 01 d8                     	addq	%rbx, %rax
+  20142f: 48 83 c4 08                  	addq	$0x8, %rsp
+  201433: 5b                           	popq	%rbx
+  201434: 41 5e                        	popq	%r14
+  201436: c3                           	retq
+  201437: 66 0f 1f 84 00 00 00 00 00   	nopw	(%rax,%rax)
+
+0000000000201440 <ackermann_ish>:
+  201440: 85 ff                        	testl	%edi, %edi
+  201442: 74 3d                        	je	0x201481 <ackermann_ish+0x41>
+  201444: 53                           	pushq	%rbx
+  201445: 89 fb                        	movl	%edi, %ebx
+  201447: 85 f6                        	testl	%esi, %esi
+  201449: 74 12                        	je	0x20145d <ackermann_ish+0x1d>
+  20144b: ff ce                        	decl	%esi
+  20144d: 89 df                        	movl	%ebx, %edi
+  20144f: e8 ec ff ff ff               	callq	0x201440 <ackermann_ish>
+  201454: 83 fb 01                     	cmpl	$0x1, %ebx
+  201457: 75 0e                        	jne	0x201467 <ackermann_ish+0x27>
+  201459: 89 c6                        	movl	%eax, %esi
+  20145b: eb 23                        	jmp	0x201480 <ackermann_ish+0x40>
+  20145d: b8 01 00 00 00               	movl	$0x1, %eax
+  201462: 83 fb 01                     	cmpl	$0x1, %ebx
+  201465: 74 f2                        	je	0x201459 <ackermann_ish+0x19>
+  201467: be 01 00 00 00               	movl	$0x1, %esi
+  20146c: 83 e8 01                     	subl	$0x1, %eax
+  20146f: 72 0f                        	jb	0x201480 <ackermann_ish+0x40>
+  201471: bf 01 00 00 00               	movl	$0x1, %edi
+  201476: 89 c6                        	movl	%eax, %esi
+  201478: e8 c3 ff ff ff               	callq	0x201440 <ackermann_ish>
+  20147d: 48 89 c6                     	movq	%rax, %rsi
+  201480: 5b                           	popq	%rbx
+  201481: ff c6                        	incl	%esi
+  201483: 48 63 c6                     	movslq	%esi, %rax
+  201486: c3                           	retq
+  201487: 90                           	nop
+
+0000000000201488 <triple>:
+  201488: 48 8d 04 7f                  	leaq	(%rdi,%rdi,2), %rax
+  20148c: c3                           	retq
+  20148d: 0f 1f 00                     	nopl	(%rax)
+
+0000000000201490 <negate>:
+  201490: 48 89 f8                     	movq	%rdi, %rax
+  201493: 48 f7 d8                     	negq	%rax
+  201496: c3                           	retq
+  201497: 90                           	nop
+
+0000000000201498 <square>:
+  201498: 48 89 f8                     	movq	%rdi, %rax
+  20149b: 48 0f af c7                  	imulq	%rdi, %rax
+  20149f: c3                           	retq

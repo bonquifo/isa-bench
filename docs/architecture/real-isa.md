@@ -1,19 +1,29 @@
 # Real instruction-set semantics
 
-Written for engineers continuing this work on the remaining six targets.
+Written for engineers continuing this work on the remaining five targets.
 
 This describes the interpreters that replace the pseudo-backend lowering, the
 interface they present to the timing model, and what the remaining instruction
 sets have to implement.
 
-**Two are complete: RV64GC and AArch64.** For each, real C compiled by clang
-and linked against a real libc executes against a real address space and
-matches its qemu on architectural state for freestanding programs and on
-output for whole programs. The second one is the evidence that the split in
-section 1 was worth making: AArch64 needed a decoder, a semantics file and a
-register map, and reused the address space, the ELF loader, the IEEE-754
-layer, the Linux process emulation, the timing model, the fixture builder and
-the conformance suite without changing any of them.
+**Three are complete: RV64GC, AArch64 and x86-64.** For each, real C compiled
+by clang and linked against a real libc executes against a real address space
+and matches its reference on architectural state for freestanding programs and
+on output for whole programs.
+
+The second one is the evidence that the split in section 1 was worth making:
+AArch64 needed a decoder, a semantics file and a register map, and reused the
+address space, the ELF loader, the IEEE-754 layer, the Linux process
+emulation, the timing model, the fixture builder and the conformance suite
+without changing any of them.
+
+The third needed two changes, and both are worth knowing about. Its reference
+is not qemu but the host processor, single-stepped through ptrace, so an
+oracle became a pair of commands rather than a path to an emulator. And it is
+the first architecture whose specification leaves some of its own state
+*undefined* after particular instructions, which the comparison had to be
+taught about; section 4 says what that means and what stops it being a way to
+hide a difference.
 
 ---
 
@@ -186,10 +196,66 @@ Four tiers, all running in `npm test` on any machine, with no Docker.
 | Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
 | The app's corpus | the same, for the fourteen C programs the app ships | qemu **and** the answers the app already records |
 
-Per target: 40 fixtures for RV64 and 40 for AArch64 — hand-written,
-randomised, written against musl, and the app's fourteen. Together, roughly
-60,000 instructions compared register by register and thirty-six whole
-programs compared on output.
+Per target: 40 fixtures for RV64, 40 for AArch64 and 37 for x86-64 —
+hand-written, randomised, written against musl, and the app's fourteen.
+Together, roughly 100,000 instructions compared register by register and
+fifty-four whole programs compared on output.
+
+### The x86-64 reference is not an emulator
+
+Every other target is compared against qemu, which is a second
+implementation of the same specification and could in principle be wrong in
+the same way an interpreter is. On x86-64 that doubt can be removed, because
+the machine running the tests is the machine the code is for. The reference
+is therefore the processor itself, single-stepped through `PTRACE_SINGLESTEP`
+with its registers read before every instruction — the same comparison qemu's
+`-d cpu` gives elsewhere, against hardware rather than a model of it. The
+tracer is a hundred lines, in
+[tools/isa/native/trace.c](../../tools/isa/native/trace.c).
+
+Using the real thing costs three things, all of them small and all of them
+named where they happen. Address-space randomisation has to be turned off, or
+two captures of the same program differ for no architectural reason; the
+system call that does it is rejected by Docker's default seccomp profile, so
+the container runs without it, which is a real relaxation confined to fixture
+generation. `syscall` copies the whole flag word into r11, and while the
+child is being single-stepped that word contains the trap flag the tracer
+itself set — so the tracer clears exactly that bit, in the child, after
+exactly that instruction. And one syscall's result is the process id, which
+is environmental; it appears in the libc tier, which is compared on output
+rather than on state, so it changes nothing.
+
+### Undefined is not the same as unchanged
+
+x86 defines several instructions to leave particular flags *undefined*: a
+divide leaves all six, a shift by more than one leaves the overflow flag,
+every logical operation leaves the adjust flag. A processor still puts
+something there. Insisting on those bits would be insisting that an
+interpreter reproduce behaviour no specification promises and no program may
+rely on.
+
+So the interpreter publishes what it does not claim, through `undefinedBits`
+on the trace interface, and the conformance suite excludes exactly those bits
+and nothing else. Three things keep that from becoming a way to hide a
+difference:
+
+- **It is sticky, and has to be.** An instruction that leaves a flag
+  undefined puts an unknown value there; the next instruction that merely
+  *preserves* that flag passes the unknown value on. Clearing the set every
+  instruction would claim the value back a step later without anything having
+  produced it — and the fixtures caught exactly that, as a rotate
+  disagreeing about a flag it had not written.
+- **It is bounded and counted.** The suite asserts that what a backend
+  declines to claim is at most six bits of at most one register. The other
+  two targets claim every bit of every register, and `undefinedBits` is
+  optional so they say nothing at all.
+- **The programs never read an undefined flag into a register.** They used
+  to: the first version of the generated tests read the flag word with
+  `seto` and `lahf` after every operation, which copies undefined bits into
+  an ordinary value where nothing can exclude them. The flags are compared
+  before every instruction anyway, which is stricter than a snapshot, so the
+  capture was removed rather than corrected. The same reasoning put a
+  `cmp` in front of every `syscall` in the x86 harness.
 
 The AArch64 tiers are the same suite, inherited rather than rewritten:
 `describeIsaConformance` takes a backend and a fixture directory, so a target
@@ -317,7 +383,7 @@ for them every iteration.
 
 ---
 
-## 5. What the remaining six must implement
+## 5. What the remaining five must implement
 
 Adding an instruction set is now a bounded act: implement
 [`IsaBackend`](../../src/isa/backend.ts), register it in
@@ -339,9 +405,8 @@ takes endianness as a constructor argument for exactly this reason.
 
 | Target | The structural surprise | Notes |
 | --- | --- | --- |
-| x86-64 | variable-length decode, flags on nearly everything | Scope to what clang emits at `-O2` — **measured: 76 distinct mnemonics** for the existing corpus — and make the unimplemented set loud. |
 | MIPS32 | branch delay slots | The instruction after a branch retires *before* the branch takes effect. `nextPc` in the trace already carries this; the timing model needs no change. |
-| POWER | condition-register fields | **Measured: 120 distinct mnemonics**, the widest of the six. Eight CR fields become eight resource ids. |
+| POWER | condition-register fields | **Measured: 120 distinct mnemonics**, the widest of the five. Eight CR fields become eight resource ids. |
 | SPARC V8 | register windows | Resolve window-relative to absolute register numbers in the interpreter, so `reads`/`writes` reaching timing are already absolute. See the toolchain warning below. |
 | WASM | a stack machine, not a register machine | No register file to compare. The differential interface needs rethinking, not just reimplementing. |
 | MOS 6502 | 64 KiB, 8-bit accumulator, no OS | Cannot support a C library. Define honestly what it can claim. |
@@ -352,6 +417,60 @@ linked musl binaries, which is the whole of musl and not only the parts a
 program reaches; the interpreter that covers it is about a thousand lines of
 semantics. "Real ISAs have hundreds of instructions" is true of the
 architectures and not of what a compiler emits for this corpus.
+
+x86-64 is the one that came closest to contradicting that, and is worth
+quoting as the ceiling: 193 opcode-map entries statically, 168 distinct
+mnemonics actually executed. Even there the number of distinct *operations*
+is far smaller, because twenty of those mnemonics are one conditional move
+and sixteen are one conditional branch.
+
+### x86-64, as built
+
+The prediction was variable-length decode and flags on nearly everything.
+Both were true and neither was the hard part.
+
+Scope was settled by measurement before a line was written, twice over.
+Statically, the eighteen binaries contain **193 distinct opcode-map
+entries**. Dynamically — single-stepping each one and mapping every executed
+address back to its disassembly — they execute **168 distinct mnemonics**,
+of which 147 are ordinary integer and SSE instructions and 21 are x87.
+
+That second measurement decided the shape of the work, because it showed
+**all fourteen corpus programs execute zero x87 instructions**. The x87 stack
+is reached only by three libc programs, and only because they print a
+floating-point number. So the integer and SSE interpreter could be finished
+and verified on its own, with x87 added afterwards as a separable piece,
+rather than everything having to work before anything could be tested.
+
+Three things were harder than the flags:
+
+- **SSE is not optional.** The ABI passes a double in an xmm register, so a
+  program that never vectorises still uses them, and clang turns an
+  unsigned-to-double conversion into a fixed sequence of packed integer
+  instructions because the architecture has no single instruction for it.
+- **The 0x66 prefix is not an operand-size override on an SSE opcode**, it
+  is part of the opcode. Asking the usual question gives sixteen bits, and a
+  `movd` that writes sixteen bits of a register leaves the other half of the
+  old value in place. That was a real bug, and the one that made
+  `corpus-nbody` print a wrong answer.
+- **x87 is an 80-bit format whose precision is a control-register field.**
+  The leading significand bit is stored rather than implied, so the encoding
+  can hold values the format cannot interpret; and the same `fmul` rounds to
+  64, 53 or 24 significant bits depending on what was last loaded into the
+  control word, which musl changes mid-computation. It is implemented
+  exactly, on BigInt significands, in
+  [x87.ts](../../src/isa/x86/x87.ts) — the host's doubles would be wrong in
+  the last few bits of every operation, which is the part a digit generator
+  is looking at.
+
+**The architectural fixtures earned their place three times.** `asm_sse.c`
+found the `movd` width bug. `asm_x87.c` found the memory-operand form of
+every x87 arithmetic instruction using the top of the stack as *both*
+operands, so `fadd` doubled instead of adding — every corpus program still
+printed the right answer with that bug in place, because none of them
+executes x87. And the randomised seeds found `shld` and `shrd` not computing
+the overflow flag for a shift of one, which is the only count it is defined
+for.
 
 ### AArch64, as built
 
@@ -500,7 +619,7 @@ Three consequences worth knowing:
   rebuild of them. A test asserts that.
 - **They are inlined, and the lane is code-split.** The packaged app loads
   over `file://`, where fetching a sibling file is blocked, so the binaries
-  become `data:` URIs in the bundle. Two targets' worth is 1.09 MB, which
+  become `data:` URIs in the bundle. Three targets' worth is 1.59 MB, which
   would be dead weight for anyone who never opens the lane, so the lane is a
   lazy chunk and the main bundle is unchanged at 657 KB.
 
@@ -510,6 +629,14 @@ Three consequences worth knowing:
 npm test                                         # includes the full differential suite
 npx vite-node tools/isa/build-fixtures.ts rv64     # regenerate fixtures; needs Docker
 npx vite-node tools/isa/build-fixtures.ts aarch64
+npx vite-node tools/isa/build-fixtures.ts x86
+```
+
+The x86-64 target needs one more image, which is built here rather than
+pulled because the thing being trusted is the tracer:
+
+```
+docker build -f tools/isa/Dockerfile.native -t isa-bench/native-x86:1 tools/isa
 ```
 
 Regeneration requires `isa-bench/codegen-min:23.1.0`,

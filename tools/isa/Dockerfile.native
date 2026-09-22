@@ -1,0 +1,23 @@
+# The x86-64 reference: the processor itself, single-stepped through ptrace.
+#
+# Every other target is compared against qemu. This one does not have to be,
+# because the machine running the tests is the machine the code is for, and a
+# real processor is a stronger reference than a model of one.
+#
+# Built here rather than pulled, because the thing being trusted is a tracer
+# of about a hundred lines and it should be readable next to the fixtures it
+# produces. The base is pinned by digest; the packages are two, and both are
+# only used to compile that tracer.
+FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc libc6-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY native/trace.c /src/trace.c
+RUN gcc -O2 -Wall -Wextra -Werror -o /usr/local/bin/isa-trace /src/trace.c \
+ && chmod 0555 /usr/local/bin/isa-trace
+
+LABEL org.opencontainers.image.title="ISA Sim native x86-64 tracer"
+
+WORKDIR /work

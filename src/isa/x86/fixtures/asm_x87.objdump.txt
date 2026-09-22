@@ -1,0 +1,561 @@
+
+/work/out.elf:	file format elf64-x86-64
+
+Disassembly of section .text:
+
+00000000002011e0 <_start>:
+  2011e0: 48 8d 25 29 4b 00 00         	leaq	0x4b29(%rip), %rsp      # 0x205d10 <isa_stack>
+  2011e7: 48 81 c4 00 00 01 00         	addq	$0x10000, %rsp          # imm = 0x10000
+  2011ee: e8 2d 01 00 00               	callq	0x201320 <kernel>
+  2011f3: 4c 8d 3d 86 29 00 00         	leaq	0x2986(%rip), %r15      # 0x203b80 <isa_dump>
+  2011fa: 49 89 07                     	movq	%rax, (%r15)
+  2011fd: 49 89 4f 08                  	movq	%rcx, 0x8(%r15)
+  201201: 49 89 57 10                  	movq	%rdx, 0x10(%r15)
+  201205: 49 89 5f 18                  	movq	%rbx, 0x18(%r15)
+  201209: 49 89 67 20                  	movq	%rsp, 0x20(%r15)
+  20120d: 49 89 6f 28                  	movq	%rbp, 0x28(%r15)
+  201211: 49 89 77 30                  	movq	%rsi, 0x30(%r15)
+  201215: 49 89 7f 38                  	movq	%rdi, 0x38(%r15)
+  201219: 4d 89 47 40                  	movq	%r8, 0x40(%r15)
+  20121d: 4d 89 4f 48                  	movq	%r9, 0x48(%r15)
+  201221: 4d 89 57 50                  	movq	%r10, 0x50(%r15)
+  201225: 4d 89 5f 58                  	movq	%r11, 0x58(%r15)
+  201229: 4d 89 67 60                  	movq	%r12, 0x60(%r15)
+  20122d: 4d 89 6f 68                  	movq	%r13, 0x68(%r15)
+  201231: 4d 89 77 70                  	movq	%r14, 0x70(%r15)
+  201235: 4d 89 7f 78                  	movq	%r15, 0x78(%r15)
+  201239: 48 39 c8                     	cmpq	%rcx, %rax
+  20123c: 0f 90 c0                     	seto	%al
+  20123f: 9f                           	lahf
+  201240: 0f b6 cc                     	movzbl	%ah, %ecx
+  201243: 81 e1 d5 00 00 00            	andl	$0xd5, %ecx
+  201249: 83 e0 01                     	andl	$0x1, %eax
+  20124c: c1 e0 0b                     	shll	$0xb, %eax
+  20124f: 09 c1                        	orl	%eax, %ecx
+  201251: 49 89 8f 80 00 00 00         	movq	%rcx, 0x80(%r15)
+  201258: 49 c7 87 88 00 00 00 00 00 00 00     	movq	$0x0, 0x88(%r15)
+  201263: 41 0f 11 87 90 00 00 00      	movups	%xmm0, 0x90(%r15)
+  20126b: 41 0f 11 8f a0 00 00 00      	movups	%xmm1, 0xa0(%r15)
+  201273: 41 0f 11 97 b0 00 00 00      	movups	%xmm2, 0xb0(%r15)
+  20127b: 41 0f 11 9f c0 00 00 00      	movups	%xmm3, 0xc0(%r15)
+  201283: 41 0f 11 a7 d0 00 00 00      	movups	%xmm4, 0xd0(%r15)
+  20128b: 41 0f 11 af e0 00 00 00      	movups	%xmm5, 0xe0(%r15)
+  201293: 41 0f 11 b7 f0 00 00 00      	movups	%xmm6, 0xf0(%r15)
+  20129b: 41 0f 11 bf 00 01 00 00      	movups	%xmm7, 0x100(%r15)
+  2012a3: 45 0f 11 87 10 01 00 00      	movups	%xmm8, 0x110(%r15)
+  2012ab: 45 0f 11 8f 20 01 00 00      	movups	%xmm9, 0x120(%r15)
+  2012b3: 45 0f 11 97 30 01 00 00      	movups	%xmm10, 0x130(%r15)
+  2012bb: 45 0f 11 9f 40 01 00 00      	movups	%xmm11, 0x140(%r15)
+  2012c3: 45 0f 11 a7 50 01 00 00      	movups	%xmm12, 0x150(%r15)
+  2012cb: 45 0f 11 af 60 01 00 00      	movups	%xmm13, 0x160(%r15)
+  2012d3: 45 0f 11 b7 70 01 00 00      	movups	%xmm14, 0x170(%r15)
+  2012db: 45 0f 11 bf 80 01 00 00      	movups	%xmm15, 0x180(%r15)
+  2012e3: 48 c7 c0 01 00 00 00         	movq	$0x1, %rax
+  2012ea: 48 c7 c7 01 00 00 00         	movq	$0x1, %rdi
+  2012f1: 4c 89 fe                     	movq	%r15, %rsi
+  2012f4: 48 c7 c2 90 21 00 00         	movq	$0x2190, %rdx           # imm = 0x2190
+  2012fb: 48 39 e4                     	cmpq	%rsp, %rsp
+  2012fe: 0f 05                        	syscall
+  201300: 48 c7 c0 3c 00 00 00         	movq	$0x3c, %rax
+  201307: 48 c7 c7 00 00 00 00         	movq	$0x0, %rdi
+  20130e: 48 39 e4                     	cmpq	%rsp, %rsp
+  201311: 0f 05                        	syscall
+  201313: 0f 0b                        	ud2
+  201315: cc                           	int3
+  201316: cc                           	int3
+  201317: cc                           	int3
+  201318: cc                           	int3
+  201319: cc                           	int3
+  20131a: cc                           	int3
+  20131b: cc                           	int3
+  20131c: cc                           	int3
+  20131d: cc                           	int3
+  20131e: cc                           	int3
+  20131f: cc                           	int3
+
+0000000000201320 <kernel>:
+  201320: 31 d2                        	xorl	%edx, %edx
+  201322: 48 8d 0d e7 27 00 00         	leaq	0x27e7(%rip), %rcx      # 0x203b10 <dv>
+  201329: 0f 57 c0                     	xorps	%xmm0, %xmm0
+  20132c: 48 8d 05 4d 28 00 00         	leaq	0x284d(%rip), %rax      # 0x203b80 <isa_dump>
+  201333: 66 66 66 66 2e 0f 1f 84 00 00 00 00 00       	nopw	%cs:(%rax,%rax)
+  201340: dd 04 0a                     	fldl	(%rdx,%rcx)
+  201343: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201347: 0f 29 44 24 b8               	movaps	%xmm0, -0x48(%rsp)
+  20134c: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201350: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201354: 48 8b 74 24 b8               	movq	-0x48(%rsp), %rsi
+  201359: 48 89 b4 90 90 01 00 00      	movq	%rsi, 0x190(%rax,%rdx,4)
+  201361: 0f b7 74 24 c0               	movzwl	-0x40(%rsp), %esi
+  201366: 48 89 b4 90 98 01 00 00      	movq	%rsi, 0x198(%rax,%rdx,4)
+  20136e: f2 0f 10 0c 0a               	movsd	(%rdx,%rcx), %xmm1
+  201373: f2 0f 5a c9                  	cvtsd2ss	%xmm1, %xmm1
+  201377: f3 0f 11 4c 24 fc            	movss	%xmm1, -0x4(%rsp)
+  20137d: d9 44 24 fc                  	flds	-0x4(%rsp)
+  201381: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201385: 0f 29 44 24 b8               	movaps	%xmm0, -0x48(%rsp)
+  20138a: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  20138e: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201392: 48 8b 74 24 b8               	movq	-0x48(%rsp), %rsi
+  201397: 48 89 b4 90 a0 01 00 00      	movq	%rsi, 0x1a0(%rax,%rdx,4)
+  20139f: 0f b7 74 24 c0               	movzwl	-0x40(%rsp), %esi
+  2013a4: 48 89 b4 90 a8 01 00 00      	movq	%rsi, 0x1a8(%rax,%rdx,4)
+  2013ac: 48 83 c2 08                  	addq	$0x8, %rdx
+  2013b0: 48 83 fa 50                  	cmpq	$0x50, %rdx
+  2013b4: 75 8a                        	jne	0x201340 <kernel+0x20>
+  2013b6: be f8 02 00 00               	movl	$0x2f8, %esi            # imm = 0x2F8
+  2013bb: 48 81 c6 80 3b 20 00         	addq	$0x203b80, %rsi         # imm = 0x203B80
+  2013c2: 31 ff                        	xorl	%edi, %edi
+  2013c4: 48 8d 15 95 27 00 00         	leaq	0x2795(%rip), %rdx      # 0x203b60 <iv>
+  2013cb: 0f 57 c0                     	xorps	%xmm0, %xmm0
+  2013ce: 66 90                        	nop
+  2013d0: 44 8b 04 17                  	movl	(%rdi,%rdx), %r8d
+  2013d4: 44 89 44 24 a8               	movl	%r8d, -0x58(%rsp)
+  2013d9: db 44 24 a8                  	fildl	-0x58(%rsp)
+  2013dd: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2013e1: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2013e5: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  2013e9: 0f 29 44 24 e8               	movaps	%xmm0, -0x18(%rsp)
+  2013ee: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  2013f2: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  2013f6: 4c 8b 44 24 e8               	movq	-0x18(%rsp), %r8
+  2013fb: 4c 89 46 d8                  	movq	%r8, -0x28(%rsi)
+  2013ff: 44 0f b7 44 24 f0            	movzwl	-0x10(%rsp), %r8d
+  201405: 4c 89 46 e0                  	movq	%r8, -0x20(%rsi)
+  201409: 44 8b 04 17                  	movl	(%rdi,%rdx), %r8d
+  20140d: 66 44 89 44 24 a8            	movw	%r8w, -0x58(%rsp)
+  201413: df 44 24 a8                  	filds	-0x58(%rsp)
+  201417: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  20141b: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  20141f: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201423: 0f 29 44 24 e8               	movaps	%xmm0, -0x18(%rsp)
+  201428: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  20142c: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201430: 4c 8b 44 24 e8               	movq	-0x18(%rsp), %r8
+  201435: 4c 89 46 e8                  	movq	%r8, -0x18(%rsi)
+  201439: 44 0f b7 44 24 f0            	movzwl	-0x10(%rsp), %r8d
+  20143f: 4c 89 46 f0                  	movq	%r8, -0x10(%rsi)
+  201443: 4c 63 04 17                  	movslq	(%rdi,%rdx), %r8
+  201447: 4d 69 c0 07 ca 9a 3b         	imulq	$0x3b9aca07, %r8, %r8   # imm = 0x3B9ACA07
+  20144e: 4c 89 44 24 a8               	movq	%r8, -0x58(%rsp)
+  201453: df 6c 24 a8                  	fildll	-0x58(%rsp)
+  201457: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  20145b: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  20145f: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201463: 0f 29 44 24 e8               	movaps	%xmm0, -0x18(%rsp)
+  201468: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  20146c: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201470: 4c 8b 44 24 e8               	movq	-0x18(%rsp), %r8
+  201475: 4c 89 46 f8                  	movq	%r8, -0x8(%rsi)
+  201479: 44 0f b7 44 24 f0            	movzwl	-0x10(%rsp), %r8d
+  20147f: 4c 89 06                     	movq	%r8, (%rsi)
+  201482: 48 83 c7 04                  	addq	$0x4, %rdi
+  201486: 48 83 c6 30                  	addq	$0x30, %rsi
+  20148a: 48 83 ff 18                  	cmpq	$0x18, %rdi
+  20148e: 0f 85 3c ff ff ff            	jne	0x2013d0 <kernel+0xb0>
+  201494: be 58 04 00 00               	movl	$0x458, %esi            # imm = 0x458
+  201499: 48 81 c6 80 3b 20 00         	addq	$0x203b80, %rsi         # imm = 0x203B80
+  2014a0: 31 ff                        	xorl	%edi, %edi
+  2014a2: 0f 57 c0                     	xorps	%xmm0, %xmm0
+  2014a5: 45 31 c0                     	xorl	%r8d, %r8d
+  2014a8: 0f 1f 84 00 00 00 00 00      	nopl	(%rax,%rax)
+  2014b0: dd 04 0f                     	fldl	(%rdi,%rcx)
+  2014b3: 45 8d 48 03                  	leal	0x3(%r8), %r9d
+  2014b7: 48 83 ff 38                  	cmpq	$0x38, %rdi
+  2014bb: 41 ba 00 00 00 00            	movl	$0x0, %r10d
+  2014c1: 4d 0f 45 d1                  	cmovneq	%r9, %r10
+  2014c5: 42 dd 04 d1                  	fldl	(%rcx,%r10,8)
+  2014c9: d9 c1                        	fld	%st(1)
+  2014cb: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2014cf: d9 c0                        	fld	%st(0)
+  2014d1: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  2014d5: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2014d9: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  2014dd: de c1                        	faddp	%st, %st(1)
+  2014df: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  2014e3: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  2014e7: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  2014eb: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  2014f0: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  2014f4: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  2014f8: 4c 8b 4c 24 d8               	movq	-0x28(%rsp), %r9
+  2014fd: 4c 89 4e 98                  	movq	%r9, -0x68(%rsi)
+  201501: 44 0f b7 4c 24 e0            	movzwl	-0x20(%rsp), %r9d
+  201507: 4c 89 4e a0                  	movq	%r9, -0x60(%rsi)
+  20150b: d9 c1                        	fld	%st(1)
+  20150d: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201511: d9 c0                        	fld	%st(0)
+  201513: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201517: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  20151b: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  20151f: de e1                        	fsubp	%st, %st(1)
+  201521: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201525: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201529: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  20152d: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  201532: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  201536: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  20153a: 4c 8b 4c 24 d8               	movq	-0x28(%rsp), %r9
+  20153f: 4c 89 4e a8                  	movq	%r9, -0x58(%rsi)
+  201543: 44 0f b7 4c 24 e0            	movzwl	-0x20(%rsp), %r9d
+  201549: 4c 89 4e b0                  	movq	%r9, -0x50(%rsi)
+  20154d: d9 c1                        	fld	%st(1)
+  20154f: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201553: d9 c0                        	fld	%st(0)
+  201555: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201559: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  20155d: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  201561: de e9                        	fsubrp	%st, %st(1)
+  201563: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201567: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  20156b: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  20156f: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  201574: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  201578: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  20157c: 4c 8b 4c 24 d8               	movq	-0x28(%rsp), %r9
+  201581: 4c 89 4e b8                  	movq	%r9, -0x48(%rsi)
+  201585: 44 0f b7 4c 24 e0            	movzwl	-0x20(%rsp), %r9d
+  20158b: 4c 89 4e c0                  	movq	%r9, -0x40(%rsi)
+  20158f: d9 c1                        	fld	%st(1)
+  201591: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201595: d9 c0                        	fld	%st(0)
+  201597: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20159b: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  20159f: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  2015a3: de c9                        	fmulp	%st, %st(1)
+  2015a5: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  2015a9: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  2015ad: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  2015b1: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  2015b6: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  2015ba: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  2015be: 4c 8b 4c 24 d8               	movq	-0x28(%rsp), %r9
+  2015c3: 4c 89 4e c8                  	movq	%r9, -0x38(%rsi)
+  2015c7: 44 0f b7 4c 24 e0            	movzwl	-0x20(%rsp), %r9d
+  2015cd: 4c 89 4e d0                  	movq	%r9, -0x30(%rsi)
+  2015d1: d9 c1                        	fld	%st(1)
+  2015d3: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2015d7: d9 c0                        	fld	%st(0)
+  2015d9: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  2015dd: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2015e1: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  2015e5: de f1                        	fdivp	%st, %st(1)
+  2015e7: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  2015eb: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  2015ef: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  2015f3: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  2015f8: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  2015fc: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  201600: 4c 8b 4c 24 d8               	movq	-0x28(%rsp), %r9
+  201605: 4c 89 4e d8                  	movq	%r9, -0x28(%rsi)
+  201609: 44 0f b7 4c 24 e0            	movzwl	-0x20(%rsp), %r9d
+  20160f: 4c 89 4e e0                  	movq	%r9, -0x20(%rsi)
+  201613: d9 c1                        	fld	%st(1)
+  201615: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201619: d9 c0                        	fld	%st(0)
+  20161b: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20161f: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201623: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  201627: de f9                        	fdivrp	%st, %st(1)
+  201629: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  20162d: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201631: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201635: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  20163a: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  20163e: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  201642: 4c 8b 4c 24 d8               	movq	-0x28(%rsp), %r9
+  201647: 4c 89 4e e8                  	movq	%r9, -0x18(%rsi)
+  20164b: 44 0f b7 4c 24 e0            	movzwl	-0x20(%rsp), %r9d
+  201651: 4c 89 4e f0                  	movq	%r9, -0x10(%rsi)
+  201655: d9 c9                        	fxch	%st(1)
+  201657: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  20165b: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20165f: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201663: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  201667: d9 c9                        	fxch	%st(1)
+  201669: de c1                        	faddp	%st, %st(1)
+  20166b: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  20166f: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201673: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201677: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  20167c: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  201680: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  201684: 4c 8b 4c 24 d8               	movq	-0x28(%rsp), %r9
+  201689: 4c 89 4e f8                  	movq	%r9, -0x8(%rsi)
+  20168d: 44 0f b7 4c 24 e0            	movzwl	-0x20(%rsp), %r9d
+  201693: 4c 89 0e                     	movq	%r9, (%rsi)
+  201696: 49 ff c0                     	incq	%r8
+  201699: 48 83 c7 08                  	addq	$0x8, %rdi
+  20169d: 48 83 c6 70                  	addq	$0x70, %rsi
+  2016a1: 49 83 f8 08                  	cmpq	$0x8, %r8
+  2016a5: 0f 85 05 fe ff ff            	jne	0x2014b0 <kernel+0x190>
+  2016ab: be d8 07 00 00               	movl	$0x7d8, %esi            # imm = 0x7D8
+  2016b0: 48 81 c6 80 3b 20 00         	addq	$0x203b80, %rsi         # imm = 0x203B80
+  2016b7: 31 ff                        	xorl	%edi, %edi
+  2016b9: 0f 57 c0                     	xorps	%xmm0, %xmm0
+  2016bc: 45 31 c0                     	xorl	%r8d, %r8d
+  2016bf: 90                           	nop
+  2016c0: dd 04 0f                     	fldl	(%rdi,%rcx)
+  2016c3: d9 c0                        	fld	%st(0)
+  2016c5: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2016c9: 45 8d 50 05                  	leal	0x5(%r8), %r10d
+  2016cd: 48 83 ff 28                  	cmpq	$0x28, %rdi
+  2016d1: 41 b9 00 00 00 00            	movl	$0x0, %r9d
+  2016d7: 4d 0f 45 ca                  	cmovneq	%r10, %r9
+  2016db: f2 42 0f 10 0c c9            	movsd	(%rcx,%r9,8), %xmm1
+  2016e1: f2 0f 11 4c 24 d8            	movsd	%xmm1, -0x28(%rsp)
+  2016e7: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2016eb: dc 44 24 d8                  	faddl	-0x28(%rsp)
+  2016ef: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  2016f3: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  2016f7: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  2016fb: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  201700: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201704: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201708: 4c 8b 54 24 a8               	movq	-0x58(%rsp), %r10
+  20170d: 4c 89 56 98                  	movq	%r10, -0x68(%rsi)
+  201711: 44 0f b7 54 24 b0            	movzwl	-0x50(%rsp), %r10d
+  201717: 4c 89 56 a0                  	movq	%r10, -0x60(%rsi)
+  20171b: d9 c0                        	fld	%st(0)
+  20171d: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201721: f2 42 0f 10 0c c9            	movsd	(%rcx,%r9,8), %xmm1
+  201727: f2 0f 11 4c 24 d8            	movsd	%xmm1, -0x28(%rsp)
+  20172d: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201731: dc 64 24 d8                  	fsubl	-0x28(%rsp)
+  201735: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201739: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  20173d: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201741: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  201746: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  20174a: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  20174e: 4c 8b 54 24 a8               	movq	-0x58(%rsp), %r10
+  201753: 4c 89 56 a8                  	movq	%r10, -0x58(%rsi)
+  201757: 44 0f b7 54 24 b0            	movzwl	-0x50(%rsp), %r10d
+  20175d: 4c 89 56 b0                  	movq	%r10, -0x50(%rsi)
+  201761: d9 c0                        	fld	%st(0)
+  201763: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201767: f2 42 0f 10 0c c9            	movsd	(%rcx,%r9,8), %xmm1
+  20176d: f2 0f 11 4c 24 d8            	movsd	%xmm1, -0x28(%rsp)
+  201773: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201777: dc 6c 24 d8                  	fsubrl	-0x28(%rsp)
+  20177b: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20177f: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  201783: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201787: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  20178c: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201790: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201794: 4c 8b 54 24 a8               	movq	-0x58(%rsp), %r10
+  201799: 4c 89 56 b8                  	movq	%r10, -0x48(%rsi)
+  20179d: 44 0f b7 54 24 b0            	movzwl	-0x50(%rsp), %r10d
+  2017a3: 4c 89 56 c0                  	movq	%r10, -0x40(%rsi)
+  2017a7: d9 c0                        	fld	%st(0)
+  2017a9: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2017ad: f2 42 0f 10 0c c9            	movsd	(%rcx,%r9,8), %xmm1
+  2017b3: f2 0f 11 4c 24 d8            	movsd	%xmm1, -0x28(%rsp)
+  2017b9: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2017bd: dc 4c 24 d8                  	fmull	-0x28(%rsp)
+  2017c1: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  2017c5: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  2017c9: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  2017cd: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  2017d2: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  2017d6: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  2017da: 4c 8b 54 24 a8               	movq	-0x58(%rsp), %r10
+  2017df: 4c 89 56 c8                  	movq	%r10, -0x38(%rsi)
+  2017e3: 44 0f b7 54 24 b0            	movzwl	-0x50(%rsp), %r10d
+  2017e9: 4c 89 56 d0                  	movq	%r10, -0x30(%rsi)
+  2017ed: d9 c0                        	fld	%st(0)
+  2017ef: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2017f3: f2 42 0f 10 0c c9            	movsd	(%rcx,%r9,8), %xmm1
+  2017f9: f2 0f 11 4c 24 d8            	movsd	%xmm1, -0x28(%rsp)
+  2017ff: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201803: dc 74 24 d8                  	fdivl	-0x28(%rsp)
+  201807: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20180b: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  20180f: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201813: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  201818: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  20181c: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201820: 4c 8b 4c 24 a8               	movq	-0x58(%rsp), %r9
+  201825: 4c 89 4e d8                  	movq	%r9, -0x28(%rsi)
+  201829: 44 0f b7 4c 24 b0            	movzwl	-0x50(%rsp), %r9d
+  20182f: 4c 89 4e e0                  	movq	%r9, -0x20(%rsi)
+  201833: d9 c0                        	fld	%st(0)
+  201835: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201839: 44 8b 0a                     	movl	(%rdx), %r9d
+  20183c: 44 89 4c 24 d8               	movl	%r9d, -0x28(%rsp)
+  201841: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201845: da 44 24 d8                  	fiaddl	-0x28(%rsp)
+  201849: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20184d: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  201851: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201855: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  20185a: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  20185e: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201862: 4c 8b 4c 24 a8               	movq	-0x58(%rsp), %r9
+  201867: 4c 89 4e e8                  	movq	%r9, -0x18(%rsi)
+  20186b: 44 0f b7 4c 24 b0            	movzwl	-0x50(%rsp), %r9d
+  201871: 4c 89 4e f0                  	movq	%r9, -0x10(%rsi)
+  201875: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201879: 44 8b 0a                     	movl	(%rdx), %r9d
+  20187c: 44 89 4c 24 d8               	movl	%r9d, -0x28(%rsp)
+  201881: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201885: da 4c 24 d8                  	fimull	-0x28(%rsp)
+  201889: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20188d: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  201891: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201895: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  20189a: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  20189e: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  2018a2: 4c 8b 4c 24 a8               	movq	-0x58(%rsp), %r9
+  2018a7: 4c 89 4e f8                  	movq	%r9, -0x8(%rsi)
+  2018ab: 44 0f b7 4c 24 b0            	movzwl	-0x50(%rsp), %r9d
+  2018b1: 4c 89 0e                     	movq	%r9, (%rsi)
+  2018b4: 49 ff c0                     	incq	%r8
+  2018b7: 48 83 c7 08                  	addq	$0x8, %rdi
+  2018bb: 48 83 c2 04                  	addq	$0x4, %rdx
+  2018bf: 48 83 c6 70                  	addq	$0x70, %rsi
+  2018c3: 49 83 f8 06                  	cmpq	$0x6, %r8
+  2018c7: 0f 85 f3 fd ff ff            	jne	0x2016c0 <kernel+0x3a0>
+  2018cd: ba 30 0a 00 00               	movl	$0xa30, %edx            # imm = 0xA30
+  2018d2: 48 81 c2 80 3b 20 00         	addq	$0x203b80, %rdx         # imm = 0x203B80
+  2018d9: 31 f6                        	xorl	%esi, %esi
+  2018db: 0f 57 c0                     	xorps	%xmm0, %xmm0
+  2018de: 66 90                        	nop
+  2018e0: dd 04 f1                     	fldl	(%rcx,%rsi,8)
+  2018e3: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2018e7: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2018eb: d9 e0                        	fchs
+  2018ed: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  2018f1: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  2018f5: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  2018f9: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  2018fe: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201902: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201906: 48 8b 7c 24 a8               	movq	-0x58(%rsp), %rdi
+  20190b: 48 89 7a e0                  	movq	%rdi, -0x20(%rdx)
+  20190f: 0f b7 7c 24 b0               	movzwl	-0x50(%rsp), %edi
+  201914: 48 89 7a e8                  	movq	%rdi, -0x18(%rdx)
+  201918: dd 04 f1                     	fldl	(%rcx,%rsi,8)
+  20191b: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  20191f: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201923: d9 e1                        	fabs
+  201925: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201929: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  20192d: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201931: 0f 29 44 24 a8               	movaps	%xmm0, -0x58(%rsp)
+  201936: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  20193a: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  20193e: 48 8b 7c 24 a8               	movq	-0x58(%rsp), %rdi
+  201943: 48 89 7a f0                  	movq	%rdi, -0x10(%rdx)
+  201947: 0f b7 7c 24 b0               	movzwl	-0x50(%rsp), %edi
+  20194c: 48 89 7a f8                  	movq	%rdi, -0x8(%rdx)
+  201950: dd 04 f1                     	fldl	(%rcx,%rsi,8)
+  201953: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201957: dd 44 f1 10                  	fldl	0x10(%rcx,%rsi,8)
+  20195b: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  20195f: 31 ff                        	xorl	%edi, %edi
+  201961: 45 31 c0                     	xorl	%r8d, %r8d
+  201964: 45 31 c9                     	xorl	%r9d, %r9d
+  201967: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  20196b: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  20196f: df e9                        	fucompi	%st(1), %st
+  201971: dd d8                        	fstp	%st(0)
+  201973: 41 0f 94 c0                  	sete	%r8b
+  201977: 41 0f 92 c1                  	setb	%r9b
+  20197b: 40 0f 9a c7                  	setp	%dil
+  20197f: 49 c1 e1 08                  	shlq	$0x8, %r9
+  201983: 4d 09 c1                     	orq	%r8, %r9
+  201986: 48 c1 e7 10                  	shlq	$0x10, %rdi
+  20198a: 4c 09 cf                     	orq	%r9, %rdi
+  20198d: 48 89 3a                     	movq	%rdi, (%rdx)
+  201990: 48 ff c6                     	incq	%rsi
+  201993: 48 83 c2 28                  	addq	$0x28, %rdx
+  201997: 48 83 fe 08                  	cmpq	$0x8, %rsi
+  20199b: 0f 85 3f ff ff ff            	jne	0x2018e0 <kernel+0x5c0>
+  2019a1: ba 60 0b 00 00               	movl	$0xb60, %edx            # imm = 0xB60
+  2019a6: 48 81 c2 80 3b 20 00         	addq	$0x203b80, %rdx         # imm = 0x203B80
+  2019ad: 31 f6                        	xorl	%esi, %esi
+  2019af: 90                           	nop
+  2019b0: dd 04 0e                     	fldl	(%rsi,%rcx)
+  2019b3: d9 c0                        	fld	%st(0)
+  2019b5: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2019b9: c7 44 24 b8 00 00 00 00      	movl	$0x0, -0x48(%rsp)
+  2019c1: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2019c5: db 5c 24 b8                  	fistpl	-0x48(%rsp)
+  2019c9: 48 63 7c 24 b8               	movslq	-0x48(%rsp), %rdi
+  2019ce: 48 89 7a f0                  	movq	%rdi, -0x10(%rdx)
+  2019d2: d9 c0                        	fld	%st(0)
+  2019d4: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2019d8: 66 c7 44 24 b8 00 00         	movw	$0x0, -0x48(%rsp)
+  2019df: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  2019e3: df 5c 24 b8                  	fistps	-0x48(%rsp)
+  2019e7: 48 0f bf 7c 24 b8            	movswq	-0x48(%rsp), %rdi
+  2019ed: 48 89 7a f8                  	movq	%rdi, -0x8(%rdx)
+  2019f1: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  2019f5: 48 c7 44 24 b8 00 00 00 00   	movq	$0x0, -0x48(%rsp)
+  2019fe: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201a02: df 7c 24 b8                  	fistpll	-0x48(%rsp)
+  201a06: 48 8b 7c 24 b8               	movq	-0x48(%rsp), %rdi
+  201a0b: 48 89 3a                     	movq	%rdi, (%rdx)
+  201a0e: 48 83 c6 08                  	addq	$0x8, %rsi
+  201a12: 48 83 c2 18                  	addq	$0x18, %rdx
+  201a16: 48 83 fe 40                  	cmpq	$0x40, %rsi
+  201a1a: 75 94                        	jne	0x2019b0 <kernel+0x690>
+  201a1c: 66 c7 44 24 f8 00 00         	movw	$0x0, -0x8(%rsp)
+  201a23: d9 7c 24 f8                  	fnstcw	-0x8(%rsp)
+  201a27: 0f b7 4c 24 f8               	movzwl	-0x8(%rsp), %ecx
+  201a2c: 48 89 88 10 0c 00 00         	movq	%rcx, 0xc10(%rax)
+  201a33: 48 05 38 0c 00 00            	addq	$0xc38, %rax            # imm = 0xC38
+  201a39: 31 c9                        	xorl	%ecx, %ecx
+  201a3b: 48 8d 15 8a e7 ff ff         	leaq	-0x1876(%rip), %rdx     # 0x2001cc <kernel.settings>
+  201a42: d9 e8                        	fld1
+  201a44: d9 05 7e e7 ff ff            	flds	-0x1882(%rip)           # 0x2001c8
+  201a4a: 0f 57 c0                     	xorps	%xmm0, %xmm0
+  201a4d: 0f 1f 00                     	nopl	(%rax)
+  201a50: 0f b7 34 11                  	movzwl	(%rcx,%rdx), %esi
+  201a54: 66 89 74 24 fa               	movw	%si, -0x6(%rsp)
+  201a59: d9 6c 24 fa                  	fldcw	-0x6(%rsp)
+  201a5d: d9 c1                        	fld	%st(1)
+  201a5f: db 7c 24 c8                  	fstpt	-0x38(%rsp)
+  201a63: d9 c0                        	fld	%st(0)
+  201a65: db 7c 24 b8                  	fstpt	-0x48(%rsp)
+  201a69: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201a6d: db 6c 24 b8                  	fldt	-0x48(%rsp)
+  201a71: de f1                        	fdivp	%st, %st(1)
+  201a73: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201a77: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201a7b: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201a7f: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  201a84: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  201a88: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  201a8c: 48 8b 74 24 d8               	movq	-0x28(%rsp), %rsi
+  201a91: 48 89 70 e0                  	movq	%rsi, -0x20(%rax)
+  201a95: 0f b7 74 24 e0               	movzwl	-0x20(%rsp), %esi
+  201a9a: 48 89 70 e8                  	movq	%rsi, -0x18(%rax)
+  201a9e: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201aa2: db 6c 24 c8                  	fldt	-0x38(%rsp)
+  201aa6: de c1                        	faddp	%st, %st(1)
+  201aa8: db 7c 24 e8                  	fstpt	-0x18(%rsp)
+  201aac: db 6c 24 e8                  	fldt	-0x18(%rsp)
+  201ab0: db 7c 24 a8                  	fstpt	-0x58(%rsp)
+  201ab4: 0f 29 44 24 d8               	movaps	%xmm0, -0x28(%rsp)
+  201ab9: db 6c 24 a8                  	fldt	-0x58(%rsp)
+  201abd: db 7c 24 d8                  	fstpt	-0x28(%rsp)
+  201ac1: 48 8b 74 24 d8               	movq	-0x28(%rsp), %rsi
+  201ac6: 48 89 70 f0                  	movq	%rsi, -0x10(%rax)
+  201aca: 0f b7 74 24 e0               	movzwl	-0x20(%rsp), %esi
+  201acf: 48 89 70 f8                  	movq	%rsi, -0x8(%rax)
+  201ad3: 66 c7 44 24 a8 00 00         	movw	$0x0, -0x58(%rsp)
+  201ada: d9 7c 24 a8                  	fnstcw	-0x58(%rsp)
+  201ade: 0f b7 74 24 a8               	movzwl	-0x58(%rsp), %esi
+  201ae3: 48 89 30                     	movq	%rsi, (%rax)
+  201ae6: 48 83 c0 28                  	addq	$0x28, %rax
+  201aea: 48 83 c1 02                  	addq	$0x2, %rcx
+  201aee: 48 83 f9 0c                  	cmpq	$0xc, %rcx
+  201af2: 0f 85 58 ff ff ff            	jne	0x201a50 <kernel+0x730>
+  201af8: dd d9                        	fstp	%st(1)
+  201afa: dd d8                        	fstp	%st(0)
+  201afc: d9 6c 24 f8                  	fldcw	-0x8(%rsp)
+  201b00: b8 6f 01 00 00               	movl	$0x16f, %eax            # imm = 0x16F
+  201b05: c3                           	retq

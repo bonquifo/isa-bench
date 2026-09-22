@@ -10,10 +10,12 @@
 import { buildFixtures, type FixtureTarget } from './fixture-builder.ts'
 import { aarch64Target } from './targets/aarch64.ts'
 import { rv64Target } from './targets/rv64.ts'
+import { x86Target } from './targets/x86.ts'
 
 const TARGETS: Record<string, FixtureTarget> = {
   rv64: rv64Target,
   aarch64: aarch64Target,
+  x86: x86Target,
 }
 
 const requested = process.argv[2]

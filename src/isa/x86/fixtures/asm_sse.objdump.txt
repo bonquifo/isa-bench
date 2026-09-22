@@ -1,0 +1,231 @@
+
+/work/out.elf:	file format elf64-x86-64
+
+Disassembly of section .text:
+
+00000000002011d0 <_start>:
+  2011d0: 48 8d 25 e9 45 00 00         	leaq	0x45e9(%rip), %rsp      # 0x2057c0 <isa_stack>
+  2011d7: 48 81 c4 00 00 01 00         	addq	$0x10000, %rsp          # imm = 0x10000
+  2011de: e8 2d 01 00 00               	callq	0x201310 <kernel>
+  2011e3: 4c 8d 3d 46 24 00 00         	leaq	0x2446(%rip), %r15      # 0x203630 <isa_dump>
+  2011ea: 49 89 07                     	movq	%rax, (%r15)
+  2011ed: 49 89 4f 08                  	movq	%rcx, 0x8(%r15)
+  2011f1: 49 89 57 10                  	movq	%rdx, 0x10(%r15)
+  2011f5: 49 89 5f 18                  	movq	%rbx, 0x18(%r15)
+  2011f9: 49 89 67 20                  	movq	%rsp, 0x20(%r15)
+  2011fd: 49 89 6f 28                  	movq	%rbp, 0x28(%r15)
+  201201: 49 89 77 30                  	movq	%rsi, 0x30(%r15)
+  201205: 49 89 7f 38                  	movq	%rdi, 0x38(%r15)
+  201209: 4d 89 47 40                  	movq	%r8, 0x40(%r15)
+  20120d: 4d 89 4f 48                  	movq	%r9, 0x48(%r15)
+  201211: 4d 89 57 50                  	movq	%r10, 0x50(%r15)
+  201215: 4d 89 5f 58                  	movq	%r11, 0x58(%r15)
+  201219: 4d 89 67 60                  	movq	%r12, 0x60(%r15)
+  20121d: 4d 89 6f 68                  	movq	%r13, 0x68(%r15)
+  201221: 4d 89 77 70                  	movq	%r14, 0x70(%r15)
+  201225: 4d 89 7f 78                  	movq	%r15, 0x78(%r15)
+  201229: 48 39 c8                     	cmpq	%rcx, %rax
+  20122c: 0f 90 c0                     	seto	%al
+  20122f: 9f                           	lahf
+  201230: 0f b6 cc                     	movzbl	%ah, %ecx
+  201233: 81 e1 d5 00 00 00            	andl	$0xd5, %ecx
+  201239: 83 e0 01                     	andl	$0x1, %eax
+  20123c: c1 e0 0b                     	shll	$0xb, %eax
+  20123f: 09 c1                        	orl	%eax, %ecx
+  201241: 49 89 8f 80 00 00 00         	movq	%rcx, 0x80(%r15)
+  201248: 49 c7 87 88 00 00 00 00 00 00 00     	movq	$0x0, 0x88(%r15)
+  201253: 41 0f 11 87 90 00 00 00      	movups	%xmm0, 0x90(%r15)
+  20125b: 41 0f 11 8f a0 00 00 00      	movups	%xmm1, 0xa0(%r15)
+  201263: 41 0f 11 97 b0 00 00 00      	movups	%xmm2, 0xb0(%r15)
+  20126b: 41 0f 11 9f c0 00 00 00      	movups	%xmm3, 0xc0(%r15)
+  201273: 41 0f 11 a7 d0 00 00 00      	movups	%xmm4, 0xd0(%r15)
+  20127b: 41 0f 11 af e0 00 00 00      	movups	%xmm5, 0xe0(%r15)
+  201283: 41 0f 11 b7 f0 00 00 00      	movups	%xmm6, 0xf0(%r15)
+  20128b: 41 0f 11 bf 00 01 00 00      	movups	%xmm7, 0x100(%r15)
+  201293: 45 0f 11 87 10 01 00 00      	movups	%xmm8, 0x110(%r15)
+  20129b: 45 0f 11 8f 20 01 00 00      	movups	%xmm9, 0x120(%r15)
+  2012a3: 45 0f 11 97 30 01 00 00      	movups	%xmm10, 0x130(%r15)
+  2012ab: 45 0f 11 9f 40 01 00 00      	movups	%xmm11, 0x140(%r15)
+  2012b3: 45 0f 11 a7 50 01 00 00      	movups	%xmm12, 0x150(%r15)
+  2012bb: 45 0f 11 af 60 01 00 00      	movups	%xmm13, 0x160(%r15)
+  2012c3: 45 0f 11 b7 70 01 00 00      	movups	%xmm14, 0x170(%r15)
+  2012cb: 45 0f 11 bf 80 01 00 00      	movups	%xmm15, 0x180(%r15)
+  2012d3: 48 c7 c0 01 00 00 00         	movq	$0x1, %rax
+  2012da: 48 c7 c7 01 00 00 00         	movq	$0x1, %rdi
+  2012e1: 4c 89 fe                     	movq	%r15, %rsi
+  2012e4: 48 c7 c2 90 21 00 00         	movq	$0x2190, %rdx           # imm = 0x2190
+  2012eb: 48 39 e4                     	cmpq	%rsp, %rsp
+  2012ee: 0f 05                        	syscall
+  2012f0: 48 c7 c0 3c 00 00 00         	movq	$0x3c, %rax
+  2012f7: 48 c7 c7 00 00 00 00         	movq	$0x0, %rdi
+  2012fe: 48 39 e4                     	cmpq	%rsp, %rsp
+  201301: 0f 05                        	syscall
+  201303: 0f 0b                        	ud2
+  201305: cc                           	int3
+  201306: cc                           	int3
+  201307: cc                           	int3
+  201308: cc                           	int3
+  201309: cc                           	int3
+  20130a: cc                           	int3
+  20130b: cc                           	int3
+  20130c: cc                           	int3
+  20130d: cc                           	int3
+  20130e: cc                           	int3
+  20130f: cc                           	int3
+
+0000000000201310 <kernel>:
+  201310: f2 0f 10 05 e8 22 00 00      	movsd	0x22e8(%rip), %xmm0     # 0x203600 <seed>
+  201318: f2 0f 10 0d e8 22 00 00      	movsd	0x22e8(%rip), %xmm1     # 0x203608 <seed+0x8>
+  201320: 0f 16 c1                     	movlhps	%xmm1, %xmm0            # xmm0 = xmm0[0],xmm1[0]
+  201323: f2 0f 10 0d e5 22 00 00      	movsd	0x22e5(%rip), %xmm1     # 0x203610 <seed+0x10>
+  20132b: f2 0f 10 15 e5 22 00 00      	movsd	0x22e5(%rip), %xmm2     # 0x203618 <seed+0x18>
+  201333: 0f 16 ca                     	movlhps	%xmm2, %xmm1            # xmm1 = xmm1[0],xmm2[0]
+  201336: f2 0f 10 15 e2 22 00 00      	movsd	0x22e2(%rip), %xmm2     # 0x203620 <seed+0x20>
+  20133e: f2 0f 10 1d e2 22 00 00      	movsd	0x22e2(%rip), %xmm3     # 0x203628 <seed+0x28>
+  201346: 0f 16 d3                     	movlhps	%xmm3, %xmm2            # xmm2 = xmm2[0],xmm3[0]
+  201349: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  20134c: 66 0f fc d9                  	paddb	%xmm1, %xmm3
+  201350: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  201354: 48 8d 05 d5 22 00 00         	leaq	0x22d5(%rip), %rax      # 0x203630 <isa_dump>
+  20135b: 0f 11 98 90 01 00 00         	movups	%xmm3, 0x190(%rax)
+  201362: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  201365: 66 0f fd d9                  	paddw	%xmm1, %xmm3
+  201369: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  20136d: 0f 11 98 a0 01 00 00         	movups	%xmm3, 0x1a0(%rax)
+  201374: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  201377: 66 0f fe d9                  	paddd	%xmm1, %xmm3
+  20137b: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  20137f: 0f 11 98 b0 01 00 00         	movups	%xmm3, 0x1b0(%rax)
+  201386: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  201389: 66 0f d4 d9                  	paddq	%xmm1, %xmm3
+  20138d: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  201391: 0f 11 98 c0 01 00 00         	movups	%xmm3, 0x1c0(%rax)
+  201398: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  20139b: 66 0f f8 d9                  	psubb	%xmm1, %xmm3
+  20139f: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  2013a3: 0f 11 98 d0 01 00 00         	movups	%xmm3, 0x1d0(%rax)
+  2013aa: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  2013ad: 66 0f fa d9                  	psubd	%xmm1, %xmm3
+  2013b1: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  2013b5: 0f 11 98 e0 01 00 00         	movups	%xmm3, 0x1e0(%rax)
+  2013bc: 0f 28 da                     	movaps	%xmm2, %xmm3
+  2013bf: 66 0f fb d8                  	psubq	%xmm0, %xmm3
+  2013c3: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  2013c7: 0f 11 98 f0 01 00 00         	movups	%xmm3, 0x1f0(%rax)
+  2013ce: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  2013d1: 66 0f db d9                  	pand	%xmm1, %xmm3
+  2013d5: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  2013d9: 0f 11 98 00 02 00 00         	movups	%xmm3, 0x200(%rax)
+  2013e0: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  2013e3: 66 0f eb d9                  	por	%xmm1, %xmm3
+  2013e7: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  2013eb: 0f 11 98 10 02 00 00         	movups	%xmm3, 0x210(%rax)
+  2013f2: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  2013f5: 66 0f ef d9                  	pxor	%xmm1, %xmm3
+  2013f9: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  2013fd: 0f 11 98 20 02 00 00         	movups	%xmm3, 0x220(%rax)
+  201404: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  201407: 0f 57 da                     	xorps	%xmm2, %xmm3
+  20140a: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  20140e: 0f 11 98 30 02 00 00         	movups	%xmm3, 0x230(%rax)
+  201415: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  201418: 0f 54 da                     	andps	%xmm2, %xmm3
+  20141b: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  20141f: 0f 11 98 40 02 00 00         	movups	%xmm3, 0x240(%rax)
+  201426: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  201429: 66 0f 74 d9                  	pcmpeqb	%xmm1, %xmm3
+  20142d: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  201431: 0f 11 98 50 02 00 00         	movups	%xmm3, 0x250(%rax)
+  201438: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  20143b: 66 0f 76 d8                  	pcmpeqd	%xmm0, %xmm3
+  20143f: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  201443: 0f 11 98 60 02 00 00         	movups	%xmm3, 0x260(%rax)
+  20144a: 0f 28 d8                     	movaps	%xmm0, %xmm3
+  20144d: 66 0f 64 d9                  	pcmpgtb	%xmm1, %xmm3
+  201451: 66 0f 6f db                  	movdqa	%xmm3, %xmm3
+  201455: 0f 11 98 70 02 00 00         	movups	%xmm3, 0x270(%rax)
+  20145c: 66 0f 66 d0                  	pcmpgtd	%xmm0, %xmm2
+  201460: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  201464: 0f 11 90 80 02 00 00         	movups	%xmm2, 0x280(%rax)
+  20146b: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  20146e: 66 0f 60 d1                  	punpcklbw	%xmm1, %xmm2    # xmm2 = xmm2[0],xmm1[0],xmm2[1],xmm1[1],xmm2[2],xmm1[2],xmm2[3],xmm1[3],xmm2[4],xmm1[4],xmm2[5],xmm1[5],xmm2[6],xmm1[6],xmm2[7],xmm1[7]
+  201472: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  201476: 0f 11 90 90 02 00 00         	movups	%xmm2, 0x290(%rax)
+  20147d: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  201480: 66 0f 61 d1                  	punpcklwd	%xmm1, %xmm2    # xmm2 = xmm2[0],xmm1[0],xmm2[1],xmm1[1],xmm2[2],xmm1[2],xmm2[3],xmm1[3]
+  201484: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  201488: 0f 11 90 a0 02 00 00         	movups	%xmm2, 0x2a0(%rax)
+  20148f: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  201492: 66 0f 62 d1                  	punpckldq	%xmm1, %xmm2    # xmm2 = xmm2[0],xmm1[0],xmm2[1],xmm1[1]
+  201496: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  20149a: 0f 11 90 b0 02 00 00         	movups	%xmm2, 0x2b0(%rax)
+  2014a1: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  2014a4: 66 0f 6c d1                  	punpcklqdq	%xmm1, %xmm2    # xmm2 = xmm2[0],xmm1[0]
+  2014a8: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  2014ac: 0f 11 90 c0 02 00 00         	movups	%xmm2, 0x2c0(%rax)
+  2014b3: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  2014b6: 66 0f f4 d1                  	pmuludq	%xmm1, %xmm2
+  2014ba: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  2014be: 0f 11 90 d0 02 00 00         	movups	%xmm2, 0x2d0(%rax)
+  2014c5: 66 0f 70 d0 e4               	pshufd	$0xe4, %xmm0, %xmm2     # xmm2 = xmm0[0,1,2,3]
+  2014ca: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  2014ce: 0f 11 90 e0 02 00 00         	movups	%xmm2, 0x2e0(%rax)
+  2014d5: 66 0f 70 d0 1b               	pshufd	$0x1b, %xmm0, %xmm2     # xmm2 = xmm0[3,2,1,0]
+  2014da: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  2014de: 0f 11 90 f0 02 00 00         	movups	%xmm2, 0x2f0(%rax)
+  2014e5: 66 0f 70 d0 00               	pshufd	$0x0, %xmm0, %xmm2      # xmm2 = xmm0[0,0,0,0]
+  2014ea: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  2014ee: 0f 11 90 00 03 00 00         	movups	%xmm2, 0x300(%rax)
+  2014f5: 66 0f 70 d0 4e               	pshufd	$0x4e, %xmm0, %xmm2     # xmm2 = xmm0[2,3,0,1]
+  2014fa: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  2014fe: 0f 11 90 10 03 00 00         	movups	%xmm2, 0x310(%rax)
+  201505: 66 0f 70 d1 ff               	pshufd	$0xff, %xmm1, %xmm2     # xmm2 = xmm1[3,3,3,3]
+  20150a: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  20150e: 0f 11 90 20 03 00 00         	movups	%xmm2, 0x320(%rax)
+  201515: 48 8b 0d 04 21 00 00         	movq	0x2104(%rip), %rcx      # 0x203620 <seed+0x20>
+  20151c: 48 8b 15 05 21 00 00         	movq	0x2105(%rip), %rdx      # 0x203628 <seed+0x28>
+  201523: 66 48 0f 6e d1               	movq	%rcx, %xmm2
+  201528: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  20152c: 0f 11 90 30 03 00 00         	movups	%xmm2, 0x330(%rax)
+  201533: 66 0f 6e d2                  	movd	%edx, %xmm2
+  201537: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  20153b: 0f 11 90 40 03 00 00         	movups	%xmm2, 0x340(%rax)
+  201542: 66 48 0f 7e c9               	movq	%xmm1, %rcx
+  201547: 48 89 88 50 03 00 00         	movq	%rcx, 0x350(%rax)
+  20154e: 66 0f 7e c9                  	movd	%xmm1, %ecx
+  201552: 89 c9                        	movl	%ecx, %ecx
+  201554: 48 89 88 58 03 00 00         	movq	%rcx, 0x358(%rax)
+  20155b: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  20155e: f3 0f 7e d1                  	movq	%xmm1, %xmm2            # xmm2 = xmm1[0],zero
+  201562: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  201566: 0f 11 90 60 03 00 00         	movups	%xmm2, 0x360(%rax)
+  20156d: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  201570: f2 0f 10 d1                  	movsd	%xmm1, %xmm2            # xmm2 = xmm1[0],xmm2[1]
+  201574: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  201578: 0f 11 90 70 03 00 00         	movups	%xmm2, 0x370(%rax)
+  20157f: 0f 28 d0                     	movaps	%xmm0, %xmm2
+  201582: f3 0f 10 d1                  	movss	%xmm1, %xmm2            # xmm2 = xmm1[0],xmm2[1,2,3]
+  201586: 66 0f 6f d2                  	movdqa	%xmm2, %xmm2
+  20158a: 0f 11 90 80 03 00 00         	movups	%xmm2, 0x380(%rax)
+  201591: 48 8d 88 90 03 00 00         	leaq	0x390(%rax), %rcx
+  201598: 66 0f 7f 01                  	movdqa	%xmm0, (%rcx)
+  20159c: 48 8d 90 a3 03 00 00         	leaq	0x3a3(%rax), %rdx
+  2015a3: 0f 11 0a                     	movups	%xmm1, (%rdx)
+  2015a6: 66 0f 6f 09                  	movdqa	(%rcx), %xmm1
+  2015aa: 66 0f 6f c9                  	movdqa	%xmm1, %xmm1
+  2015ae: 0f 11 88 90 03 00 00         	movups	%xmm1, 0x390(%rax)
+  2015b5: 48 8d 88 98 03 00 00         	leaq	0x398(%rax), %rcx
+  2015bc: 0f 10 0a                     	movups	(%rdx), %xmm1
+  2015bf: 66 0f 6f c9                  	movdqa	%xmm1, %xmm1
+  2015c3: 0f 11 88 a0 03 00 00         	movups	%xmm1, 0x3a0(%rax)
+  2015ca: f3 0f 7e 09                  	movq	(%rcx), %xmm1
+  2015ce: 66 0f 6f c9                  	movdqa	%xmm1, %xmm1
+  2015d2: 0f 11 88 b0 03 00 00         	movups	%xmm1, 0x3b0(%rax)
+  2015d9: 48 8d 88 c0 03 00 00         	leaq	0x3c0(%rax), %rcx
+  2015e0: 66 0f d6 01                  	movq	%xmm0, (%rcx)
+  2015e4: 48 8d 88 bc 03 00 00         	leaq	0x3bc(%rax), %rcx
+  2015eb: f3 0f 6f 01                  	movdqu	(%rcx), %xmm0
+  2015ef: 66 0f 6f c0                  	movdqa	%xmm0, %xmm0
+  2015f3: 0f 11 80 c0 03 00 00         	movups	%xmm0, 0x3c0(%rax)
+  2015fa: b8 48 00 00 00               	movl	$0x48, %eax
+  2015ff: c3                           	retq

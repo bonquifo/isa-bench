@@ -19,6 +19,8 @@ import * as aarch64Shipped from '../isa/aarch64/shipped.ts'
 import type { IsaBackend } from '../isa/backend.ts'
 import { rv64Backend } from '../isa/riscv/backend.ts'
 import * as rv64Shipped from '../isa/riscv/shipped.ts'
+import { x86Backend } from '../isa/x86/backend.ts'
+import * as x86Shipped from '../isa/x86/shipped.ts'
 
 /** The parts of a target's shipped-binary module the lane uses. */
 interface ShippedModule {
@@ -59,5 +61,17 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     oracle: 'qemu-aarch64',
     verified: 'register by register and flag by flag, before every instruction',
     shipped: aarch64Shipped,
+  },
+  {
+    id: IsaId.X86,
+    backend: x86Backend,
+    label: 'x86-64',
+    instructions: 'x86-64',
+    // The one target whose reference is not an emulator. The machine the
+    // tests run on is an x86-64 machine, so the comparison can be against
+    // the processor itself, single-stepped through ptrace.
+    oracle: 'the host processor',
+    verified: 'register by register and flag by flag, before every instruction',
+    shipped: x86Shipped,
   },
 ]

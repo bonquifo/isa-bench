@@ -7,7 +7,7 @@
  */
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { FixtureTarget, LockstepStep } from '../fixture-builder.ts'
+import { qemuOracle, type FixtureTarget, type LockstepStep } from '../fixture-builder.ts'
 import { CORPUS_FLAGS, corpusPrograms } from '../corpus.ts'
 import { generateRandomProgram } from '../rv64/random.ts'
 
@@ -59,8 +59,7 @@ const RANDOM_SEEDS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
 export const rv64Target: FixtureTarget = {
   id: 'rv64',
   codegen: 'isa-bench/codegen-min:23.1.0',
-  oracle: 'isa-sim/qemu-user:11.1.0',
-  qemu: '/opt/qemu/bin/qemu-riscv64',
+  oracle: qemuOracle('isa-sim/qemu-user:11.1.0', '/opt/qemu/bin/qemu-riscv64'),
   triple: 'riscv64-unknown-linux-gnu',
   march: 'rv64gc',
   harnessDir: join(TOOLS, 'rv64'),
