@@ -841,6 +841,33 @@ at all, and `lld` cannot link SPARC either (`unknown emulation: elf32_sparc`,
 verified) — which is what `isa-sim/sparc-linker:2.40-2` exists for. That
 target needs binutils, and picolibc or a freestanding subset.
 
+#### SPARC V8, measured before building
+
+The toolchain and the oracle are both confirmed working end to end, and
+four things about them shape the backend:
+
+- **The chain is three images, not two.** `clang --target=sparc-unknown-linux-gnu
+  -mcpu=v8` compiles (note `-mcpu`, not `-march`, which clang rejects for
+  this target), `sparc64-linux-gnu-ld -m elf32_sparc` links, and
+  `qemu-sparc` — already in `isa-sim/qemu-user:11.1.0` — runs it. A
+  freestanding recursive-Fibonacci program returns the right answer
+  through all three.
+- **It is the first big-endian target.** `GuestMemory` already takes
+  endianness as a constructor argument, which is exactly why.
+- **The delay slot is architectural here, not implied.** qemu's dump
+  carries `pc` *and* `npc`, so unlike MIPS the "where control goes next"
+  state is named by the architecture and does not have to be
+  reconstructed. The dump also carries the window-relative `%g/%o/%l/%i`
+  view, `psr` with the integer condition codes, `wim`, `y` and `fsr`.
+- **Window overflow traps are handled inside qemu and appear as a
+  duplicated dump.** When a `save` runs out of windows, the Linux kernel
+  spills to the stack; qemu-user emulates that internally, so no handler
+  instructions appear in the trace. What appears instead is the *same*
+  pc, npc and registers twice in a row with only `wim` changed, because
+  qemu restarts the translation block after taking the trap. A lockstep
+  parser that does not expect that pair will report a mismatch on every
+  recursion deeper than eight frames.
+
 ### What a libc program actually needs, measured
 
 Running one was the only way to find out, and the answer was three things
