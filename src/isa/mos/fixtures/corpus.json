@@ -30,21 +30,21 @@
     {
       "name": "corpus-fib",
       "exit": 0,
-      "imageBytes": 4736,
+      "imageBytes": 4740,
       "stdoutBytes": 16,
       "stderrBytes": 0
     },
     {
       "name": "corpus-hello",
       "exit": 0,
-      "imageBytes": 4555,
+      "imageBytes": 4559,
       "stdoutBytes": 14,
       "stderrBytes": 0
     },
     {
       "name": "corpus-sum",
       "exit": 0,
-      "imageBytes": 4527,
+      "imageBytes": 4531,
       "stdoutBytes": 4,
       "stderrBytes": 0
     },
@@ -72,14 +72,14 @@
     {
       "name": "corpus-life",
       "exit": 0,
-      "imageBytes": 5420,
+      "imageBytes": 5443,
       "stdoutBytes": 18,
       "stderrBytes": 0
     },
     {
       "name": "corpus-cube",
       "exit": 0,
-      "imageBytes": 6580,
+      "imageBytes": 6594,
       "stdoutBytes": 7,
       "stderrBytes": 0
     },
@@ -93,28 +93,28 @@
     {
       "name": "corpus-nbody",
       "exit": 0,
-      "imageBytes": 5760,
+      "imageBytes": 5751,
       "stdoutBytes": 18,
       "stderrBytes": 0
     },
     {
       "name": "corpus-queens",
       "exit": 0,
-      "imageBytes": 5094,
+      "imageBytes": 5103,
       "stdoutBytes": 13,
       "stderrBytes": 0
     },
     {
       "name": "corpus-fft",
       "exit": 0,
-      "imageBytes": 5349,
+      "imageBytes": 5353,
       "stdoutBytes": 19,
       "stderrBytes": 0
     },
     {
       "name": "corpus-pi",
       "exit": 0,
-      "imageBytes": 5258,
+      "imageBytes": 5262,
       "stdoutBytes": 17,
       "stderrBytes": 0
     }
