@@ -18,7 +18,7 @@
  * disassembler's name can stand for, which is the strongest statement
  * that does not require reimplementing the disassembler.
  */
-import { PPC, PPC_NAME, decode } from './decode.ts'
+import { File, PPC, PPC_NAME, decode, type PpcInst } from './decode.ts'
 import type { DecodeCheck } from '../conformance.node.ts'
 
 const ALIASES: Readonly<Record<string, readonly number[]>> = {
@@ -33,7 +33,7 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   'add.': [PPC.ADD], 'subf.': [PPC.SUBF], 'and.': [PPC.AND], 'or.': [PPC.OR],
   'xor.': [PPC.XOR], 'nand.': [PPC.NAND], 'nor.': [PPC.NOR], 'eqv.': [PPC.EQV],
   'andc.': [PPC.ANDC], 'orc.': [PPC.ORC],
-  'mullw.': [PPC.MULLW], 'mulld.': [PPC.MULLD],
+  'mullw.': [PPC.MULLW], 'mulld.': [PPC.MULLD], 'mulhdu.': [PPC.MULHDU],
   'divw.': [PPC.DIVW], 'divd.': [PPC.DIVD],
   'divwu.': [PPC.DIVWU], 'divdu.': [PPC.DIVDU],
   'neg.': [PPC.NEG], 'extsb.': [PPC.EXTSB], 'extsh.': [PPC.EXTSH],
@@ -65,10 +65,8 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   'rldicl.': [PPC.RLDICL], 'rldicr.': [PPC.RLDICR], 'rldic.': [PPC.RLDIC],
   'rldimi.': [PPC.RLDIMI], 'rldcl.': [PPC.RLDCL], 'rldcr.': [PPC.RLDCR],
 
-  // Comparison, whose width is a field rather than part of the name.
-  cmpw: [PPC.CMP], cmpd: [PPC.CMP], cmplw: [PPC.CMPL], cmpld: [PPC.CMPL],
-  cmpwi: [PPC.CMPI], cmpdi: [PPC.CMPI],
-  cmplwi: [PPC.CMPLI], cmpldi: [PPC.CMPLI],
+  // Comparisons are checked by signature below: their width is a field,
+  // and `cmpw` and `cmpd` are different questions.
 
   // Every branch is one of three instructions.
   b: [PPC.B], ba: [PPC.B], bl: [PPC.B], bla: [PPC.B],
@@ -86,7 +84,7 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   mfxer: [PPC.MFSPR], mtxer: [PPC.MTSPR],
   mfspr: [PPC.MFSPR], mtspr: [PPC.MTSPR],
   mftb: [PPC.MFSPR], mfvrsave: [PPC.MFSPR], mtvrsave: [PPC.MTSPR],
-  mfcr: [PPC.MFCR], mfocrf: [PPC.MFCR], mtcr: [PPC.MTCRF], mtcrf: [PPC.MTCRF], mtocrf: [PPC.MTCRF],
+  mtcr: [PPC.MTCRF], mtcrf: [PPC.MTCRF], mtocrf: [PPC.MTCRF],
 
   // The condition-register logic, where the same-operand case is named
   // after what it does rather than what it is.
@@ -105,67 +103,39 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   trap: [PPC.TRAP], tw: [PPC.TRAP], td: [PPC.TRAP], twi: [PPC.TRAP], tdi: [PPC.TRAP],
   'sc': [PPC.SC],
 
-  // Loads and stores: the width and the sign are fields here, so all of
-  // these are four operations.
-  lbz: [PPC.LOAD], lhz: [PPC.LOAD], lha: [PPC.LOAD], lwz: [PPC.LOAD],
-  lwa: [PPC.LOAD], ld: [PPC.LOAD], lfs: [PPC.LOAD], lfd: [PPC.LOAD],
-  lbzu: [PPC.LOADU], lhzu: [PPC.LOADU], lhau: [PPC.LOADU], lwzu: [PPC.LOADU],
-  ldu: [PPC.LOADU], lfsu: [PPC.LOADU], lfdu: [PPC.LOADU],
-  stb: [PPC.STORE], sth: [PPC.STORE], stw: [PPC.STORE], std: [PPC.STORE],
-  stfs: [PPC.STORE], stfd: [PPC.STORE],
-  stbu: [PPC.STOREU], sthu: [PPC.STOREU], stwu: [PPC.STOREU], stdu: [PPC.STOREU],
-  stfsu: [PPC.STOREU], stfdu: [PPC.STOREU],
-  lbzx: [PPC.LOADX], lhzx: [PPC.LOADX], lhax: [PPC.LOADX], lwzx: [PPC.LOADX],
-  lwax: [PPC.LOADX], ldx: [PPC.LOADX], lfsx: [PPC.LOADX], lfdx: [PPC.LOADX],
-  lbzux: [PPC.LOADUX], lhzux: [PPC.LOADUX], lhaux: [PPC.LOADUX],
-  lwzux: [PPC.LOADUX], lwaux: [PPC.LOADUX], ldux: [PPC.LOADUX],
-  stbx: [PPC.STOREX], sthx: [PPC.STOREX], stwx: [PPC.STOREX], stdx: [PPC.STOREX],
-  stfsx: [PPC.STOREX], stfdx: [PPC.STOREX],
-  stbux: [PPC.STOREUX], sthux: [PPC.STOREUX], stwux: [PPC.STOREUX],
-  stdux: [PPC.STOREUX],
+  // Loads and stores are checked by signature below. The width, the
+  // sign and the register file are fields, and `lfs` and `lwz` -- one
+  // converts a single to a double on the way in -- are the same
+  // operation with a different field.
   lhbrx: [PPC.LOADBR], lwbrx: [PPC.LOADBR], ldbrx: [PPC.LOADBR],
   sthbrx: [PPC.STOREBR], stwbrx: [PPC.STOREBR], stdbrx: [PPC.STOREBR],
   lwarx: [PPC.LARX], ldarx: [PPC.LARX],
   'stwcx.': [PPC.STCX], 'stdcx.': [PPC.STCX],
 
-  // The classic floating-point unit, where single and double are the
-  // same operation in a different primary opcode.
-  fadd: [PPC.FADD], fadds: [PPC.FADD], fsub: [PPC.FSUB], fsubs: [PPC.FSUB],
-  fmul: [PPC.FMUL], fmuls: [PPC.FMUL], fdiv: [PPC.FDIV], fdivs: [PPC.FDIV],
-  fsqrt: [PPC.FSQRT], fsqrts: [PPC.FSQRT],
-  fmadd: [PPC.FMADD], fmadds: [PPC.FMADD],
-  fmsub: [PPC.FMSUB], fmsubs: [PPC.FMSUB],
-  fnmadd: [PPC.FNMADD], fnmadds: [PPC.FNMADD],
-  fnmsub: [PPC.FNMSUB], fnmsubs: [PPC.FNMSUB],
+  // The classic floating-point arithmetic is checked by signature below:
+  // single and double are the same operation with a precision flag, and
+  // the flag decides the rounding.
   fmr: [PPC.FMR], 'fmr.': [PPC.FMR], fneg: [PPC.FNEG], fabs: [PPC.FABS],
   fnabs: [PPC.FNABS], fsel: [PPC.FSEL], frsp: [PPC.FRSP],
   fcmpu: [PPC.FCMPU], fcmpo: [PPC.FCMPO],
-  fctid: [PPC.FCTID], fctidz: [PPC.FCTID], fctiw: [PPC.FCTIW],
-  fctiwz: [PPC.FCTIW], fcfid: [PPC.FCFID],
-  frin: [PPC.FRIN], friz: [PPC.FRIN], frip: [PPC.FRIN], frim: [PPC.FRIN],
+  fcfid: [PPC.FCFID],
   mffs: [PPC.MFFS], mtfsf: [PPC.MTFSF],
 
   // Moving between the register files, which have one encoding each
   // and several names.
-  mfvsrd: [PPC.MFVSR], mfvsrwz: [PPC.MFVSR], mffprd: [PPC.MFVSR],
-  mffprwz: [PPC.MFVSR],
-  mtvsrd: [PPC.MTVSR], mtvsrwa: [PPC.MTVSR], mtvsrwz: [PPC.MTVSR],
-  mtfprd: [PPC.MTVSR], mtfprwa: [PPC.MTVSR], mtfprwz: [PPC.MTVSR],
+  // The register-file moves are checked by signature below; the `fpr`
+  // spellings are the same instructions under a second name.
 
-  // VSX memory.
-  lxvd2x: [PPC.LXV], lxvw4x: [PPC.LXV], lxvdsx: [PPC.LXV], lxsdx: [PPC.LXV],
-  lxsiwzx: [PPC.LXV], lxsiwax: [PPC.LXV],
-  stxvd2x: [PPC.STXV], stxvw4x: [PPC.STXV], stxsdx: [PPC.STXV],
-  stfiwx: [PPC.STOREX], lfiwax: [PPC.LFIW], lfiwzx: [PPC.LFIW],
-  // The Altivec operations, which are one entry each because what they
-  // compute lives in a field rather than in the operation.
-  vadduwm: [PPC.VOP], vmuluwm: [PPC.VOP], vslw: [PPC.VOP], vsrw: [PPC.VOP],
-  vperm: [PPC.VOP], vsel: [PPC.VOP], vand: [PPC.VOP], vor: [PPC.VOP],
-  vxor: [PPC.VOP], vnor: [PPC.VOP],
-  xxswapd: [PPC.XXPERM],
-
-  // Altivec.
-  vspltisw: [PPC.VSPLTISW], vspltish: [PPC.VSPLTISW], vspltisb: [PPC.VSPLTISW],
+  // VSX memory needs no entries: each form is its own operation, named as
+  // the disassembler names it.
+  // The Altivec operations need no entries either: each is its own
+  // operation. They were once all one, admitted here by membership, which
+  // meant the tier could not tell `vadduwm` from `vsubuwm`.
+  //
+  // What *is* an alias is `xxpermdi` with a particular selector, which the
+  // disassembler prints under four names of its own.
+  xxswapd: [PPC.XXPERMDI], xxmrghd: [PPC.XXPERMDI],
+  xxmrgld: [PPC.XXPERMDI], xxspltd: [PPC.XXPERMDI],
 }
 
 /**
@@ -208,20 +178,11 @@ for (const name of ['xsnabsdp', 'xsnabssp']) GENERATED[name] = [PPC.XSNABS]
 for (const name of ['xscpsgndp', 'xscpsgnsp']) GENERATED[name] = [PPC.XSCPSGN]
 for (const name of ['xsmaxdp', 'xsmaxsp']) GENERATED[name] = [PPC.XSMAX]
 for (const name of ['xsmindp', 'xsminsp']) GENERATED[name] = [PPC.XSMIN]
-for (const name of ['xxland', 'xxlandc', 'xxlor', 'xxlxor', 'xxlnor',
-  'xxlorc', 'xxlnand', 'xxleqv']) GENERATED[name] = [PPC.XXLOGIC]
-for (const name of ['xxsel']) GENERATED[name] = [PPC.XXSEL]
-for (const name of ['xxpermdi', 'xxmrghw', 'xxmrglw', 'xxsldwi']) {
-  GENERATED[name] = [PPC.XXPERM]
-}
-for (const name of ['xxspltw', 'xxspltd']) GENERATED[name] = [PPC.XXSPLT]
-// The conversions, whose names spell both formats.
-for (const from of ['sx', 'ux', 'sp', 'dp', 'sxd', 'uxd', 'sxw', 'uxw']) {
-  for (const to of ['dp', 'sp', 'sxds', 'uxds', 'sxws', 'uxws', 'dpo']) {
-    GENERATED[`xscv${from}${to}`] = [PPC.XSCVT]
-    GENERATED[`xvcv${from}${to}`] = [PPC.XVCVT]
-  }
-}
+// The bitwise operations and the conversions are not listed here at all.
+// Each is one operation to the interpreter, which picks the behaviour from
+// a field, so they are *refined* to one name apiece in `decode` below
+// rather than admitted by membership -- membership would let a decoder
+// that confused `xxland` with `xxlor` pass.
 
 /**
  * A branch may be printed with a `+` or `-` on the end.
@@ -239,15 +200,124 @@ for (const [name, ops] of Object.entries({ ...GENERATED })) {
   }
 }
 
+/**
+ * Operations the interpreter keeps as one and selects between by a field.
+ *
+ * Reported to the tier under a distinct identity per behaviour, so that
+ * the check is of the field as well as the opcode. The identities are
+ * offset far above the real ones so they cannot collide.
+ */
+const REFINED_BASE = 10_000
+
+/**
+ * The name an instruction must have, given the fields the interpreter
+ * actually acts on.
+ *
+ * For the operations where one identity covers several instructions --
+ * a load is a load whatever its width -- the check has to be of the
+ * fields, or a decoder that read the width wrong would pass. This is
+ * where three real mistakes hid: `stfiwx` decoded as `stfsx`, `mfocrf`
+ * as `mfcr`, and the word merges as a doubleword permute, each admitted
+ * because the name was in the set the operation could stand for.
+ *
+ * Returns undefined for the operations whose identity is already exact.
+ */
+function signature(inst: PpcInst): string | undefined {
+  const fpr = inst.destFile === File.FPR || inst.sourceFile === File.FPR
+  const suffix = (update: boolean, indexed: boolean): string =>
+    (update ? 'u' : '') + (indexed ? 'x' : '')
+  switch (inst.op) {
+    case PPC.LOAD: case PPC.LOADU: case PPC.LOADX: case PPC.LOADUX: {
+      const update = inst.op === PPC.LOADU || inst.op === PPC.LOADUX
+      const indexed = inst.op === PPC.LOADX || inst.op === PPC.LOADUX
+      const stem = fpr
+        ? (inst.width === 4 ? 'lfs' : 'lfd')
+        : inst.width === 1 ? 'lbz'
+          : inst.width === 2 ? (inst.signed ? 'lha' : 'lhz')
+            : inst.width === 4 ? (inst.signed ? 'lwa' : 'lwz')
+              : 'ld'
+      return stem + suffix(update, indexed)
+    }
+    case PPC.STORE: case PPC.STOREU: case PPC.STOREX: case PPC.STOREUX: {
+      const update = inst.op === PPC.STOREU || inst.op === PPC.STOREUX
+      const indexed = inst.op === PPC.STOREX || inst.op === PPC.STOREUX
+      const stem = fpr
+        ? (inst.width === 4 ? 'stfs' : 'stfd')
+        : ['', 'stb', 'sth', '', 'stw', '', '', '', 'std'][inst.width] ?? '?'
+      return stem + suffix(update, indexed)
+    }
+    case PPC.LFIW: return inst.signed ? 'lfiwax' : 'lfiwzx'
+    // All eight fields, or the ones a mask names: two instructions with
+    // different results, which were once one.
+    case PPC.MFCR: return inst.imm === 0xffn ? 'mfcr' : 'mfocrf'
+    case PPC.MFVSR: return inst.width === 8 ? 'mfvsrd' : 'mfvsrwz'
+    case PPC.MTVSR:
+      return inst.width === 8 ? 'mtvsrd' : inst.signed ? 'mtvsrwa' : 'mtvsrwz'
+    case PPC.CMP: return inst.is32 ? 'cmpw' : 'cmpd'
+    case PPC.CMPL: return inst.is32 ? 'cmplw' : 'cmpld'
+    case PPC.CMPI: return inst.is32 ? 'cmpwi' : 'cmpdi'
+    case PPC.CMPLI: return inst.is32 ? 'cmplwi' : 'cmpldi'
+    case PPC.FADD: case PPC.FSUB: case PPC.FMUL: case PPC.FDIV: case PPC.FSQRT:
+    case PPC.FMADD: case PPC.FMSUB: case PPC.FNMADD: case PPC.FNMSUB:
+      return PPC_NAME[inst.op]! + (inst.is32 ? 's' : '')
+    default:
+      return undefined
+  }
+}
+
+/** Every signature, numbered once so a name maps to one stable identity. */
+const SIGNATURES: string[] = []
+function signatureId(name: string): number {
+  let index = SIGNATURES.indexOf(name)
+  if (index < 0) index = SIGNATURES.push(name) - 1
+  return REFINED_BASE + 5000 + index
+}
+
+/**
+ * Second spellings the disassembler uses for the same instruction.
+ * `mffprd` is `mfvsrd` named for the floating-point half it reads.
+ */
+const SIGNATURE_SPELLINGS: Readonly<Record<string, string>> = {
+  mffprd: 'mfvsrd', mffprwz: 'mfvsrwz',
+  mtfprd: 'mtvsrd', mtfprwa: 'mtvsrwa', mtfprwz: 'mtvsrwz',
+}
+for (const [spelling, canonical] of Object.entries(SIGNATURE_SPELLINGS)) {
+  GENERATED[spelling] = [signatureId(canonical)]
+}
+// A compare with a field other than cr0 is still printed as the same
+// mnemonic, so nothing more is needed for those.
+const LOGIC_NAMES = [
+  'xxland', 'xxlandc', 'xxlor', 'xxlxor', 'xxlnor', 'xxlorc', 'xxlnand', 'xxleqv',
+]
+/** Measured spellings of the conversions, keyed on their nine-bit opcode. */
+const CONVERSION_NAMES: Readonly<Record<number, string>> = {
+  72: 'xscvdpuxws', 88: 'xscvdpsxws', 344: 'xscvdpsxds',
+  360: 'xscvuxddp', 376: 'xscvsxddp', 248: 'xvcvsxwdp',
+}
+
 export const powerDecodeCheck: DecodeCheck = {
   decode(bytes, address) {
     // Little-endian in memory; the bit numbering inside is the other
     // way round, which the decoder handles.
     const word = (bytes[0]! | (bytes[1]! << 8) | (bytes[2]! << 16) |
       (bytes[3]! << 24)) >>> 0
-    return { op: decode(word, address).op, length: 4 }
+    const inst = decode(word, address)
+    const named = signature(inst)
+    if (named !== undefined) return { op: signatureId(named), length: 4 }
+    if (inst.op === PPC.XXLOGIC) {
+      return { op: REFINED_BASE + (inst.shift - 130) / 8, length: 4 }
+    }
+    if (inst.op === PPC.XSCVT || inst.op === PPC.XVCVT) {
+      return { op: REFINED_BASE + 1000 + inst.shift, length: 4 }
+    }
+    return { op: inst.op, length: 4 }
   },
   name(op) {
+    if (op >= REFINED_BASE + 5000) return SIGNATURES[op - REFINED_BASE - 5000] ?? `?sig${op}`
+    if (op >= REFINED_BASE + 1000) {
+      return CONVERSION_NAMES[op - REFINED_BASE - 1000] ?? `?cvt${op}`
+    }
+    if (op >= REFINED_BASE) return LOGIC_NAMES[op - REFINED_BASE] ?? `?logic${op}`
     return PPC_NAME[op] ?? `?${op}`
   },
   aliases: GENERATED,

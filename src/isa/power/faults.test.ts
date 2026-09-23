@@ -73,13 +73,42 @@ describe('power: state this backend does not model', () => {
     expect(message).toContain('rounds to nearest')
   })
 
-  it('refuses the vector operations rather than approximating them', () => {
-    // These decode -- the tables know what they are -- and have no
-    // semantics. musl reaches them through `memcpy`, which is why the
-    // whole-program tier is not enabled yet.
-    const vadduwm = ((4 << 26) | (2 << 21) | (3 << 16) | (4 << 11) | 128) >>> 0
-    expect(decode(vadduwm, 0x1000n).op).toBe(PPC.VOP)
-    expect(() => step([vadduwm])).toThrow(/no semantics/)
+  it('refuses the vector encodings nothing measured uses', () => {
+    // The vector operations the libc and corpus binaries contain are
+    // implemented; the rest of the space is refused rather than guessed.
+    const vx = (xo: number): number =>
+      ((4 << 26) | (2 << 21) | (3 << 16) | (4 << 11) | xo) >>> 0
+    // `vspltish` and `vspltisb` splat halfwords and bytes. They used to
+    // decode as `vspltisw`, which would have produced the right value in
+    // the wrong element width.
+    expect(() => decode(vx(844), 0x1000n)).toThrow(UnimplementedInstruction)
+    expect(() => decode(vx(780), 0x1000n)).toThrow(UnimplementedInstruction)
+    // A comparison with the record bit also writes a condition field,
+    // which is not implemented.
+    expect(() => decode(vx(134 + 1024), 0x1000n)).toThrow(UnimplementedInstruction)
+    // And the word form itself still decodes, so the refusals above are
+    // about those encodings and not the whole family.
+    expect(decode(vx(908), 0x1000n).op).toBe(PPC.VSPLTISW)
+  })
+
+  it('refuses the word-order VSX loads rather than treating them as doubleword ones', () => {
+    // `lxvw4x` places four words in a different order from `lxvd2x` on a
+    // little-endian machine, and used to be decoded as it.
+    expect(() => decode(xForm(31, 2, 3, 4, 780), 0x1000n)).toThrow(UnimplementedInstruction)
+  })
+
+  it('writes only doubleword 0 for a scalar VSX store', () => {
+    // `stxsdx` once wrote all sixteen bytes, overwriting the eight after
+    // its operand. Those eight must survive.
+    const stxsdx = xForm(31, 2, 0, 4, 716)
+    const { cpu, memory } = machine([stxsdx])
+    memory.store(0x108n, 8, 0x1111_2222_3333_4444n)
+    cpu.vsrHi[2] = 0xaaaa_bbbb_cccc_ddddn
+    cpu.vsrLo[2] = 0xeeee_ffff_0000_1111n
+    cpu.setGpr(4, 0x100n)
+    cpu.run(createRetireChunk(1))
+    expect(memory.load(0x100n, 8, false)).toBe(0xaaaa_bbbb_cccc_ddddn)
+    expect(memory.load(0x108n, 8, false)).toBe(0x1111_2222_3333_4444n)
   })
 })
 

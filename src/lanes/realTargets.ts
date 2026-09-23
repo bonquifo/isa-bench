@@ -21,6 +21,8 @@ import { mipsBackend } from '../isa/mips/backend.ts'
 import * as mipsShipped from '../isa/mips/shipped.ts'
 import { mosBackend } from '../isa/mos/backend.ts'
 import * as mosShipped from '../isa/mos/shipped.ts'
+import { powerBackend } from '../isa/power/backend.ts'
+import * as powerShipped from '../isa/power/shipped.ts'
 import { rv64Backend } from '../isa/riscv/backend.ts'
 import * as rv64Shipped from '../isa/riscv/shipped.ts'
 import { wasmBackend } from '../isa/wasm/backend.ts'
@@ -123,6 +125,22 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     returnChannel: 'stderr',
     intBits: 32,
     shipped: mipsShipped,
+  },
+  {
+    id: IsaId.POWER,
+    backend: powerBackend,
+    label: 'POWER',
+    instructions: 'POWER (powerpc64le)',
+    oracle: 'qemu-ppc64le',
+    // The condition register is compared field by field, and the vector
+    // unit -- which musl's string functions and the compiler's own
+    // vectorised loops reach -- is covered by programs that dump every
+    // result for a byte-for-byte comparison.
+    verified: 'register by register, before every instruction',
+    libc: 'musl',
+    returnChannel: 'stderr',
+    intBits: 32,
+    shipped: powerShipped,
   },
   {
     id: IsaId.MOS,

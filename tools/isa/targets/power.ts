@@ -19,6 +19,7 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { qemuOracle, type FixtureTarget, type LockstepStep } from '../fixture-builder.ts'
+import { CORPUS_FLAGS, corpusPrograms } from '../corpus.ts'
 import { generateRandomProgram } from '../power/random.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -103,26 +104,17 @@ export const powerTarget: FixtureTarget = {
   randomGenerator: 'tools/isa/power/random.ts',
   generateRandom: (seed: number) => generateRandomProgram(seed),
   parseCpuLog: parsePowerCpuLog,
-  // No libc tier yet, and the reasons are specific rather than general.
-  //
-  // Eleven of the eighteen programs already run correctly end to end;
-  // the other seven stop for three causes, each identified and none of
-  // them mysterious:
-  //
-  //   - musl's `memcpy` and `strlen` use Altivec, and the vector
-  //     operations are decoded here but have no semantics yet. They
-  //     fail loudly, which is the right behaviour and still a failure.
-  //   - one program outgrows the heap: the address it faults on is
-  //     inside the range `brk` should have mapped, which points at the
-  //     page size the auxiliary vector advertises rather than at the
-  //     syscall.
-  //   - printf's floating-point path produces zeroes. The value reaches
-  //     it correctly -- traced through the variadic save area and into
-  //     the digit loop -- and the arithmetic matches the reference for
-  //     3,177 instructions of `vfprintf` before the two diverge on a
-  //     pointer comparison in the big-integer loop.
-  //
-  // Enabling the tier before those are fixed would mean committing
-  // fixtures the suite cannot pass, so it is left off and the gap is
-  // written down instead.
+  libc: {
+    triple: 'powerpc64le-unknown-linux-musl',
+    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r3',
+    sysroot: '/sysroot/powerpc64le',
+    builtins: '/sysroot/builtins/libclang_rt.builtins-powerpc64le.a',
+    programsDir: join(TOOLS, 'libc'),
+    libs: ['-lm'],
+    extra: corpusPrograms().map((program) => ({
+      name: program.name,
+      source: program.source,
+      flags: CORPUS_FLAGS,
+    })),
+  },
 }

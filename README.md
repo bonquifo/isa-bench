@@ -116,10 +116,10 @@ Everything else on that screen — cycles, cache behavior, energy — is the sam
 deterministic model the other lanes use. **Nothing anywhere in this app is
 measured on hardware.**
 
-SPARC and POWER are verified on architectural state -- every register
-before every instruction, and the final state byte for byte -- but do
-not yet run whole programs against a libc, and the app says so rather
-than offering them.
+SPARC is verified on architectural state -- every register before every
+instruction, and the final state byte for byte -- but does not yet run
+whole programs against a libc, and the app says so rather than offering
+it.
 
 An instruction a real backend does not implement is refused by name and
 address; it is never executed as an approximation. On the 6502 that

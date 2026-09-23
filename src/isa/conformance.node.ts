@@ -15,6 +15,8 @@
  * having it shared is what lets a decoder be checked against LLVM's own
  * tables before any semantics exist to check it through.
  */
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { hex64 } from './common/bits64.ts'
 import {
@@ -183,7 +185,13 @@ export function describeIsaConformance(options: ConformanceOptions): void {
   const names = fixtureNames(fixtureDir)
 
   if (options.decodeCheck) {
-    describeDecodeTier(backend.name, fixtureDir, names, options.decodeCheck)
+    // The whole-program binaries as well, where their disassembly was
+    // captured. They are where the libc lives, and a libc reaches
+    // instructions no freestanding program does.
+    const libcNames = index.libcFixtures
+      .map((fixture) => fixture.name)
+      .filter((name) => existsSync(join(fixtureDir, `${name}.objdump.txt`)))
+    describeDecodeTier(backend.name, fixtureDir, [...names, ...libcNames], options.decodeCheck)
   }
 
   describe(`${backend.name}: lockstep against the reference`, () => {

@@ -344,6 +344,11 @@ function buildLibcOne(
   writeFileSync(join(target.outDir, `${name}.elf`), elf)
   writeFileSync(join(target.outDir, `${name}.stdout`), stdout)
   if (stderr.length > 0) writeFileSync(join(target.outDir, `${name}.stderr`), stderr)
+  // The disassembly too, so the decode tier covers these binaries. They
+  // are where the libc lives, and a libc reaches instructions no
+  // freestanding program does -- on POWER, the whole of the vector unit.
+  writeFileSync(join(target.outDir, `${name}.objdump.txt`),
+    sh(target.codegen, work, 'llvm-objdump -d /work/out.elf'))
   console.log(
     `${name.padEnd(16)} ${String(elf.length).padStart(6)} B elf   ` +
     `${String(stdout.length).padStart(7)} B stdout  exit ${exitCode}`,

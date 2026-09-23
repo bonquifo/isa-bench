@@ -23,7 +23,7 @@
  * which is an instruction rather than a call. There is no
  * `set_tid_address`, no `rseq`, no auxiliary vector and no `AT_PAGESZ`
  * -- which between them account for a good deal of the awkwardness on
- * the other targets, and for one of POWER's three outstanding gaps.
+ * the other targets.
  *
  * A few more are implemented below than any of those programs import,
  * because they are what a libc reaches for when its environment is less

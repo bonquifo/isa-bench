@@ -98,10 +98,15 @@ export function loadPower(bytes: Uint8Array, options: LoadPowerOptions = {}): Lo
       : {}),
     linux: syscalls,
   })
+  // Nothing is written at the stack pointer. It points at argc, which
+  // the process ABI puts there and a libc reads before anything else;
+  // an earlier version stored a terminating back chain at this address,
+  // which silently turned argc into zero. musl then walked argv and envp
+  // from the wrong place, found the auxiliary vector empty, and ran with
+  // a page size of zero -- which surfaced much later as an allocator
+  // asking `mmap` for zero bytes. `_start` builds its own frame, so the
+  // back chain the ABI wants is the one it writes.
   interpreter.setGpr(1, initialSp)
-  // The back chain terminates here, and the ABI says so rather than
-  // leaving it to whatever the stack page happened to contain.
-  memory.store(initialSp, 8, 0n)
   // And the entry point, which every global entry point needs in order
   // to find its own table of contents.
   interpreter.setGpr(12, elf.entry)

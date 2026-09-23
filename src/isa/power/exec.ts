@@ -108,6 +108,52 @@ export interface PowerOptions {
   syscallNumbers?: Readonly<Record<number, number>>
 }
 
+/** A 128-bit register as its two doublewords, element 0 first. */
+type Vector = readonly [bigint, bigint]
+
+const M32 = 0xffff_ffffn
+const M64 = 0xffff_ffff_ffff_ffffn
+const ZERO_VECTOR: Vector = [0n, 0n]
+
+/** The four words, leftmost first. */
+function toWords(v: Vector): bigint[] {
+  return [v[0] >> 32n, v[0] & M32, v[1] >> 32n, v[1] & M32]
+}
+
+function fromWords(words: readonly bigint[]): Vector {
+  const w = words.map((word) => BigInt.asUintN(32, word))
+  return [(w[0]! << 32n) | w[1]!, (w[2]! << 32n) | w[3]!]
+}
+
+/** The sixteen bytes, leftmost first. */
+function toBytes(v: Vector): number[] {
+  const out: number[] = []
+  for (const half of v) {
+    for (let i = 7; i >= 0; i--) out.push(Number((half >> BigInt(i * 8)) & 0xffn))
+  }
+  return out
+}
+
+function fromBytes(bytes: readonly number[]): Vector {
+  let hi = 0n
+  let lo = 0n
+  for (let i = 0; i < 8; i++) hi = (hi << 8n) | BigInt(bytes[i]!)
+  for (let i = 8; i < 16; i++) lo = (lo << 8n) | BigInt(bytes[i]!)
+  return [hi, lo]
+}
+
+/** Applies an operation word by word, keeping the low 32 bits of each. */
+function mapWords(a: Vector, b: Vector, f: (x: bigint, y: bigint) => bigint): Vector {
+  const x = toWords(a)
+  const y = toWords(b)
+  return fromWords(x.map((value, i) => f(value, y[i]!)))
+}
+
+/** The same, by doubleword. */
+function mapDoublewords(a: Vector, b: Vector, f: (x: bigint, y: bigint) => bigint): Vector {
+  return [BigInt.asUintN(64, f(a[0], b[0])), BigInt.asUintN(64, f(a[1], b[1]))]
+}
+
 export class PowerInterpreter implements Interpreter {
   readonly image: PowerImage
   private readonly memory: GuestMemory
@@ -359,6 +405,113 @@ export class PowerInterpreter implements Interpreter {
   private static rotl32(value: number, by: number): number {
     const n = by & 31
     return n === 0 ? value >>> 0 : (((value << n) | (value >>> (32 - n))) >>> 0)
+  }
+
+  /**
+   * The element-wise vector operations.
+   *
+   * Every one of these is defined in the architecture's own element
+   * numbering, which is big-endian whatever the machine's byte order:
+   * element 0 is the leftmost word of the register, and that is
+   * doubleword 0, which is `vsrHi`. The byte order of the machine only
+   * affects how a register meets memory -- the loads and stores above --
+   * and a little-endian compiler compensates for it there, with swaps and
+   * inverted permute controls, rather than by any of these meaning
+   * something different.
+   */
+  private vector(inst: PpcInst): void {
+    const a = inst.ra >= 0 ? this.readVector(inst.ra) : ZERO_VECTOR
+    const b = inst.rb >= 0 ? this.readVector(inst.rb) : ZERO_VECTOR
+    let result: Vector
+
+    switch (inst.op) {
+      case PPC.VADDUWM: result = mapWords(a, b, (x, y) => x + y); break
+      case PPC.VSUBUWM: result = mapWords(a, b, (x, y) => x - y); break
+      // The low half of each product; the high half is a different
+      // instruction.
+      case PPC.VMULUWM: result = mapWords(a, b, (x, y) => x * y); break
+      // Each element shifts by its own amount, taken modulo the width.
+      case PPC.VSLW: result = mapWords(a, b, (x, y) => x << (y & 31n)); break
+      case PPC.VSRW: result = mapWords(a, b, (x, y) => x >> (y & 31n)); break
+      case PPC.VSRAW:
+        result = mapWords(a, b, (x, y) => BigInt.asIntN(32, x) >> (y & 31n))
+        break
+      case PPC.VCMPEQUW: result = mapWords(a, b, (x, y) => (x === y ? M32 : 0n)); break
+      case PPC.VCMPGTUW: result = mapWords(a, b, (x, y) => (x > y ? M32 : 0n)); break
+
+      case PPC.VADDUDM: result = mapDoublewords(a, b, (x, y) => x + y); break
+      case PPC.VSUBUDM: result = mapDoublewords(a, b, (x, y) => x - y); break
+      case PPC.VSLD: result = mapDoublewords(a, b, (x, y) => x << (y & 63n)); break
+      case PPC.VSRAD:
+        result = mapDoublewords(a, b, (x, y) => BigInt.asIntN(64, x) >> (y & 63n))
+        break
+      case PPC.VCMPEQUD: result = mapDoublewords(a, b, (x, y) => (x === y ? M64 : 0n)); break
+      case PPC.VCMPGTUD: result = mapDoublewords(a, b, (x, y) => (x > y ? M64 : 0n)); break
+
+      case PPC.VPKUDUM:
+        // The low word of each doubleword, A's two then B's two.
+        result = fromWords([a[0] & M32, a[1] & M32, b[0] & M32, b[1] & M32])
+        break
+      case PPC.VUPKLSW:
+        // "Low" is elements 2 and 3 in this numbering, sign-extended.
+        result = [
+          BigInt.asUintN(64, BigInt.asIntN(32, b[1] >> 32n)),
+          BigInt.asUintN(64, BigInt.asIntN(32, b[1] & M32)),
+        ]
+        break
+      case PPC.VPERM: {
+        // Each result byte is chosen from the thirty-two bytes of A then
+        // B, by the low five bits of the matching control byte.
+        const control = toBytes(this.readVector(inst.rc))
+        const source = [...toBytes(a), ...toBytes(b)]
+        result = fromBytes(control.map((selector) => source[selector & 31]!))
+        break
+      }
+
+      case PPC.XXMRGHW: {
+        const [a0, a1] = toWords(a)
+        const [b0, b1] = toWords(b)
+        result = fromWords([a0!, b0!, a1!, b1!])
+        break
+      }
+      case PPC.XXMRGLW: {
+        const [, , a2, a3] = toWords(a)
+        const [, , b2, b3] = toWords(b)
+        result = fromWords([a2!, b2!, a3!, b3!])
+        break
+      }
+      case PPC.XXSLDWI: {
+        // The eight words of A then B, and four of them starting at the
+        // shift. With a shift of zero this is a copy of A.
+        const joined = [...toWords(a), ...toWords(b)]
+        const shift = Number(inst.imm)
+        result = fromWords(joined.slice(shift, shift + 4))
+        break
+      }
+      case PPC.XXSEL: {
+        // B where the mask is set, A where it is not.
+        const c = this.readVector(inst.rc)
+        result = [(a[0] & ~c[0]) | (b[0] & c[0]), (a[1] & ~c[1]) | (b[1] & c[1])]
+        break
+      }
+      case PPC.XXSPLTW: {
+        const word = toWords(b)[Number(inst.imm)]!
+        result = fromWords([word, word, word, word])
+        break
+      }
+      default:
+        throw new UnimplementedInstruction(
+          ISA_NAME, this.pc, wordBytes(inst.word),
+          `vector operation ${inst.op} has no semantics`,
+        )
+    }
+
+    this.vsrHi[inst.rd] = BigInt.asUintN(64, result[0])
+    this.vsrLo[inst.rd] = BigInt.asUintN(64, result[1])
+  }
+
+  private readVector(index: number): Vector {
+    return [this.vsrHi[index]!, this.vsrLo[index]!]
   }
 
   private static rotl64(value: bigint, by: number): bigint {
@@ -688,9 +841,16 @@ export class PowerInterpreter implements Interpreter {
       case PPC.MCRF:
         this.cr[inst.rd >> 2] = this.cr[inst.ra >> 2]!
         return
-      case PPC.MFCR:
-        this.setReg(inst.rd, BigInt(this.packedCr()))
+      case PPC.MFCR: {
+        // Each mask bit selects one four-bit field, cr0 in the top bit.
+        const mask = Number(inst.imm)
+        let keep = 0
+        for (let f = 0; f < 8; f++) {
+          if ((mask >> (7 - f)) & 1) keep |= 0xf << (28 - f * 4)
+        }
+        this.setReg(inst.rd, BigInt((this.packedCr() & keep) >>> 0))
         return
+      }
       case PPC.MTCRF: {
         const value = Number(BigInt.asUintN(32, this.gpr64[inst.rd]!))
         const mask = Number(inst.imm)
@@ -779,26 +939,44 @@ export class PowerInterpreter implements Interpreter {
         if (inst.op === PPC.STOREU || inst.op === PPC.STOREUX) this.setReg(inst.ra, address)
         return
       }
-      case PPC.LXV: {
+      case PPC.LXSIWZX: {
+        // One word, zero-extended into doubleword 0. The architecture
+        // leaves doubleword 1 undefined; zero is what the reference
+        // leaves there, and nothing reads it.
         const address = this.effective(inst)
-        if (inst.width === 4) {
-          this.vsrHi[inst.rd] = this.memory.load(address, 4, false)
-          this.vsrLo[inst.rd] = 0n
-          return
-        }
+        this.vsrHi[inst.rd] = this.memory.load(address, 4, false)
+        this.vsrLo[inst.rd] = 0n
+        return
+      }
+      case PPC.LXVD2X: {
         // `lxvd2x` names the doublewords in register order rather than
         // memory order, which is the same on both byte orders precisely
-        // because it is defined that way.
+        // because it is defined that way. Within each doubleword the
+        // bytes are in the machine's order, which is why a little-endian
+        // compiler follows it with `xxswapd`.
+        const address = this.effective(inst)
         this.vsrHi[inst.rd] = this.memory.load(address, 8, false)
         this.vsrLo[inst.rd] = this.memory.load(address + 8n, 8, false)
         return
       }
-      case PPC.STXV: {
+      case PPC.STXVD2X: {
         const address = this.effective(inst)
         this.memory.store(address, 8, this.vsrHi[inst.rd]!)
-        // The scalar form writes one doubleword; only the vector forms
-        // write both.
-        if (inst.width === 16) this.memory.store(address + 8n, 8, this.vsrLo[inst.rd]!)
+        this.memory.store(address + 8n, 8, this.vsrLo[inst.rd]!)
+        return
+      }
+      case PPC.STXSDX: {
+        // Doubleword 0 only. Writing the whole register here would
+        // overwrite eight bytes that belong to whatever is next.
+        const address = this.effective(inst)
+        this.memory.store(address, 8, this.vsrHi[inst.rd]!)
+        return
+      }
+      case PPC.STFIWX: {
+        // The low word of doubleword 0, unconverted: this is how an
+        // integer produced by a float-to-integer conversion reaches memory.
+        const address = this.effective(inst)
+        this.memory.store(address, 4, this.vsrHi[inst.rd]! & 0xffff_ffffn)
         return
       }
       case PPC.LFIW: {
@@ -986,7 +1164,7 @@ export class PowerInterpreter implements Interpreter {
         return
       }
 
-      case PPC.XSCVT: case PPC.FCTID: case PPC.FCTIW: case PPC.FCFID:
+      case PPC.XSCVT: case PPC.FCFID:
       case PPC.FRSP: case PPC.XVCVT:
         this.convert(inst)
         return
@@ -1015,7 +1193,7 @@ export class PowerInterpreter implements Interpreter {
         this.vsrLo[inst.rd] = BigInt.asUintN(64, apply(al, bl))
         return
       }
-      case PPC.XXPERM: {
+      case PPC.XXPERMDI: {
         // Two doublewords chosen from two registers, which is how a
         // swap, a splat and a merge are all spelled.
         const selector = Number(inst.imm)
@@ -1032,6 +1210,17 @@ export class PowerInterpreter implements Interpreter {
         this.vsrLo[inst.rd] = word
         return
       }
+
+      case PPC.VADDUWM: case PPC.VSUBUWM: case PPC.VMULUWM:
+      case PPC.VSLW: case PPC.VSRW: case PPC.VSRAW:
+      case PPC.VCMPEQUW: case PPC.VCMPGTUW:
+      case PPC.VADDUDM: case PPC.VSUBUDM: case PPC.VSLD: case PPC.VSRAD:
+      case PPC.VCMPEQUD: case PPC.VCMPGTUD:
+      case PPC.VPKUDUM: case PPC.VUPKLSW: case PPC.VPERM:
+      case PPC.XXMRGHW: case PPC.XXMRGLW: case PPC.XXSLDWI:
+      case PPC.XXSEL: case PPC.XXSPLTW:
+        this.vector(inst)
+        return
 
       case PPC.MFFS: case PPC.MTFSF:
         // The floating-point status and control register is not
@@ -1136,11 +1325,21 @@ export class PowerInterpreter implements Interpreter {
       case 88: case 72: { // xscvdpsxws, xscvdpuxws
         const value = bitsToF64(source)
         const signed = inst.shift === 88
-        const truncated = Number.isNaN(value) ? 0 : Math.trunc(value)
-        const clamped = signed
-          ? Math.min(Math.max(truncated, -0x80000000), 0x7fffffff)
-          : Math.min(Math.max(truncated, 0), 0xffffffff)
-        this.vsrHi[inst.rd] = BigInt.asUintN(64, BigInt(clamped))
+        // A NaN has no integer value, and the architecture names the
+        // result: the most negative word for the signed form, zero for
+        // the unsigned one.
+        const clamped = Number.isNaN(value)
+          ? (signed ? -0x80000000 : 0)
+          : signed
+            ? Math.min(Math.max(Math.trunc(value), -0x80000000), 0x7fffffff)
+            : Math.min(Math.max(Math.trunc(value), 0), 0xffffffff)
+        // The result is word 1. Words 0, 2 and 3 are left undefined by
+        // the architecture; hardware copies the result into word 0 as
+        // well, and so does the reference, so this does too -- it keeps
+        // the two comparable on the doubleword that holds a scalar, and
+        // no program may rely on the difference.
+        const word = BigInt.asUintN(32, BigInt(clamped))
+        this.vsrHi[inst.rd] = (word << 32n) | word
         return
       }
       default:
@@ -1150,12 +1349,6 @@ export class PowerInterpreter implements Interpreter {
       case PPC.FCFID:
         this.vsrHi[inst.rd] = f64ToBits(Number(BigInt.asIntN(64, source)))
         return
-      case PPC.FCTID: case PPC.FCTIW: {
-        const value = bitsToF64(source)
-        const truncated = Number.isNaN(value) ? 0 : Math.trunc(value)
-        this.vsrHi[inst.rd] = BigInt.asUintN(64, BigInt(truncated))
-        return
-      }
       case PPC.FRSP:
         this.vsrHi[inst.rd] = f64ToBits(Math.fround(bitsToF64(source)))
         return

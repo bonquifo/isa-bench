@@ -215,9 +215,21 @@ export const PPC = {
   /** The bitwise operations, which are on the whole 128 bits. */
   XXLOGIC: 180,
   XXSEL: 181,
-  XXPERM: 182,
-  XXSPLT: 183,
-  XXMRG: 184,
+  /**
+   * Doubleword select from two registers. `xxswapd`, `xxmrghd`,
+   * `xxmrgld` and `xxspltd` are all this with a particular selector.
+   */
+  XXPERMDI: 182,
+  XXSPLTW: 183,
+  /**
+   * The word merges and the word shift are *not* `xxpermdi`: they move
+   * 32-bit elements rather than 64-bit ones. They were once admitted to
+   * the decode check as aliases of it, which is how a decoder that
+   * confused them could pass -- each now has its own identity.
+   */
+  XXMRGHW: 184,
+  XXMRGLW: 188,
+  XXSLDWI: 189,
   /** Element-wise conversions, the `xv` family. */
   XVCVT: 185,
   XVADD: 186,
@@ -227,13 +239,36 @@ export const PPC = {
   MFVSR: 190,
   MTVSR: 191,
 
-  // VSX loads and stores.
-  LXV: 195,
-  STXV: 196,
+  // VSX loads and stores, one identity each: they differ in width and in
+  // where the elements land, and treating them as one is how a scalar
+  // store came to write sixteen bytes.
+  LXVD2X: 195,
+  STXVD2X: 196,
+  STXSDX: 197,
+  LXSIWZX: 198,
+  /** The low word of a floating-point register, stored unconverted. */
+  STFIWX: 199,
 
-  // Altivec, which shares the upper 32 VSX registers.
+  // Altivec, which shares the upper 32 VSX registers. One identity per
+  // operation, so the decode tier checks each by name.
   VSPLTISW: 200,
-  VOP: 201,
+  VADDUWM: 210,
+  VADDUDM: 211,
+  VSUBUWM: 212,
+  VSUBUDM: 213,
+  VMULUWM: 214,
+  VSLW: 215,
+  VSRW: 216,
+  VSRAW: 217,
+  VSLD: 218,
+  VSRAD: 219,
+  VCMPEQUW: 220,
+  VCMPEQUD: 221,
+  VCMPGTUW: 222,
+  VCMPGTUD: 223,
+  VPKUDUM: 224,
+  VUPKLSW: 225,
+  VPERM: 226,
 
   // Cache and ordering.
   SYNC: 205,
@@ -462,14 +497,23 @@ const X: Readonly<Record<number, XEntry>> = {
   179: { op: PPC.MTVSR, width: 8 },
   211: { op: PPC.MTVSR, width: 4, signed: true },
   243: { op: PPC.MTVSR, width: 4 },
-  844: { op: PPC.LXV, width: 16 }, 972: { op: PPC.STXV, width: 16 },
-  780: { op: PPC.LXV, width: 16 }, 908: { op: PPC.STXV, width: 16 },
+  // `lxvw4x` and `stxvw4x` (780, 908) are deliberately absent. On a
+  // little-endian machine they place the four words in a different order
+  // from `lxvd2x`, and they used to be decoded as it -- which would run
+  // and produce a plausible, permuted answer. Nothing measured uses them,
+  // so they are refused rather than implemented unverified.
+  844: { op: PPC.LXVD2X, width: 16 }, 972: { op: PPC.STXVD2X, width: 16 },
   // `stxsdx` moves one doubleword, not sixteen bytes: it is the scalar
   // form, and storing the whole register would overwrite eight bytes
   // that belong to whatever is next in memory.
-  716: { op: PPC.STXV, width: 8 },
-  12: { op: PPC.LXV, width: 4 },
-  983: { op: PPC.STOREX, width: 4, file: File.FPR },
+  716: { op: PPC.STXSDX, width: 8 },
+  12: { op: PPC.LXSIWZX, width: 4 },
+  // `stfiwx` stores the low word of the register *as it is*. It shares a
+  // shape with `stfsx` (663), which converts a double to single precision
+  // first, and it used to be decoded as that -- so every integer musl's
+  // `printf` produced with a float-to-integer conversion was stored as the
+  // bit pattern of a float, and the digits it printed came out as zeros.
+  983: { op: PPC.STFIWX, width: 4, file: File.FPR },
 
   // Ordering and cache hints, which are architectural no-operations for
   // everything an interpreter without a cache hierarchy can observe.
@@ -484,14 +528,29 @@ const X: Readonly<Record<number, XEntry>> = {
 const FP_A: Readonly<Record<number, PpcOp>> = {
   21: PPC.FADD, 20: PPC.FSUB, 25: PPC.FMUL, 18: PPC.FDIV, 22: PPC.FSQRT,
   29: PPC.FMADD, 28: PPC.FMSUB, 31: PPC.FNMADD, 30: PPC.FNMSUB,
-  23: PPC.FSEL, 24: PPC.FRSP,
+  // 24 is not here. It is `fres`, a reciprocal *estimate*, and it used
+  // to be listed as `frsp` -- which is the X-form entry 12 below. Nothing
+  // measured uses it, so it is refused rather than guessed at.
+  23: PPC.FSEL,
 }
 const FP_X: Readonly<Record<number, PpcOp>> = {
   72: PPC.FMR, 40: PPC.FNEG, 264: PPC.FABS, 136: PPC.FNABS,
   0: PPC.FCMPU, 32: PPC.FCMPO,
-  814: PPC.FCTID, 815: PPC.FCTID, 846: PPC.FCFID,
-  14: PPC.FCTIW, 15: PPC.FCTIW,
-  392: PPC.FRIN, 424: PPC.FRIN, 456: PPC.FRIN, 488: PPC.FRIN,
+  846: PPC.FCFID,
+  // Absent on purpose, and each for a reason the table used to hide by
+  // folding several instructions into one:
+  //
+  //   814, 14   `fctid`, `fctiw` round to nearest; they were executed as
+  //             their truncating `z` forms, which differ on 2.7.
+  //   815, 15   `fctidz`, `fctiwz` truncate, but saturate out-of-range
+  //             values and give the most negative integer for a NaN,
+  //             neither of which was implemented.
+  //   392..488  `frin`, `friz`, `frip`, `frim` round four different ways
+  //             and were one operation.
+  //
+  // No binary measured here contains any of them -- the compiler reaches
+  // the VSX conversions instead -- so they are refused rather than
+  // implemented without anything to check them against.
   583: PPC.MFFS, 711: PPC.MTFSF,
   12: PPC.FRSP,
 }
@@ -510,7 +569,11 @@ const XX3: Readonly<Record<number, PpcOp>> = {
   // The element-wise family, which the corpus reaches through
   // conversions rather than arithmetic.
   64: PPC.XVADD, 72: PPC.XVADD, 80: PPC.XVMUL, 88: PPC.XVMUL,
-  10: PPC.XXPERM, 18: PPC.XXPERM, 24: PPC.XXPERM,
+  // The word merges, measured: 18 is `xxmrghw` and 50 is `xxmrglw`.
+  // `xxpermdi` and `xxsldwi` are not here because two of these eight
+  // bits are an operand for them; they are matched on their five-bit
+  // opcode after this table misses.
+  18: PPC.XXMRGHW, 50: PPC.XXMRGLW,
 }
 
 /**
@@ -536,7 +599,7 @@ const XX2: Readonly<Record<number, PpcOp>> = {
   // Roots.
   75: PPC.XSSQRT,
   // Splat, which is a two-operand form despite its name.
-  164: PPC.XXSPLT,
+  164: PPC.XXSPLTW,
 }
 
 /**
@@ -544,12 +607,20 @@ const XX2: Readonly<Record<number, PpcOp>> = {
  * eleven-bit opcode. Listed rather than generalised for the same reason
  * the VSX table is: each one was seen in a disassembly.
  */
-const ALTIVEC: ReadonlySet<number> = new Set([
-  128,  // vadduwm
-  137,  // vmuluwm
-  388,  // vslw
-  644,  // vsrw
-])
+const ALTIVEC: Readonly<Record<number, PpcOp>> = {
+  128: PPC.VADDUWM, 192: PPC.VADDUDM,
+  1152: PPC.VSUBUWM, 1216: PPC.VSUBUDM,
+  137: PPC.VMULUWM,
+  388: PPC.VSLW, 644: PPC.VSRW, 900: PPC.VSRAW,
+  1476: PPC.VSLD, 964: PPC.VSRAD,
+  // The comparisons without the record bit. With it -- the same numbers
+  // plus 1024 -- they also write a condition field, which is not
+  // implemented and so is refused by being absent.
+  134: PPC.VCMPEQUW, 199: PPC.VCMPEQUD,
+  646: PPC.VCMPGTUW, 711: PPC.VCMPGTUD,
+  1102: PPC.VPKUDUM,
+  1742: PPC.VUPKLSW,
+}
 
 export function decode(word: number, address: bigint): PpcInst {
   const inst = blank(word >>> 0)
@@ -771,15 +842,21 @@ export function decode(word: number, address: bigint): PpcInst {
       // and a six-bit opcode at the very bottom of the word; VX-form
       // has three and an eleven-bit one. The VA opcodes occupy a narrow
       // range, which is what tells them apart.
+      //
+      // Only `vperm` is implemented of the VA forms; the rest are refused.
       const va = fld(word, 26, 31)
-      if (va >= 32 && va <= 47) {
-        inst.op = PPC.VOP
+      if (va === 43) {
+        inst.op = PPC.VPERM
         inst.rc = fld(word, 21, 25) + 32
-        inst.shift = va
         return inst
       }
+      if (va >= 32 && va <= 47) return refuse(address, word, `altivec VA-form ${va}`)
       const xo = fld(word, 21, 31)
-      if (xo === 908 || xo === 844 || xo === 780) {
+      // Only the word form. 844 and 780 are `vspltish` and `vspltisb`,
+      // which splat halfwords and bytes; they used to be decoded as this,
+      // which would have produced a vector of the right value in the
+      // wrong element width.
+      if (xo === 908) {
         inst.op = PPC.VSPLTISW
         // The immediate is in the field that would otherwise be a
         // register, so it is read before the offset above applies.
@@ -787,9 +864,12 @@ export function decode(word: number, address: bigint): PpcInst {
         inst.ra = -1; inst.rb = -1
         return inst
       }
-      if (ALTIVEC.has(xo)) {
-        inst.op = PPC.VOP
-        inst.shift = xo
+      const found = ALTIVEC[xo]
+      if (found !== undefined) {
+        inst.op = found
+        // The unpack reads one source; its A field is zero rather than a
+        // register, and naming v0 there would invent a dependence.
+        if (found === PPC.VUPKLSW) inst.ra = -1
         return inst
       }
       return refuse(address, word, `altivec extended ${xo}`)
@@ -870,6 +950,11 @@ function decodeX(inst: PpcInst, word: number, address: bigint): PpcInst {
     case PPC.MFCR:
       inst.ra = -1; inst.rb = -1
       inst.sourceFile = File.CR
+      // `mfocrf` is this opcode with bit 11 set, and it moves only the
+      // fields its mask names; the rest of the result is zero. Treating it
+      // as `mfcr` returns every field, which is a different value in a
+      // register a caller then saves and compares.
+      inst.imm = fld(word, 11, 11) === 1 ? BigInt(fld(word, 12, 19)) : 0xffn
       return inst
     case PPC.MTCRF:
       inst.imm = BigInt(fld(word, 12, 19))
@@ -890,15 +975,19 @@ function decodeX(inst: PpcInst, word: number, address: bigint): PpcInst {
 
     case PPC.LOADX: case PPC.LOADUX: case PPC.STOREX: case PPC.STOREUX:
     case PPC.LOADBR: case PPC.STOREBR: case PPC.LARX: case PPC.STCX:
-    case PPC.LFIW:
+    case PPC.LFIW: case PPC.STFIWX:
       inst.width = entry.width ?? 0
       inst.signed = entry.signed ?? false
       inst.destFile = entry.file ?? File.GPR
       inst.sourceFile = entry.file ?? File.GPR
       return inst
 
-    case PPC.LXV: case PPC.STXV:
-      inst.width = 16
+    case PPC.LXVD2X: case PPC.STXVD2X: case PPC.STXSDX: case PPC.LXSIWZX:
+      // The width is the table's. An earlier version set sixteen here for
+      // every form, which overrode the scalar entries: `stxsdx` wrote
+      // eight bytes past its operand, and `lxsiwzx` read twelve bytes too
+      // many into a register that should have held one word.
+      inst.width = entry.width ?? 16
       // The VSX register number's high bit is at the bottom of the word.
       inst.rd = fld(word, 6, 10) | (fld(word, 31, 31) << 5)
       inst.recordCr = false
@@ -984,8 +1073,7 @@ function decodeFp(inst: PpcInst, word: number, address: bigint, single: boolean)
       inst.destFile = File.CR
       return inst
     case PPC.FMR: case PPC.FNEG: case PPC.FABS: case PPC.FNABS:
-    case PPC.FCTID: case PPC.FCTIW: case PPC.FCFID: case PPC.FRSP:
-    case PPC.FRIN:
+    case PPC.FCFID: case PPC.FRSP:
       inst.ra = -1
       return inst
     case PPC.MFFS:
@@ -1010,6 +1098,17 @@ function decodeVsx(inst: PpcInst, word: number, address: bigint): PpcInst {
   const xt = fld(word, 6, 10) | (fld(word, 31, 31) << 5)
   const xa = fld(word, 11, 15) | (fld(word, 29, 29) << 5)
   const xb = fld(word, 16, 20) | (fld(word, 30, 30) << 5)
+
+  // `xxsel` is the one four-operand form, recognised by two bits alone:
+  // 26 and 27 both set. It is checked first because its third source
+  // occupies bits 21 to 25, which would otherwise be read as part of an
+  // opcode. No entry in the tables below has both bits set.
+  if (fld(word, 26, 27) === 3) {
+    inst.op = PPC.XXSEL
+    inst.rd = xt; inst.ra = xa; inst.rb = xb
+    inst.rc = fld(word, 21, 25) | (fld(word, 28, 28) << 5)
+    return inst
+  }
 
   const three = fld(word, 21, 28)
   const found = XX3[three]
@@ -1052,15 +1151,24 @@ function decodeVsx(inst: PpcInst, word: number, address: bigint): PpcInst {
     inst.rb = xb
     inst.ra = -1
     inst.shift = two
+    // `xxspltw` names the word it splats in the two bits that would be
+    // the top of the A field.
+    if (second === PPC.XXSPLTW) inst.imm = BigInt(fld(word, 14, 15))
     return inst
   }
 
-  // `xxpermdi` gives up two of its opcode bits to the selector that
-  // says which doubleword of each source to take, so it is only five
-  // bits wide and is looked up after the wider tables have missed.
-  // `xxswapd` is this instruction with that selector set to two.
-  if (fld(word, 24, 28) === 10) {
-    inst.op = PPC.XXPERM
+  // `xxpermdi` and `xxsldwi` give up two of their opcode bits to an
+  // operand -- the doubleword selector and the word shift -- so they are
+  // five bits wide and are looked up after the wider tables have missed.
+  // `xxswapd` is `xxpermdi` with the selector set to two.
+  if (fld(word, 21, 21) === 0 && fld(word, 24, 28) === 10) {
+    inst.op = PPC.XXPERMDI
+    inst.rd = xt; inst.ra = xa; inst.rb = xb
+    inst.imm = BigInt(fld(word, 22, 23))
+    return inst
+  }
+  if (fld(word, 21, 21) === 0 && fld(word, 24, 28) === 2) {
+    inst.op = PPC.XXSLDWI
     inst.rd = xt; inst.ra = xa; inst.rb = xb
     inst.imm = BigInt(fld(word, 22, 23))
     return inst

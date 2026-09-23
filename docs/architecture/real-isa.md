@@ -16,11 +16,10 @@ but all fourteen corpus programs match wasmtime byte for byte, and every
 operation is compared against a second engine on every edge value of its
 operand types.
 
-The other three each make a narrower claim, and say so: the 6502 because
-it has no reference it can be stepped alongside, and SPARC and POWER
-because they have the architectural tiers and not yet the whole-program
-one -- SPARC because musl has no port for it at all, POWER for three
-specific reasons section 5 names.
+The other two each make a narrower claim, and say so: the 6502 because
+it has no reference it can be stepped alongside, and SPARC because it
+has the architectural tiers and not yet the whole-program one -- musl
+has no port for it at all.
 
 The second one is the evidence that the split in section 1 was worth making:
 AArch64 needed a decoder, a semantics file and a register map, and reused the
@@ -646,8 +645,8 @@ All fourteen corpus programs — `printf` with floats, `malloc`, `strlen`
 `mmap`, because the heap is `memory.grow`, an instruction rather than a
 call; no `set_tid_address`, no `rseq`, no auxiliary vector and no
 `AT_PAGESZ`. Those last few are a fair share of the awkwardness on the
-other targets, and one of them is a named cause of POWER's missing
-whole-program tier.
+other targets -- and a loader bug in exactly that area was what held
+back POWER's whole-program tier.
 
 The one answer that needed care is `fd_seek`, which returns "this is a
 pipe". Saying anything else makes the libc choose the buffering it uses
@@ -759,13 +758,19 @@ because it does not depend on anything dynamic — `f3` is always the top
 half of `vs3` — so the resource id is simply the VSX number and the
 image resolves it at decode time.
 
-That also decides what the guest has to dump. qemu's register dump has
-the general registers, `lr`, `ctr`, `cr` and `xer`, and **no
-floating-point registers at all**. On this target that is not a detail:
-every `double` result lives in one. The lockstep tier therefore sees a
+That also decides what the guest has to dump. qemu's default register
+dump has the general registers, `lr`, `ctr`, `cr` and `xer`, and no
+floating-point registers. On this target that is not a detail: every
+`double` result lives in one. The lockstep tier therefore sees a
 floating-point program's control flow and not its answers, and the
-guest's own dump is what covers them — which is the clearest case yet
-for why that mechanism exists.
+guest's own dump is what covers them.
+
+That absence is qemu's default, not a limit: adding `fpu` to its `-d`
+list prints all thirty-two, and that is how the printf bug below was
+found. The lockstep tier does not use it yet. It would turn "the answer
+is wrong at the end" into "the answer first went wrong here" for
+floating-point code, and is the obvious next strengthening of this
+target's tier.
 
 #### The floating-point status register is refused
 
@@ -784,27 +789,85 @@ This is the same call as the 6502's cycle counter. Modelling it from
 recall would have meant guessing bit positions and validating them
 against one oracle; refusing it costs nothing measurable and says so.
 
-#### What it does not have yet
+#### The whole-program tier, and what it found
 
-**No whole-program tier.** Eleven of the eighteen libc and corpus
-programs already run correctly end to end, and the other seven stop for
-three causes, each identified:
+All eighteen libc and corpus programs now match qemu-ppc64le on output
+and exit status, and the fourteen corpus programs compute exactly the
+answers the app's own compiler recorded. POWER is in the app's lane.
 
-- musl's `memcpy` and `strlen` use Altivec, and the vector operations
-  are decoded here but have no semantics. They fail loudly, which is
-  right and still a failure.
-- one program outgrows the heap, faulting on an address inside the
-  range `brk` should have mapped — which points at the page size the
-  auxiliary vector advertises rather than at the syscall.
-- printf's floating-point path produces zeroes. The value reaches it
-  correctly, traced through the variadic save area into the digit loop,
-  and the control flow matches the reference for 3,177 instructions of
-  `vfprintf` before the two diverge on a pointer comparison in the
-  big-integer loop.
+The tier had been held back for three causes, each written down. They
+turned out to be five bugs, and only one of the three causes was where
+it had been placed.
 
-Enabling the tier before those are fixed would mean committing fixtures
-the suite cannot pass, so it is left off and the gap is written down
-with its three causes rather than left to be discovered.
+- **The heap fault was the loader, not the page size.** The loader wrote
+  a terminating back chain at the initial stack pointer — which is where
+  the process ABI puts `argc`. With `argc` read as zero, musl walked
+  `argv` and `envp` from the wrong place, found a NULL where the
+  auxiliary vector should start, and read every entry as zero. The page
+  size was the symptom: the allocator later asked `mmap` for zero bytes.
+  The suspicion recorded here pointed at the auxiliary vector and was
+  right about that; the cause was one line upstream.
+- **printf's zeroes were `stfiwx` decoded as `stfsx`.** The two have the
+  same shape: one stores the low word of a register as it is, the other
+  converts a double to single precision first. They had identical table
+  entries, so every integer musl produced with a float-to-integer
+  conversion — every digit of every `%f` — was stored as the bit pattern
+  of a float.
+- **`mfocrf` returned the whole condition register.** It moves one field
+  and zeroes the rest; it had been decoded as `mfcr`.
+- **The vector unit**, which was the cause correctly named: eighteen
+  Altivec and VSX operations, now implemented and verified below.
+- **Latent decoding errors**, found on the way and unreached by anything
+  that ran: `stxsdx` writing sixteen bytes instead of eight, `lxsiwzx`
+  reading sixteen instead of four, `vspltish` and `vspltisb` decoded as
+  `vspltisw`, the word merges decoded as a doubleword permute, `lxvw4x`
+  treated as `lxvd2x` (a different element order on this byte order),
+  `fres` listed as `frsp`, and `fctid`, `fctiw` and the `fri*` rounding
+  family collapsed onto forms that round differently. None is in any
+  binary measured here, so they are now refused rather than implemented
+  without anything to check them against.
+
+#### Why the decode tier let them through
+
+Every one of those was admitted by the decode tier, and for the same
+reason: **membership rather than equality**. The alias table said
+`stfiwx` may decode as a store, `mfocrf` as `mfcr`, `xxmrghw` as
+`xxpermdi` — and the check passed because the decoded operation was in
+the set the name could stand for, while the *field* that separated them
+was never looked at.
+
+So the check now works by **signature**. For every operation whose
+behaviour depends on a field — width, sign, register file, precision,
+which condition fields, which logical operation — the decoded
+instruction is turned back into the one name those fields imply, and
+that must equal what LLVM printed. A load with the wrong sign flag now
+fails as `lha decoded as lhz`; that was checked by making exactly that
+change and watching the tier fail across seven binaries.
+
+The tier also now covers the libc and corpus binaries, not only the
+freestanding programs. That is where the vector unit is: none of the
+freestanding programs reaches it, and all of the bugs above lived in
+code only a libc executes.
+
+#### The vector unit, verified
+
+Printed output is weak evidence for vector code — an element that does
+not reach the output can be wrong forever — so two freestanding programs
+run every implemented vector operation on edge operands (sign bits, all
+ones, equal and unequal elements, shift counts past the element width)
+and store each result to its own slot of the guest dump, which is
+compared with qemu's byte for byte. Two scalar stores are written over a
+marker so that one writing too much shows as a marker that is gone.
+
+Both matched first time, and both were then checked to fail: restoring
+the sixteen-byte `stxsdx` and dropping the modulo from a vector shift
+each made the comparison fail.
+
+One behaviour is chosen rather than derived. `xscvdpsxws` and
+`xscvdpuxws` define only word 1 of their result and leave the others
+undefined; hardware and qemu both copy the word into word 0 as well, so
+this does too. No program may depend on it, and matching it keeps the
+two comparable on the doubleword that holds a scalar.
 
 ### MOS 6502, as built
 
