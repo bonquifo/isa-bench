@@ -100,7 +100,7 @@ export const mipsTarget: FixtureTarget = {
   parseCpuLog: parseMipsCpuLog,
   libc: {
     triple: 'mipsel-unknown-linux-musl',
-    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r2',
+    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r3',
     sysroot: '/sysroot/mipsel',
     builtins: '/sysroot/builtins/libclang_rt.builtins-mipsel.a',
     programsDir: join(TOOLS, 'libc'),

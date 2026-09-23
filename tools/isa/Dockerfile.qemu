@@ -1,0 +1,41 @@
+# The lockstep reference for RV64, AArch64, MIPS32, POWER and SPARC: qemu's
+# user-mode emulators, built from the pinned 11.1.0 release.
+#
+#   docker build -f tools/isa/Dockerfile.qemu -t isa-sim/qemu-user:11.1.0 tools/isa
+#
+# User mode only, and only the five targets that use it -- x86-64 is traced
+# natively and WebAssembly and the 6502 have references of their own. The
+# source tarball is checked against a pinned SHA-256 before it is built.
+ARG BASE=debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+
+FROM ${BASE} AS builder
+ARG QEMU_URL=https://download.qemu.org/qemu-11.1.0.tar.xz
+ARG QEMU_SHA256=6ee1d1a61f68212476b27108c26da5f449dc09b626d42f8279ba0dc2e08fa858
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} TZ=UTC LC_ALL=C.UTF-8
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl xz-utils build-essential ninja-build python3 python3-venv \
+    pkg-config libglib2.0-dev libpixman-1-dev zlib1g-dev \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --fail --location --proto '=https' --tlsv1.2 "${QEMU_URL}" -o /tmp/qemu.tar.xz \
+ && echo "${QEMU_SHA256}  /tmp/qemu.tar.xz" | sha256sum --check --strict \
+ && mkdir /src && tar -xJf /tmp/qemu.tar.xz -C /src --strip-components=1 \
+ && cd /src \
+ && ./configure --prefix=/opt/qemu --disable-system --disable-docs --disable-tools \
+    --disable-gtk --disable-sdl --disable-vnc --disable-curl --disable-gnutls \
+    --target-list=aarch64-linux-user,riscv64-linux-user,mipsel-linux-user,ppc64le-linux-user,sparc-linux-user \
+ && ninja -C build install \
+ && find /opt/qemu -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} +
+
+FROM ${BASE}
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} PATH=/opt/qemu/bin:$PATH
+LABEL org.opencontainers.image.title="ISA Sim QEMU linux-user" \
+      org.opencontainers.image.version="11.1.0" \
+      org.opencontainers.image.licenses="GPL-2.0-only"
+RUN apt-get update && apt-get install -y --no-install-recommends libglib2.0-0 zlib1g \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 65532 nonroot && useradd --no-log-init --uid 65532 --gid 65532 --home-dir /nonexistent nonroot
+COPY --from=builder /opt/qemu /opt/qemu
+USER 65532:65532
+WORKDIR /artifacts

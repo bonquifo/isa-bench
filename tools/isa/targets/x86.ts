@@ -74,7 +74,7 @@ export const x86Target: FixtureTarget = {
   parseCpuLog: parseX86TraceLog,
   libc: {
     triple: 'x86_64-unknown-linux-musl',
-    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r2',
+    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r3',
     sysroot: '/sysroot/x86_64',
     builtins: '/sysroot/builtins/libclang_rt.builtins-x86_64.a',
     programsDir: join(TOOLS, 'libc'),

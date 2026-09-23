@@ -206,12 +206,7 @@ export const PPC = {
   XSCMP: 169,
   XSCVT: 170,
   XSNEG: 171,
-  XSABS: 172,
-  XSNABS: 173,
   XSCPSGN: 174,
-  XSMAX: 175,
-  XSMIN: 176,
-  XSRDPI: 177,
   /** The bitwise operations, which are on the whole 128 bits. */
   XXLOGIC: 180,
   XXSEL: 181,
@@ -232,8 +227,6 @@ export const PPC = {
   XXSLDWI: 189,
   /** Element-wise conversions, the `xv` family. */
   XVCVT: 185,
-  XVADD: 186,
-  XVMUL: 187,
 
   // Moving between the register files.
   MFVSR: 190,
@@ -564,7 +557,9 @@ const XX3: Readonly<Record<number, PpcOp>> = {
   161: PPC.XSNMADD, 169: PPC.XSNMADD, 177: PPC.XSNMSUB, 185: PPC.XSNMSUB,
   // xscmpudp and xscmpodp.
   35: PPC.XSCMP, 43: PPC.XSCMP,
-  176: PPC.XSCPSGN, 160: PPC.XSMAX, 168: PPC.XSMIN,
+  // xsmaxdp and xsmindp (160, 168) are refused: nothing measured uses
+  // them, and they have no semantics to be wrong with.
+  176: PPC.XSCPSGN,
   // The bitwise operations are on all 128 bits, and the eight of them
   // are spaced by eight: and, andc, or, xor, nor, orc, nand, eqv.
   130: PPC.XXLOGIC, 138: PPC.XXLOGIC, 146: PPC.XXLOGIC, 154: PPC.XXLOGIC,

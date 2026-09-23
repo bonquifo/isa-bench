@@ -1,0 +1,29 @@
+# The 6502 toolchain: the llvm-mos SDK 23.0.1, which carries the compiler and
+# `mos-sim`, the simulator the whole-program fixtures are recorded with.
+#
+#   docker build -f tools/isa/Dockerfile.mos -t isa-sim/mos:23.0.1 tools/isa
+#
+# A release binary, checked against a pinned SHA-256 before it is unpacked.
+ARG BASE=debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+
+FROM ${BASE} AS fetch
+ARG MOS_URL=https://github.com/llvm-mos/llvm-mos-sdk/releases/download/v23.0.1/llvm-mos-linux.tar.xz
+ARG MOS_SHA256=bd76dd5a826b83e438bf55dbdd512d65d4600ba80fda919dca633cad76f023cc
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --fail --location --proto '=https' --tlsv1.2 "${MOS_URL}" -o /tmp/mos.tar.xz \
+ && echo "${MOS_SHA256}  /tmp/mos.tar.xz" | sha256sum --check --strict \
+ && mkdir /opt/llvm-mos && tar -xJf /tmp/mos.tar.xz -C /opt/llvm-mos --strip-components=1
+
+FROM ${BASE}
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} PATH=/opt/llvm-mos/bin:$PATH
+LABEL org.opencontainers.image.title="ISA Sim llvm-mos code generation" \
+      org.opencontainers.image.version="23.0.1" \
+      org.opencontainers.image.licenses="Apache-2.0 WITH LLVM-exception"
+RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 libedit2 libxml2 zlib1g \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 65532 nonroot && useradd --no-log-init --uid 65532 --gid 65532 --home-dir /nonexistent nonroot
+COPY --from=fetch /opt/llvm-mos /opt/llvm-mos
+USER 65532:65532
+WORKDIR /artifacts

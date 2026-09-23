@@ -76,7 +76,7 @@ export const rv64Target: FixtureTarget = {
   parseCpuLog: parseRiscvCpuLog,
   libc: {
     triple: 'riscv64-unknown-linux-musl',
-    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r2',
+    image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r3',
     sysroot: '/sysroot/riscv64',
     builtins: '/sysroot/builtins/libclang_rt.builtins-riscv64.a',
     programsDir: join(TOOLS, 'libc'),

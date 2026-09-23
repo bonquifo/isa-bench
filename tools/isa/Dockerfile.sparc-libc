@@ -25,7 +25,9 @@
 # Build tools stay in the builder stages; the published image carries the
 # compiler, the GNU linker (lld has no 32-bit SPARC support) and the
 # sysroot.
-ARG LLVM=isa-sim/codegen:23.1.0
+# The compiler comes from the minimal image (Dockerfile.codegen-min), so the
+# libraries are built by the same clang binary that compiles the programs.
+ARG LLVM=isa-bench/codegen-min:23.1.0
 FROM ${LLVM} AS llvm
 
 # ---------------------------------------------------------------------------

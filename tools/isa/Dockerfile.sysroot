@@ -23,7 +23,9 @@
 # Build tools stay in the builder stages. llvm-ar alone is 58 MB and the LLVM
 # source tree is far larger; the published image gains the sysroots and
 # nothing else.
-ARG LLVM=isa-sim/codegen:23.1.0
+# The compiler comes from the minimal image (Dockerfile.codegen-min), so the
+# libraries are built by the same clang binary that compiles the programs.
+ARG LLVM=isa-bench/codegen-min:23.1.0
 ARG BASE=isa-bench/codegen-min:23.1.0
 
 FROM ${LLVM} AS llvm

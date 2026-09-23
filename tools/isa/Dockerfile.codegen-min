@@ -1,0 +1,59 @@
+# The compiler every real-ISA fixture is built with: clang, lld,
+# llvm-objdump and llvm-ar from the LLVM 23.1.0 release, and nothing else.
+#
+#   docker build -f tools/isa/Dockerfile.codegen-min \
+#     -t isa-bench/codegen-min:23.1.0 tools/isa
+#
+# The release tarball is 12 GB once extracted -- headers, static libraries and
+# development tools -- which is what once made this image 15.8 GB. clang is
+# statically linked against LLVM and needs nothing from that tree except its
+# own builtin headers, so the published image carries five things. The
+# tarball is fetched from the LLVM project's release page and checked against
+# a pinned SHA-256 before it is unpacked.
+#
+# The sysroot and SPARC libc images copy their compiler out of this one, so
+# every target is compiled by the same binary.
+ARG BASE=debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+ARG RUNTIME_BASE=ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+
+FROM ${BASE} AS fetch
+ARG LLVM_URL=https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.0/LLVM-23.1.0-Linux-X64.tar.xz
+ARG LLVM_SHA256=18da30f77f475688a18f7704d23f9f155ae007ed9922dbed6850a9419d9fec8c
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --fail --location --proto '=https' --tlsv1.2 "${LLVM_URL}" -o /tmp/llvm.tar.xz \
+ && echo "${LLVM_SHA256}  /tmp/llvm.tar.xz" | sha256sum --check --strict \
+ && mkdir /opt/llvm \
+ && tar -xJf /tmp/llvm.tar.xz -C /opt/llvm --strip-components=1 \
+      --wildcards '*/bin/clang-23' '*/bin/lld' '*/bin/llvm-objdump' '*/bin/llvm-ar' \
+      '*/lib/clang/23/include' \
+ && rm /tmp/llvm.tar.xz
+
+FROM ${RUNTIME_BASE}
+ARG SOURCE_DATE_EPOCH=1787616000
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH} PATH=/opt/llvm/bin:$PATH
+LABEL org.opencontainers.image.title="ISA Bench minimal codegen" \
+      org.opencontainers.image.version="23.1.0" \
+      org.opencontainers.image.licenses="Apache-2.0 WITH LLVM-exception"
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libatomic1 libedit2 libxml2 zlib1g libicu70 \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 65532 nonroot \
+ && useradd --no-log-init --uid 65532 --gid 65532 --home-dir /nonexistent nonroot
+
+# The compiler, the linker, the disassembler that reads back what they made,
+# and the archiver the sysroot builds need.
+COPY --from=fetch /opt/llvm/bin/clang-23 /opt/llvm/bin/clang-23
+COPY --from=fetch /opt/llvm/bin/lld /opt/llvm/bin/lld
+COPY --from=fetch /opt/llvm/bin/llvm-objdump /opt/llvm/bin/llvm-objdump
+COPY --from=fetch /opt/llvm/bin/llvm-ar /opt/llvm/bin/llvm-ar
+# clang cannot compile anything that includes <stdint.h> without these.
+COPY --from=fetch /opt/llvm/lib/clang/23/include /opt/llvm/lib/clang/23/include
+
+RUN ln -s clang-23 /opt/llvm/bin/clang \
+ && ln -s lld /opt/llvm/bin/ld.lld \
+ && ln -s lld /opt/llvm/bin/wasm-ld \
+ && ln -s llvm-ar /opt/llvm/bin/llvm-ranlib
+
+USER 65532:65532
+WORKDIR /artifacts

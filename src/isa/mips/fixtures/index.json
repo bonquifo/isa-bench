@@ -102,7 +102,7 @@
       "seed": 233
     }
   ],
-  "libcImage": "isa-bench/codegen-musl:23.1.0-1.2.5-r2",
+  "libcImage": "isa-bench/codegen-musl:23.1.0-1.2.5-r3",
   "libcFixtures": [
     {
       "name": "libc-alloc",

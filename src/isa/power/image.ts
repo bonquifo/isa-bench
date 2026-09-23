@@ -119,8 +119,7 @@ const FP_OPS = new Set<number>([
   PPC.FSEL,
   PPC.XSADD, PPC.XSSUB, PPC.XSMUL, PPC.XSDIV, PPC.XSSQRT, PPC.XSMADD,
   PPC.XSMSUB, PPC.XSNMADD, PPC.XSNMSUB, PPC.XSCMP, PPC.XSCVT,
-  PPC.XSNEG, PPC.XSABS, PPC.XSNABS, PPC.XSCPSGN, PPC.XSMAX, PPC.XSMIN,
-  PPC.XSRDPI, PPC.XVCVT, PPC.XVADD, PPC.XVMUL,
+  PPC.XSNEG, PPC.XSCPSGN, PPC.XVCVT,
 ])
 const MUL_OPS = new Set<number>([
   PPC.VMULUWM,
@@ -154,7 +153,7 @@ function latencyOf(inst: PpcInst): LatencyClass {
   if (MUL_OPS.has(inst.op)) return LatencyClass.MUL
   if (inst.op === PPC.FDIV || inst.op === PPC.XSDIV ||
       inst.op === PPC.FSQRT || inst.op === PPC.XSSQRT) return LatencyClass.FP_DIV
-  if (inst.op === PPC.FMUL || inst.op === PPC.XSMUL || inst.op === PPC.XVMUL) {
+  if (inst.op === PPC.FMUL || inst.op === PPC.XSMUL) {
     return LatencyClass.FP_MUL
   }
   if (FP_OPS.has(inst.op)) return LatencyClass.FP_ADD

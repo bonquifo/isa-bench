@@ -154,7 +154,7 @@ const SCALAR_NAMES: ReadonlyMap<number, readonly string[]> = new Map([
   [PPC.XSADD, ['xsadddp']], [PPC.XSSUB, ['xssubdp']],
   [PPC.XSMUL, ['xsmuldp']], [PPC.XSDIV, ['xsdivdp']],
   [PPC.XSSQRT, ['xssqrtdp']], [PPC.XSNEG, ['xsnegdp']],
-  [PPC.XSCPSGN, ['xscpsgndp']], [PPC.XSMAX, ['xsmaxdp']], [PPC.XSMIN, ['xsmindp']],
+  [PPC.XSCPSGN, ['xscpsgndp']],
   // Unordered and ordered differ only in which NaNs raise an exception,
   // which nothing here observes.
   [PPC.XSCMP, ['xscmpudp', 'xscmpodp']],

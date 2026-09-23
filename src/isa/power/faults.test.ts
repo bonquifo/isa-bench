@@ -6,8 +6,9 @@
  * than answered with a plausible zero -- it holds the rounding mode,
  * and this interpreter only rounds to nearest, so a program that set a
  * different mode and carried on would get quietly wrong answers. And
- * the vector operations are decoded but have no semantics yet, which is
- * a stated gap rather than a silent one: they stop the run.
+ * the vector unit is implemented only as far as measured programs reach
+ * it; every other vector encoding is refused at decode, so the gap stops
+ * the run rather than running a neighbouring instruction.
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -112,6 +113,7 @@ describe('power: state this backend does not model', () => {
     expect(() => decode(0xf0221800, 0x1000n)).toThrow(UnimplementedInstruction) // xsaddsp
     expect(() => decode(0xf0221a40, 0x1000n)).toThrow(UnimplementedInstruction) // xvsubsp
     expect(() => decode(0xf0221ac0, 0x1000n)).toThrow(UnimplementedInstruction) // xvdivsp
+    expect(() => decode(0xf0221d00, 0x1000n)).toThrow(UnimplementedInstruction) // xsmaxdp
   })
 
   it('refuses a conditional trap rather than always taking it', () => {

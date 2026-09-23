@@ -1137,10 +1137,10 @@ export class PowerInterpreter implements Interpreter {
       case PPC.XSNEG:
         this.vsrHi[inst.rd] = this.vsrHi[inst.rb]! ^ (1n << 63n)
         return
-      case PPC.XSABS: case PPC.FABS:
+      case PPC.FABS:
         this.vsrHi[inst.rd] = this.vsrHi[inst.rb]! & ~(1n << 63n)
         return
-      case PPC.XSNABS: case PPC.FNABS:
+      case PPC.FNABS:
         this.vsrHi[inst.rd] = this.vsrHi[inst.rb]! | (1n << 63n)
         return
       case PPC.FNEG:

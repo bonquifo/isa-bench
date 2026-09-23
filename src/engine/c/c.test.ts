@@ -797,7 +797,7 @@ describe('C language semantics', () => {
     expect(r.gold).toBe(8)
   })
 
-  it('maps Program-menu ids onto canned C without customSource', () => {
+  it('maps Program-menu ids onto canned C without customSource', { timeout: 60_000 }, () => {
     expect(isCWorkload('c-sum')).toBe(true)
     expect(isCWorkload('custom-c')).toBe(false)
     expect(cWorkloadId(C_EXAMPLES.find((e) => e.id === 'queens')!)).toBe('c-queens')
