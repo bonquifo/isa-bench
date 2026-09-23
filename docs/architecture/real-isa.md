@@ -1791,7 +1791,15 @@ cd ../.. && npx vite-node tools/isa/build-toolchain.ts
 ```
 
 The initial stack pointer recorded in each lockstep fixture comes from
-qemu and varies between captures, because qemu-user randomises it; the
-programs set their own stack immediately, so it does not affect
-execution, but it is why regenerating produces a diff even when nothing
-else changed.
+where qemu-user maps the guest's stack, which address-space randomisation
+used to move on every capture, so regenerating produced a diff even when
+nothing else had changed. qemu now runs under `setarch -R`, and two
+captures of the same inputs are byte-identical -- which is what lets CI
+regenerate fixtures and commit only real changes.
+
+In practice none of this is run by hand. The
+[Regenerate](../../.github/workflows/regenerate.yml) workflow rebuilds
+whatever a change to `tools/isa` affects and commits the result, and
+`node scripts/images.mjs pull` fetches every image above from the
+project's container registry, keyed by a hash of its inputs, instead of
+building it.

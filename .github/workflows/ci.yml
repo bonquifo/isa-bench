@@ -1,9 +1,30 @@
 name: CI
 
+# Every push and pull request is verified. What reaches main, or a v* tag,
+# is also packaged for all three platforms -- each on its own runner,
+# because macOS installers cannot be built elsewhere and Linux ones built on
+# Windows lose their executable bit -- and published:
+#
+#   main     the rolling "latest-main" prerelease, replaced on every push
+#   v*       a versioned release, its version taken from the tag
+#
+# The in-app compiler is fetched from its release and checked against
+# tools/isa/toolchain.lock.json; the Regenerate workflow is what builds and
+# publishes a new one, and it starts this workflow on the commit it makes.
+
 on:
   push:
     branches: ['**']
+    tags: ['v*']
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  contents: read
 
 jobs:
   verify:
@@ -15,8 +36,113 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: node scripts/fetch-toolchain.mjs
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
       # Proves the bundle the desktop app ships still builds.
       - run: npm run build
+
+  deep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/fetch-toolchain.mjs
+      - run: npm run test:deep
+
+  package:
+    needs: [verify, deep]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: desktop:pack:win
+            artifacts: |
+              release/*.exe
+          - os: ubuntu-latest
+            script: desktop:pack:linux
+            artifacts: |
+              release/*.AppImage
+              release/*.tar.gz
+          - os: macos-latest
+            script: desktop:pack:mac
+            artifacts: |
+              release/*.dmg
+              release/*.zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/fetch-toolchain.mjs
+      - name: Version
+        shell: bash
+        # A tag names its release's version; a build of main is the version
+        # in package.json, marked as a prerelease of it.
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="$(node -p "require('./package.json').version")-main.${GITHUB_RUN_NUMBER}"
+          fi
+          npm version "$version" --no-git-tag-version --allow-same-version
+      - run: npm run ${{ matrix.script }}
+        env:
+          # Unsigned builds; signing needs certificates this workflow has none of.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - name: Check the Linux tarball kept its executable bits
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$(ls release/*.tar.gz | head -1)"
+          for entry in isa-bench chrome-sandbox; do
+            mode="$(tar tvzf "$archive" | awk -v name="/$entry\$" '$NF ~ name {print $1; exit}')"
+            echo "$entry: $mode"
+            case "$mode" in *x*) ;; *) echo "::error::$entry is not executable in $archive"; exit 1 ;; esac
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: isa-bench-${{ matrix.os }}
+          path: ${{ matrix.artifacts }}
+          if-no-files-found: error
+
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: isa-bench-*
+          merge-multiple: true
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --latest \
+              --title "ISA Bench ${GITHUB_REF_NAME#v}" --generate-notes artifacts/*
+          else
+            # One rolling prerelease, moved to this commit and refilled.
+            gh release delete latest-main --yes --cleanup-tag 2>/dev/null || true
+            gh release create latest-main --prerelease --target "$GITHUB_SHA" \
+              --title "Latest main (${GITHUB_SHA::7})" \
+              --notes "Built automatically from ${GITHUB_SHA} on main. Unsigned; not a versioned release." \
+              artifacts/*
+          fi

@@ -1,0 +1,238 @@
+name: Regenerate
+
+# Rebuilds everything that is generated from tools/isa -- the Docker images,
+# every target's fixtures, and the in-app compiler bundle -- whenever what
+# they are generated from changes, proves the results with the full and
+# deep suites, and commits them back to the branch.
+#
+#   images      built only when their content key is not in the registry
+#               (scripts/images.mjs), so an unchanged image is a pull
+#   fixtures    one job per target, from the images
+#   toolchain   the compiler bundle, from the images
+#   verify      npm test and test:deep on the regenerated tree; the deep
+#               suite requires the in-app compiler to reproduce the fixture
+#               binaries byte for byte, so the two cannot drift apart
+#   publish     a new bundle becomes a release named by its lock; changed
+#               fixtures and lock are committed to the branch, and CI is
+#               started on that commit (a push made with GITHUB_TOKEN does
+#               not start workflows by itself)
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'tools/isa/**'
+      - '!tools/isa/toolchain.lock.json'
+      - 'src/engine/c/programs.ts'
+      - 'src/compiler/wrap.ts'
+      - 'src/isa/shipped.ts'
+      - 'scripts/images.mjs'
+      - '.github/workflows/regenerate.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: regenerate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+  actions: write
+
+env:
+  ISA_IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}/isa-bench-images
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      first: ${{ steps.plan.outputs.first }}
+      second: ${{ steps.plan.outputs.second }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: plan
+        run: |
+          plan="$(node scripts/images.mjs plan)"
+          echo "$plan"
+          echo "first=$(jq -c .first <<<"$plan")" >> "$GITHUB_OUTPUT"
+          echo "second=$(jq -c .second <<<"$plan")" >> "$GITHUB_OUTPUT"
+
+  images-first:
+    needs: plan
+    if: needs.plan.outputs.first != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.first) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-image
+        with:
+          name: ${{ matrix.image.name }}
+          heavy: ${{ matrix.image.heavy }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  images-second:
+    needs: [plan, images-first]
+    if: always() && needs.plan.result == 'success' && needs.images-first.result != 'failure' && needs.plan.outputs.second != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.second) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-image
+        with:
+          name: ${{ matrix.image.name }}
+          heavy: ${{ matrix.image.heavy }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  fixtures:
+    needs: [images-first, images-second]
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: rv64, dir: riscv, script: 'tools/isa/build-fixtures.ts rv64', images: 'codegen-min codegen-musl qemu-user' }
+          - { target: aarch64, dir: aarch64, script: 'tools/isa/build-fixtures.ts aarch64', images: 'codegen-min codegen-musl qemu-user' }
+          - { target: x86, dir: x86, script: 'tools/isa/build-fixtures.ts x86', images: 'codegen-min codegen-musl native-x86' }
+          - { target: mips, dir: mips, script: 'tools/isa/build-fixtures.ts mips', images: 'codegen-min codegen-musl qemu-user' }
+          - { target: power, dir: power, script: 'tools/isa/build-fixtures.ts power', images: 'codegen-min codegen-musl qemu-user' }
+          - { target: sparc, dir: sparc, script: 'tools/isa/build-fixtures.ts sparc', images: 'codegen-min sparc-linker sparc-picolibc qemu-user' }
+          - { target: wasm, dir: wasm, script: 'tools/isa/wasm/build-fixtures.ts', images: 'wasi' }
+          - { target: mos, dir: mos, script: 'tools/isa/mos/build-corpus.ts', images: 'mos' }
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/images.mjs pull ${{ matrix.images }}
+      - run: npx vite-node ${{ matrix.script }}
+      - run: tar cf fixtures-${{ matrix.target }}.tar src/isa/${{ matrix.dir }}/fixtures
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fixtures-${{ matrix.target }}
+          path: fixtures-${{ matrix.target }}.tar
+
+  toolchain:
+    needs: [images-first, images-second]
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/images.mjs pull clang-wasm mos-wasm codegen-musl sparc-picolibc wasi mos
+      - run: npx vite-node tools/isa/build-toolchain.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toolchain
+          path: |
+            toolchain/
+            tools/isa/toolchain.lock.json
+
+  verify:
+    needs: [fixtures, toolchain]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fixtures-*
+          merge-multiple: true
+      - run: for archive in fixtures-*.tar; do tar xf "$archive"; done && rm fixtures-*.tar
+      - uses: actions/download-artifact@v4
+        with:
+          name: toolchain
+      - name: What changed
+        run: |
+          git add -A src/isa tools/isa/toolchain.lock.json
+          git diff --cached --stat | tail -40
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:deep
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fixtures-*
+          merge-multiple: true
+      - run: for archive in fixtures-*.tar; do tar xf "$archive"; done && rm fixtures-*.tar
+      - uses: actions/download-artifact@v4
+        with:
+          name: toolchain
+      - name: Publish the bundle, if it is new
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- tools/isa/toolchain.lock.json; then
+            echo "The compiler bundle is unchanged."
+            exit 0
+          fi
+          tag="toolchain-$(tr -d '\r' < tools/isa/toolchain.lock.json | sha256sum | cut -c1-12)"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "$tag is already published."
+          else
+            gh release create "$tag" --prerelease --target "$GITHUB_SHA" \
+              --title "In-app compiler ($tag)" \
+              --notes "Built by the Regenerate workflow from ${GITHUB_SHA}. Checksums are pinned in tools/isa/toolchain.lock.json." \
+              toolchain/llvm.wasm toolchain/mos.wasm toolchain/sysroot.tar toolchain/manifest.json
+          fi
+      - name: Commit what changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git add -A src/isa tools/isa/toolchain.lock.json
+          if git diff --cached --quiet; then
+            echo "Nothing generated has changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Regenerate fixtures and the compiler bundle" \
+            -m "Generated by the Regenerate workflow from ${GITHUB_SHA}."
+          # Commits that did not touch the generators may have landed while
+          # this ran; the regenerated files are ours alone, so rebase onto them.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          # A push made with GITHUB_TOKEN starts no workflows, so CI is
+          # started on the new commit explicitly.
+          gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"

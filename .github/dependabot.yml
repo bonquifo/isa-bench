@@ -1,0 +1,18 @@
+# Dependency updates arrive as pull requests, which CI verifies like any
+# other change. Grouped, so a week's updates are one review, not twenty.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ['*']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

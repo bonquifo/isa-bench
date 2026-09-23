@@ -8,7 +8,10 @@ app — no server, no Docker, no network, no account.
 
 ## Install
 
-Download the installer for your platform from `release/` and run it:
+Download the installer for your platform from the
+[releases page](https://github.com/bonquifo/isa-bench/releases) — the latest
+versioned release, or **Latest main** for a build of whatever is on `main`
+now — and run it:
 
 | Platform | Artifact |
 | --- | --- |
@@ -37,10 +40,9 @@ Artifacts land in `release/`.
 
 Two supported ways to get all three:
 
-1. **CI** — [`.github/workflows/release.yml`](.github/workflows/release.yml)
-   builds every platform on its own runner and attaches the results to a draft
-   GitHub release when you push a `v*` tag. It also asserts the Linux tarball
-   kept its executable bits.
+1. **CI** — see [Pipeline](#pipeline). Every push to `main` refreshes the
+   *Latest main* prerelease, and pushing a `v1.2.3` tag publishes release
+   1.2.3, each built on its own platform's runner.
 2. **Linux from a Windows checkout via WSL**:
 
    ```bash
@@ -268,9 +270,35 @@ node scripts/fetch-toolchain.mjs
 ```
 
 or build it from source with Docker (`npx vite-node
-tools/isa/build-toolchain.ts`, after building the images its header lists).
+tools/isa/build-toolchain.ts`, after `node scripts/images.mjs pull`).
 Without it the app still runs, and says your C will use the model lowering;
 packaging refuses to run without it.
+
+## Pipeline
+
+Nothing generated is edited by hand, and nothing needs rebuilding by hand
+either. Two workflows carry a change from a commit to an installer:
+
+- **[Regenerate](.github/workflows/regenerate.yml)** runs when anything the
+  generated files are made from changes — a Dockerfile, a harness, a patch,
+  the corpus programs. It rebuilds only the Docker images whose inputs
+  changed (each is stored in the GitHub container registry under a hash of
+  its inputs, so an unchanged one is a pull), regenerates every target's
+  fixtures and the in-app compiler, and runs the full and deep suites on the
+  result — the deep suite requires the compiler to rebuild the fixture
+  binaries byte for byte, so the two cannot drift apart. Whatever changed is
+  committed back to the branch; a new compiler is published as a release
+  named by its lock.
+- **[CI](.github/workflows/ci.yml)** verifies every push and pull request —
+  typecheck, lint, tests, build and the deep suite. On `main` it then
+  packages Windows, Linux and macOS and replaces the *Latest main*
+  prerelease; on a `v*` tag it publishes that version.
+
+To ship a version: `git tag v1.2.3 && git push origin v1.2.3`.
+
+Locally, `node scripts/images.mjs pull` fetches every image the generators
+use instead of building them, which takes hours for the two LLVM builds.
+Dependabot proposes dependency updates weekly, as pull requests CI checks.
 
 Source layout:
 
