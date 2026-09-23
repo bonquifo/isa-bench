@@ -1,11 +1,10 @@
 /**
  * Which targets can execute real compiled code, and how to reach them.
  *
- * The app compares eight targets. One is still a pseudo-backend driven by
- * the engine's own lowering; seven execute real instructions. Rather than
- * scatter that distinction through the UI and the comparison path, it is
- * asked for here: a target with a backend runs real code, and a target
- * without one continues to run exactly as it does today.
+ * All eight targets execute real instructions. Rather than scatter that
+ * distinction through the UI and the comparison path, it is asked for
+ * here: a target with a backend runs real code, and one without would
+ * continue to run through the engine's own lowering.
  *
  * Registering a backend is the whole act of adding an instruction set. What
  * it has to satisfy is in ./backend.ts, and whether it does is decided by the
@@ -19,11 +18,12 @@ import { mosBackend } from './mos/backend.ts'
 import { powerBackend } from './power/backend.ts'
 import { rv64Backend } from './riscv/backend.ts'
 import { sparcBackend } from './sparc/backend.ts'
+import { wasmBackend } from './wasm/backend.ts'
 import { x86Backend } from './x86/backend.ts'
 
 const BACKENDS: readonly IsaBackend[] = [
   rv64Backend, aarch64Backend, x86Backend, mipsBackend, mosBackend, sparcBackend,
-  powerBackend,
+  powerBackend, wasmBackend,
 ]
 
 const BY_ID = new Map<IsaId, IsaBackend>(BACKENDS.map((backend) => [backend.id, backend]))

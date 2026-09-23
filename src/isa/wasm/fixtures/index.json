@@ -1,0 +1,102 @@
+{
+  "generator": "tools/isa/wasm/build-fixtures.ts",
+  "codegen": "isa-sim/wasi:33.0-48.0.1",
+  "oracle": "isa-sim/wasi:33.0-48.0.1 (wasmtime) and the host engine at test time",
+  "target": "wasm32 / wasm32-wasip1",
+  "march": "",
+  "flags": "--target=wasm32 -O2 -ffreestanding -fno-builtin -nostdlib -Wl,--no-entry -Wl,--export-memory -Wl,--export-dynamic -fno-vectorize -fno-slp-vectorize",
+  "randomGenerator": "src/isa/wasm/generate.node.ts",
+  "randomSeeds": [],
+  "fixtures": [
+    {
+      "name": "alu",
+      "steps": 0
+    },
+    {
+      "name": "call",
+      "steps": 0
+    },
+    {
+      "name": "dot",
+      "steps": 0
+    },
+    {
+      "name": "loops",
+      "steps": 0
+    }
+  ],
+  "libcImage": "isa-sim/wasi:33.0-48.0.1",
+  "libcFixtures": [
+    {
+      "name": "corpus-fib",
+      "exitCode": 0,
+      "stderr": "55"
+    },
+    {
+      "name": "corpus-hello",
+      "exitCode": 0,
+      "stderr": "0"
+    },
+    {
+      "name": "corpus-sum",
+      "exitCode": 0,
+      "stderr": "820"
+    },
+    {
+      "name": "corpus-ptr",
+      "exitCode": 0,
+      "stderr": "30"
+    },
+    {
+      "name": "corpus-struct",
+      "exitCode": 0,
+      "stderr": "16"
+    },
+    {
+      "name": "corpus-mandelbrot",
+      "exitCode": 0,
+      "stderr": "-322095334"
+    },
+    {
+      "name": "corpus-wolf",
+      "exitCode": 0,
+      "stderr": "1968457438"
+    },
+    {
+      "name": "corpus-life",
+      "exitCode": 0,
+      "stderr": "212766499"
+    },
+    {
+      "name": "corpus-cube",
+      "exitCode": 0,
+      "stderr": "1274204170"
+    },
+    {
+      "name": "corpus-fire",
+      "exitCode": 0,
+      "stderr": "-1938390215"
+    },
+    {
+      "name": "corpus-nbody",
+      "exitCode": 0,
+      "stderr": "-975672083"
+    },
+    {
+      "name": "corpus-queens",
+      "exitCode": 0,
+      "stderr": "92"
+    },
+    {
+      "name": "corpus-fft",
+      "exitCode": 0,
+      "stderr": "476065557"
+    },
+    {
+      "name": "corpus-pi",
+      "exitCode": 0,
+      "stderr": "314168"
+    }
+  ],
+  "unbuilt": []
+}

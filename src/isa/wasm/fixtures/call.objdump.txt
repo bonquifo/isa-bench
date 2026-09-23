@@ -1,0 +1,328 @@
+
+call.wasm:	file format wasm
+
+Disassembly of section CODE:
+
+0000007f <CODE>:
+        # 8 functions in section.
+
+00000080 <kernel>:
+        .local i32, i32, i32, i32
+      85: 41 80 02     	i32.const	256
+      88: 41 00        	i32.const	0
+      8a: 28 02 80 80 84 80 00 	i32.load	65536
+      91: 10 81 80 80 80 00    	call	1
+      97: 36 02 98 80 84 80 00 	i32.store	65560
+      9e: 41 84 02     	i32.const	260
+      a1: 41 02        	i32.const	2
+      a3: 41 03        	i32.const	3
+      a5: 10 82 80 80 80 00    	call	2
+      ab: 36 02 98 80 84 80 00 	i32.store	65560
+      b2: 41 88 02     	i32.const	264
+      b5: 41 00        	i32.const	0
+      b7: 41 00        	i32.const	0
+      b9: 28 02 84 80 84 80 00 	i32.load	65540
+      c0: 41 03        	i32.const	3
+      c2: 6f           	i32.rem_s
+      c3: 41 02        	i32.const	2
+      c5: 74           	i32.shl 
+      c6: 41 88 80 84 80 00    	i32.const	65544
+      cc: 6a           	i32.add 
+      cd: 28 02 00     	i32.load	0
+      d0: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+      db: 41 01        	i32.const	1
+      dd: 6a           	i32.add 
+      de: 41 00        	i32.const	0
+      e0: 28 02 84 80 84 80 00 	i32.load	65540
+      e7: 41 01        	i32.const	1
+      e9: 6a           	i32.add 
+      ea: 41 03        	i32.const	3
+      ec: 6f           	i32.rem_s
+      ed: 41 02        	i32.const	2
+      ef: 74           	i32.shl 
+      f0: 41 88 80 84 80 00    	i32.const	65544
+      f6: 6a           	i32.add 
+      f7: 28 02 00     	i32.load	0
+      fa: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     105: 41 02        	i32.const	2
+     107: 6a           	i32.add 
+     108: 41 00        	i32.const	0
+     10a: 28 02 84 80 84 80 00 	i32.load	65540
+     111: 41 02        	i32.const	2
+     113: 6a           	i32.add 
+     114: 41 03        	i32.const	3
+     116: 6f           	i32.rem_s
+     117: 41 02        	i32.const	2
+     119: 74           	i32.shl 
+     11a: 41 88 80 84 80 00    	i32.const	65544
+     120: 6a           	i32.add 
+     121: 28 02 00     	i32.load	0
+     124: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     12f: 41 03        	i32.const	3
+     131: 6a           	i32.add 
+     132: 41 00        	i32.const	0
+     134: 28 02 84 80 84 80 00 	i32.load	65540
+     13b: 41 03        	i32.const	3
+     13d: 6a           	i32.add 
+     13e: 41 03        	i32.const	3
+     140: 6f           	i32.rem_s
+     141: 41 02        	i32.const	2
+     143: 74           	i32.shl 
+     144: 41 88 80 84 80 00    	i32.const	65544
+     14a: 6a           	i32.add 
+     14b: 28 02 00     	i32.load	0
+     14e: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     159: 41 04        	i32.const	4
+     15b: 6a           	i32.add 
+     15c: 41 00        	i32.const	0
+     15e: 28 02 84 80 84 80 00 	i32.load	65540
+     165: 41 04        	i32.const	4
+     167: 6a           	i32.add 
+     168: 41 03        	i32.const	3
+     16a: 6f           	i32.rem_s
+     16b: 41 02        	i32.const	2
+     16d: 74           	i32.shl 
+     16e: 41 88 80 84 80 00    	i32.const	65544
+     174: 6a           	i32.add 
+     175: 28 02 00     	i32.load	0
+     178: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     183: 41 05        	i32.const	5
+     185: 6a           	i32.add 
+     186: 41 00        	i32.const	0
+     188: 28 02 84 80 84 80 00 	i32.load	65540
+     18f: 41 05        	i32.const	5
+     191: 6a           	i32.add 
+     192: 41 03        	i32.const	3
+     194: 6f           	i32.rem_s
+     195: 41 02        	i32.const	2
+     197: 74           	i32.shl 
+     198: 41 88 80 84 80 00    	i32.const	65544
+     19e: 6a           	i32.add 
+     19f: 28 02 00     	i32.load	0
+     1a2: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     1ad: 41 06        	i32.const	6
+     1af: 6a           	i32.add 
+     1b0: 41 00        	i32.const	0
+     1b2: 28 02 84 80 84 80 00 	i32.load	65540
+     1b9: 41 06        	i32.const	6
+     1bb: 6a           	i32.add 
+     1bc: 41 03        	i32.const	3
+     1be: 6f           	i32.rem_s
+     1bf: 41 02        	i32.const	2
+     1c1: 74           	i32.shl 
+     1c2: 41 88 80 84 80 00    	i32.const	65544
+     1c8: 6a           	i32.add 
+     1c9: 28 02 00     	i32.load	0
+     1cc: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     1d7: 41 07        	i32.const	7
+     1d9: 6a           	i32.add 
+     1da: 41 00        	i32.const	0
+     1dc: 28 02 84 80 84 80 00 	i32.load	65540
+     1e3: 41 07        	i32.const	7
+     1e5: 6a           	i32.add 
+     1e6: 41 03        	i32.const	3
+     1e8: 6f           	i32.rem_s
+     1e9: 41 02        	i32.const	2
+     1eb: 74           	i32.shl 
+     1ec: 41 88 80 84 80 00    	i32.const	65544
+     1f2: 6a           	i32.add 
+     1f3: 28 02 00     	i32.load	0
+     1f6: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     201: 41 08        	i32.const	8
+     203: 6a           	i32.add 
+     204: 41 00        	i32.const	0
+     206: 28 02 84 80 84 80 00 	i32.load	65540
+     20d: 41 08        	i32.const	8
+     20f: 6a           	i32.add 
+     210: 41 03        	i32.const	3
+     212: 6f           	i32.rem_s
+     213: 41 02        	i32.const	2
+     215: 74           	i32.shl 
+     216: 41 88 80 84 80 00    	i32.const	65544
+     21c: 6a           	i32.add 
+     21d: 28 02 00     	i32.load	0
+     220: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     22b: 41 09        	i32.const	9
+     22d: 6a           	i32.add 
+     22e: 41 00        	i32.const	0
+     230: 28 02 84 80 84 80 00 	i32.load	65540
+     237: 41 09        	i32.const	9
+     239: 6a           	i32.add 
+     23a: 41 03        	i32.const	3
+     23c: 6f           	i32.rem_s
+     23d: 41 02        	i32.const	2
+     23f: 74           	i32.shl 
+     240: 41 88 80 84 80 00    	i32.const	65544
+     246: 6a           	i32.add 
+     247: 28 02 00     	i32.load	0
+     24a: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     255: 41 0a        	i32.const	10
+     257: 6a           	i32.add 
+     258: 41 00        	i32.const	0
+     25a: 28 02 84 80 84 80 00 	i32.load	65540
+     261: 41 0a        	i32.const	10
+     263: 6a           	i32.add 
+     264: 41 03        	i32.const	3
+     266: 6f           	i32.rem_s
+     267: 41 02        	i32.const	2
+     269: 74           	i32.shl 
+     26a: 41 88 80 84 80 00    	i32.const	65544
+     270: 6a           	i32.add 
+     271: 28 02 00     	i32.load	0
+     274: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     27f: 41 0b        	i32.const	11
+     281: 6a           	i32.add 
+     282: 41 00        	i32.const	0
+     284: 28 02 84 80 84 80 00 	i32.load	65540
+     28b: 41 0b        	i32.const	11
+     28d: 6a           	i32.add 
+     28e: 41 03        	i32.const	3
+     290: 6f           	i32.rem_s
+     291: 41 02        	i32.const	2
+     293: 74           	i32.shl 
+     294: 41 88 80 84 80 00    	i32.const	65544
+     29a: 6a           	i32.add 
+     29b: 28 02 00     	i32.load	0
+     29e: 11 80 80 80 80 00 80 80 80 80 00     	call_indirect	 0
+     2a9: 22 00        	local.tee	0
+     2ab: 36 02 98 80 84 80 00 	i32.store	65560
+     2b2: 41 06        	i32.const	6
+     2b4: 10 81 80 80 80 00    	call	1
+     2ba: 21 01        	local.set	1
+     2bc: 41 07        	i32.const	7
+     2be: 10 81 80 80 80 00    	call	1
+     2c4: 21 02        	local.set	2
+     2c6: 41 08        	i32.const	8
+     2c8: 10 81 80 80 80 00    	call	1
+     2ce: 21 03        	local.set	3
+     2d0: 41 8c 02     	i32.const	268
+     2d3: 41 09        	i32.const	9
+     2d5: 10 81 80 80 80 00    	call	1
+     2db: 20 03        	local.get	3
+     2dd: 20 02        	local.get	2
+     2df: 20 01        	local.get	1
+     2e1: 6a           	i32.add 
+     2e2: 6a           	i32.add 
+     2e3: 6a           	i32.add 
+     2e4: 22 01        	local.tee	1
+     2e6: 36 02 98 80 84 80 00 	i32.store	65560
+     2ed: 20 00        	local.get	0
+     2ef: 41 80 02     	i32.const	256
+     2f2: 28 02 98 80 84 80 00 	i32.load	65560
+     2f9: 73           	i32.xor 
+     2fa: 20 01        	local.get	1
+     2fc: 73           	i32.xor 
+     2fd: 0b           	end
+
+000002fe <fib>:
+        .local i32, i32
+     302: 41 00        	i32.const	0
+     304: 21 01        	local.set	1
+     306: 02 40        	block   	
+     308: 20 00        	local.get	0
+     30a: 41 02        	i32.const	2
+     30c: 48           	i32.lt_s
+     30d: 0d 00        	br_if   	0                       # 0: down to label0
+     30f: 41 00        	i32.const	0
+     311: 21 01        	local.set	1
+     313: 03 40        	loop    	                        # label1:
+     315: 20 00        	local.get	0
+     317: 22 02        	local.tee	2
+     319: 41 7e        	i32.const	-2
+     31b: 6a           	i32.add 
+     31c: 21 00        	local.set	0
+     31e: 20 02        	local.get	2
+     320: 41 7f        	i32.const	-1
+     322: 6a           	i32.add 
+     323: 10 81 80 80 80 00    	call	1
+     329: 20 01        	local.get	1
+     32b: 6a           	i32.add 
+     32c: 21 01        	local.set	1
+     32e: 20 02        	local.get	2
+     330: 41 03        	i32.const	3
+     332: 4b           	i32.gt_u
+     333: 0d 00        	br_if   	0                       # 0: up to label1
+     335: 0b           	end
+     336: 0b           	end
+     337: 20 00        	local.get	0
+     339: 20 01        	local.get	1
+     33b: 6a           	i32.add 
+     33c: 0b           	end
+
+0000033d <ackermann_ish>:
+        .local i32
+     341: 02 40        	block   	
+     343: 20 00        	local.get	0
+     345: 45           	i32.eqz
+     346: 0d 00        	br_if   	0                       # 0: down to label2
+     348: 41 01        	i32.const	1
+     34a: 21 02        	local.set	2
+     34c: 02 40        	block   	
+     34e: 20 01        	local.get	1
+     350: 45           	i32.eqz
+     351: 0d 00        	br_if   	0                       # 0: down to label3
+     353: 20 00        	local.get	0
+     355: 20 01        	local.get	1
+     357: 41 7f        	i32.const	-1
+     359: 6a           	i32.add 
+     35a: 10 82 80 80 80 00    	call	2
+     360: 21 02        	local.set	2
+     362: 0b           	end
+     363: 02 40        	block   	
+     365: 20 00        	local.get	0
+     367: 41 01        	i32.const	1
+     369: 47           	i32.ne  
+     36a: 0d 00        	br_if   	0                       # 0: down to label4
+     36c: 20 02        	local.get	2
+     36e: 21 01        	local.set	1
+     370: 0c 01        	br      	1                       # 1: down to label3
+     372: 0b           	end
+     373: 02 40        	block   	
+     375: 20 02        	local.get	2
+     377: 0d 00        	br_if   	0                       # 0: down to label5
+     379: 41 01        	i32.const	1
+     37b: 21 01        	local.set	1
+     37d: 0c 01        	br      	1                       # 1: down to label4
+     37f: 0b           	end
+     380: 41 01        	i32.const	1
+     382: 20 02        	local.get	2
+     384: 41 7f        	i32.const	-1
+     386: 6a           	i32.add 
+     387: 10 82 80 80 80 00    	call	2
+     38d: 21 01        	local.set	1
+     38f: 0b           	end
+     390: 20 01        	local.get	1
+     392: 41 01        	i32.const	1
+     394: 6a           	i32.add 
+     395: 0b           	end
+
+00000396 <triple>:
+
+     398: 20 00        	local.get	0
+     39a: 41 03        	i32.const	3
+     39c: 6c           	i32.mul 
+     39d: 0b           	end
+
+0000039e <negate>:
+
+     3a0: 41 00        	i32.const	0
+     3a2: 20 00        	local.get	0
+     3a4: 6b           	i32.sub 
+     3a5: 0b           	end
+
+000003a6 <square>:
+
+     3a8: 20 00        	local.get	0
+     3aa: 20 00        	local.get	0
+     3ac: 6c           	i32.mul 
+     3ad: 0b           	end
+
+000003ae <isa_entry>:
+
+     3b0: 10 80 80 80 80 00    	call	0
+     3b6: 0b           	end
+
+000003b7 <dump_address>:
+
+     3b9: 41 98 80 84 80 00    	i32.const	65560
+     3bf: 0b           	end

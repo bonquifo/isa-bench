@@ -23,6 +23,8 @@ import { mosBackend } from '../isa/mos/backend.ts'
 import * as mosShipped from '../isa/mos/shipped.ts'
 import { rv64Backend } from '../isa/riscv/backend.ts'
 import * as rv64Shipped from '../isa/riscv/shipped.ts'
+import { wasmBackend } from '../isa/wasm/backend.ts'
+import * as wasmShipped from '../isa/wasm/shipped.ts'
 import { x86Backend } from '../isa/x86/backend.ts'
 import * as x86Shipped from '../isa/x86/shipped.ts'
 
@@ -140,5 +142,29 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     returnChannel: 'framed',
     intBits: 16,
     shipped: mosShipped,
+  },
+  {
+    id: IsaId.WASM,
+    backend: wasmBackend,
+    label: 'WebAssembly',
+    instructions: 'WebAssembly',
+    // Two references, and neither is an emulator. The systematic and
+    // generated tiers run against the engine inside the process running
+    // the tests, which is the only target here whose oracle needs no
+    // container at all. The whole programs are compared against
+    // wasmtime, a different engine from a different vendor -- so the
+    // agreement is with two independent implementations rather than one.
+    oracle: "the host's WebAssembly engine, then wasmtime",
+    // No lockstep: no engine will single-step a module and report the
+    // operand stack, which after compilation has largely stopped
+    // existing. What replaces it is stronger per instruction and
+    // stronger at the end -- every operation against every edge value,
+    // and all of linear memory rather than a chosen set of registers.
+    verified: 'every operation against every edge value, ' +
+      'then whole modules on all of memory byte for byte',
+    libc: 'wasi-libc',
+    returnChannel: 'stderr',
+    intBits: 32,
+    shipped: wasmShipped,
   },
 ]

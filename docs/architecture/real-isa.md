@@ -1,21 +1,26 @@
 # Real instruction-set semantics
 
-Written for engineers continuing this work on the remaining target.
+Written for engineers maintaining or extending this work.
 
 This describes the interpreters that replace the pseudo-backend lowering, the
-interface they present to the timing model, and what the remaining instruction
-sets have to implement.
+interface they present to the timing model, and how each instruction set was
+verified.
 
-**Seven are complete: RV64GC, AArch64, x86-64, MIPS32, MOS 6502,
-SPARC V8 and POWER.** For the first four, real C compiled by clang and
-linked against a real libc executes against a real address space and
-matches its reference on architectural state for freestanding programs
-and on output for whole programs. The last three each make a narrower
-claim, and say so: the 6502 because it has no reference it can be
-stepped alongside, and SPARC and POWER because they have the
-architectural tiers and not yet the whole-program one -- SPARC because
-musl has no port for it at all, POWER for three specific reasons
-section 5 names.
+**All eight are complete: RV64GC, AArch64, x86-64, MIPS32, MOS 6502,
+SPARC V8, POWER and WebAssembly.** For the first four, real C compiled by
+clang and linked against a real libc executes against a real address space
+and matches its reference on architectural state for freestanding programs
+and on output for whole programs. WebAssembly makes the same claim by a
+different route: it has no lockstep tier because no engine can be stepped,
+but all fourteen corpus programs match wasmtime byte for byte, and every
+operation is compared against a second engine on every edge value of its
+operand types.
+
+The other three each make a narrower claim, and say so: the 6502 because
+it has no reference it can be stepped alongside, and SPARC and POWER
+because they have the architectural tiers and not yet the whole-program
+one -- SPARC because musl has no port for it at all, POWER for three
+specific reasons section 5 names.
 
 The second one is the evidence that the split in section 1 was worth making:
 AArch64 needed a decoder, a semantics file and a register map, and reused the
@@ -446,20 +451,22 @@ for them every iteration.
 
 ---
 
-## 5. What the remaining target must implement
+## 5. How each target was added
 
-Adding an instruction set is now a bounded act: implement
-[`IsaBackend`](../../src/isa/backend.ts), register it in
+All eight targets now execute real instructions. Adding one is a bounded
+act: implement [`IsaBackend`](../../src/isa/backend.ts), register it in
 [registry.ts](../../src/isa/registry.ts), add a
 [`FixtureTarget`](../../tools/isa/fixture-builder.ts) so fixtures can be
-captured, and call `describeIsaConformance` from a test file. The backend then
-inherits the entire differential suite — lockstep and final-state comparison —
-rather than growing its own version that checks slightly less.
+captured, and call `describeIsaConformance` from a test file. The backend
+then inherits the entire differential suite — lockstep and final-state
+comparison — rather than growing its own version that checks slightly
+less.
 
 A target with no traceable reference takes a different route, which the
-6502 opened: call `describeDecodeTier` directly for the tier that only
-needs a disassembly, and bring its own oracle for the rest. WASM will
-almost certainly take that route too.
+6502 opened and WebAssembly then took: call `describeDecodeTier` directly
+for the tier that only needs a disassembly, and bring its own oracle for
+the rest. Two of the eight went that way, which is enough to say the
+split was worth extracting rather than a special case dressed up as one.
 
 ```
 per ISA     decode, semantics, register file and numbering, ELF machine and
@@ -471,22 +478,206 @@ shared      address space, ELF loading, IEEE-754, the trace interface, the
 Everything in `src/isa/common/` is reusable as is — `GuestMemory` already
 takes endianness as a constructor argument for exactly this reason.
 
-| Target | The structural surprise | Notes |
-| --- | --- | --- |
-| WASM | a stack machine, not a register machine | No register file to compare. The differential interface needs rethinking, not just reimplementing. |
+The contract was frozen after RV64GC and before the other seven, which is
+the cheapest moment to get it wrong. It survived all seven with one
+documented addition and one field that does not apply: WebAssembly's
+`elfMachine` is zero, because a module is not an ELF file. That is a
+better outcome than freezing it late would have produced, and it is the
+only evidence available that freezing early was right rather than lucky.
 
-Instruction counts above are measured on the existing C corpus at `-O2`, not
-estimated. RV64 needed 49 for that corpus, and 90 across four statically
-linked musl binaries, which is the whole of musl and not only the parts a
-program reaches; the interpreter that covers it is about a thousand lines of
-semantics. "Real ISAs have hundreds of instructions" is true of the
-architectures and not of what a compiler emits for this corpus.
+Instruction counts below are measured on the existing C corpus at `-O2`,
+not estimated. RV64 needed 49 for that corpus, and 90 across four
+statically linked musl binaries, which is the whole of musl and not only
+the parts a program reaches; the interpreter that covers it is about a
+thousand lines of semantics. "Real ISAs have hundreds of instructions" is
+true of the architectures and not of what a compiler emits for this
+corpus.
 
 x86-64 is the one that came closest to contradicting that, and is worth
 quoting as the ceiling: 193 opcode-map entries statically, 168 distinct
-mnemonics actually executed. Even there the number of distinct *operations*
-is far smaller, because twenty of those mnemonics are one conditional move
-and sixteen are one conditional branch.
+mnemonics actually executed. Even there the number of distinct
+*operations* is far smaller, because twenty of those mnemonics are one
+conditional move and sixteen are one conditional branch.
+
+WebAssembly is the other end of the same argument for a different reason:
+180 opcodes implemented, but the compiled corpus reaches only 97 of them.
+The rest exist because the instruction set is small enough to cover
+completely, not because a compiler asked for them.
+
+### WebAssembly, as built
+
+The table above predicted the structural surprise correctly — a stack
+machine, not a register machine — and then drew the wrong conclusion
+from it. It said the differential interface "needs rethinking, not just
+reimplementing". It did not. The frozen `IsaBackend` contract took this
+target unchanged, and the reason is a fact about the format rather than
+about the design.
+
+#### The stack depth is static, so there is still a resource to name
+
+`i32.add` reads "the top two" and writes "the top one". Which storage
+that is depends on how deep the stack is, which sounds dynamic and is
+not: **a valid module's stack depth at every instruction is statically
+determined**, because the validation rules that make a module valid are
+exactly the rules that force it. So the analysis in
+[image.ts](../../src/isa/wasm/image.ts) is not an approximation of a
+dynamic quantity; it is the quantity, computed once per function.
+
+That gives the flat resource space the contract wants — a slot named by
+its depth, a local by its index, a global by its index — and two
+`i32.add`s at different depths come out genuinely independent, which is
+the thing a timing model needed to know.
+
+The same walk resolves the branches. `br 2` means "leave two enclosing
+blocks", so where it lands is a fact about the nesting; after the walk
+it is a byte offset, a count of values to carry and a depth to carry
+them to. The interpreter then needs no label stack at all, and an `end`
+that is merely closing a block costs nothing.
+
+One approximation remains, and it is the same one SPARC makes. Slots and
+locals are frame-relative and the id space is not, so a callee's slot 0
+and its caller's are the same id. It is handled the same way: every
+instruction naming a slot or a local reads `Res.FRAME`, and `call` and
+`return` write it, which makes the dependence on the call real rather
+than missing.
+
+#### The oracle is in the test process
+
+Every other target's reference has to be driven in a container: qemu, or
+mos-sim, or the host processor through ptrace. This one's is
+`WebAssembly`, which is already in the process running the tests.
+
+Three of the four tiers therefore compare **live**, against modules
+generated from a seed at the moment the test runs. Nothing is recorded,
+so nothing can go stale between capturing and checking. The whole suite
+is 53 tests in under a second, with no Docker and no network.
+
+The fourth tier — the app's own corpus — is recorded, because its oracle
+is **wasmtime**: a different engine, from a different vendor, with a
+different compiler. Agreeing with two independent implementations is a
+better claim than agreeing with one.
+
+#### There is no lockstep, and what replaces it goes further
+
+No engine will single-step a module and report the operand stack: V8 and
+wasmtime both compile to machine code, and at that point the stack has
+largely stopped existing. That is the same absence the 6502 has, and it
+gets the same answer — a tier that is stronger per instruction rather
+than a weaker version of the missing one.
+
+Two things stand in for it:
+
+- **Every operation against every edge value.** One generated module
+  applies all 136 operations to every combination of the edge cases for
+  their operand types — both zeros, both infinities, *both signs of
+  NaN*, a subnormal, the integer extremes — writing each of 6,977
+  results to its own address. A single differing byte therefore names
+  the operation and both its operands, so a failure is a lookup and not
+  a bisection.
+- **All of linear memory, byte for byte.** The engine hands the memory
+  over directly, so the final-state comparison covers the whole of the
+  guest's observable state rather than the registers a harness thought
+  to write down.
+
+#### Generating the bytes is not circular
+
+The compiled modules reach 97 of the 180 opcodes. Clang compiling
+ordinary C never emits `i64.rotl`, `f64.copysign`,
+`i32.reinterpret_f32`, the saturating truncations, `select`, `br_table`
+or `memory.grow`, so the generator emits modules directly rather than
+emitting C.
+
+The obvious objection is that a generator using this backend's own
+opcode numbers, checked against an interpreter using the same numbers,
+proves nothing. It is not so: **the reference executes the byte.** If
+this backend believed 0x7c was `i64.add` when it was something else, the
+generator would emit 0x7c meaning add, the engine would do whatever 0x7c
+actually is, and the two would disagree. The tier checks the whole
+mapping from opcode to behaviour, which is more than the decode tier
+asks. Between the generator, the compiled modules and the trap cases,
+**178 of the 180 implemented opcodes are executed against the engine.**
+
+#### What the probe found, and one thing it nearly missed
+
+The decode tier was green first, as on POWER: 980 instructions across
+four compiled modules, 47 distinct mnemonics, no mismatches, before a
+line of semantics existed. Then the probe found four operations wrong —
+all four floating-point, and all four about a single bit.
+
+- **`max` of two zeros was inverted.** `min(+0, -0)` is `-0` and
+  `max(+0, -0)` is `+0`; written as the same test with the sign flipped,
+  the second is wrong. `<` and `>` consider the two zeros equal, so
+  nothing else notices.
+- **`min` and `max` of a NaN returned the wrong NaN.** The literal `NaN`
+  is `0x7ff8…` on every platform; what the engine produces is the
+  *host's* default, which on x86 is `0xfff8…` with the sign bit set.
+  Since every other floating-point operation here is the host's own —
+  and so gets the host's answer for free — the fix was to compute the
+  default rather than write it down, which keeps the two byte-identical
+  on a machine where the default is the other one.
+- **`copysign` read an ordering instead of a bit.** `b < 0` is false for
+  every NaN, including one whose sign bit is set, so a negative NaN
+  produced a positive result.
+- **`f32.add` and `f32.mul` of two NaNs depended on the host's
+  scheduling.** Which NaN comes out is left open by the standard, so the
+  implementation had been leaving it to `a + b` — and `+` and `*`
+  commute, so the engine running the interpreter is free to reorder
+  them, and with two NaNs of different signs that changes the answer. A
+  simulator whose output depends on its host's instruction scheduling is
+  not a simulator; the rule is now stated outright.
+
+The third of those is the one worth keeping. The probe had NaN operands
+from the start and did not catch it, because **every NaN in the seed set
+was positive**. The bug surfaced in a whole generated module instead,
+and shrinking that module to its first cause took four lines of
+bisection. Adding the negative NaN to the seeds then caught the fourth
+bug immediately. A probe is only as exhaustive as its edge cases, and
+"both signs of NaN" is not a case anyone lists unprompted.
+
+#### The libc asks for five functions
+
+There are no system calls here. A module names the functions it wants
+and the embedder supplies them, so what a program can do is a property
+of the link rather than of the machine.
+
+All fourteen corpus programs — `printf` with floats, `malloc`, `strlen`
+— import the same five and no others: `fd_write`, `fd_seek`,
+`fd_fdstat_get`, `fd_close`, `proc_exit`. There is no `brk` and no
+`mmap`, because the heap is `memory.grow`, an instruction rather than a
+call; no `set_tid_address`, no `rseq`, no auxiliary vector and no
+`AT_PAGESZ`. Those last few are a fair share of the awkwardness on the
+other targets, and one of them is a named cause of POWER's missing
+whole-program tier.
+
+The one answer that needed care is `fd_seek`, which returns "this is a
+pipe". Saying anything else makes the libc choose the buffering it uses
+for a file, and the output then comes out in a different *order* rather
+than not at all — the hardest kind of difference to notice.
+
+All fourteen programs match wasmtime on stdout byte for byte, on the
+return value and on the exit status, across 1.1 million instructions.
+The floating-point `printf` path worked on the first run, which is worth
+recording only because it is exactly where POWER's whole-program tier
+still stops.
+
+#### What is refused
+
+`table.get` and `table.set` are decoded — so a disassembly is right
+about them — and have no semantics. Nothing a C toolchain emits uses the
+reference types, so implementing them would mean shipping something no
+test here could execute. They stop the run.
+
+Not implemented at all, and so refused by the decoder rather than
+mis-decoded: SIMD, threads and atomics, exception handling, multiple
+memories, and the component model. A missing encoding is refused loudly;
+a wrong one would run.
+
+`elfMachine` is zero, which is the only field of the frozen contract
+that does not apply to a target. A module is its own container, there is
+no registered `e_machine` to give, and inventing one would be claiming
+the loader accepts something it cannot read. The 6502 looks like it
+should be the exception here and is not — llvm-mos emits perfectly
+ordinary ELF objects.
 
 ### POWER, as built
 

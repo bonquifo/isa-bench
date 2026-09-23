@@ -1,0 +1,312 @@
+
+loops.wasm:	file format wasm
+
+Disassembly of section CODE:
+
+00000064 <CODE>:
+        # 3 functions in section.
+
+00000065 <kernel>:
+        .local i32, i32, i32, i32, i32, i32, i32, i32
+      6a: 41 00        	i32.const	0
+      6c: 21 00        	local.set	0
+      6e: 02 40        	block   	
+      70: 02 40        	block   	
+      72: 02 40        	block   	
+      74: 41 00        	i32.const	0
+      76: 28 02 80 80 84 80 00 	i32.load	65536
+      7d: 22 01        	local.tee	1
+      7f: 41 01        	i32.const	1
+      81: 48           	i32.lt_s
+      82: 0d 00        	br_if   	0                       # 0: down to label2
+      84: 20 01        	local.get	1
+      86: 41 7f        	i32.const	-1
+      88: 6a           	i32.add 
+      89: 21 02        	local.set	2
+      8b: 41 00        	i32.const	0
+      8d: 21 03        	local.set	3
+      8f: 41 00        	i32.const	0
+      91: 21 00        	local.set	0
+      93: 41 00        	i32.const	0
+      95: 21 04        	local.set	4
+      97: 41 00        	i32.const	0
+      99: 21 05        	local.set	5
+      9b: 03 40        	loop    	                        # label3:
+      9d: 02 40        	block   	
+      9f: 02 40        	block   	
+      a1: 20 03        	local.get	3
+      a3: 41 03        	i32.const	3
+      a5: 71           	i32.and 
+      a6: 0d 00        	br_if   	0                       # 0: down to label5
+      a8: 20 03        	local.get	3
+      aa: 41 03        	i32.const	3
+      ac: 6c           	i32.mul 
+      ad: 20 05        	local.get	5
+      af: 6a           	i32.add 
+      b0: 21 05        	local.set	5
+      b2: 0c 01        	br      	1                       # 1: down to label4
+      b4: 0b           	end
+      b5: 02 40        	block   	
+      b7: 20 03        	local.get	3
+      b9: 41 01        	i32.const	1
+      bb: 71           	i32.and 
+      bc: 45           	i32.eqz
+      bd: 0d 00        	br_if   	0                       # 0: down to label6
+      bf: 20 05        	local.get	5
+      c1: 20 00        	local.get	0
+      c3: 6a           	i32.add 
+      c4: 21 05        	local.set	5
+      c6: 0c 01        	br      	1                       # 1: down to label5
+      c8: 0b           	end
+      c9: 20 04        	local.get	4
+      cb: 20 05        	local.get	5
+      cd: 73           	i32.xor 
+      ce: 21 05        	local.set	5
+      d0: 0b           	end
+      d1: 02 40        	block   	
+      d3: 20 05        	local.get	5
+      d5: 41 a0 8d 06  	i32.const	100000
+      d9: 4a           	i32.gt_s
+      da: 0d 00        	br_if   	0                       # 0: down to label7
+      dc: 20 00        	local.get	0
+      de: 41 7f        	i32.const	-1
+      e0: 6a           	i32.add 
+      e1: 21 00        	local.set	0
+      e3: 20 04        	local.get	4
+      e5: 41 80 02     	i32.const	256
+      e8: 6a           	i32.add 
+      e9: 21 04        	local.set	4
+      eb: 20 02        	local.get	2
+      ed: 20 03        	local.get	3
+      ef: 47           	i32.ne  
+      f0: 21 06        	local.set	6
+      f2: 20 03        	local.get	3
+      f4: 41 01        	i32.const	1
+      f6: 6a           	i32.add 
+      f7: 21 03        	local.set	3
+      f9: 20 06        	local.get	6
+      fb: 0d 01        	br_if   	1                       # 1: down to label6
+      fd: 0b           	end
+      fe: 0b           	end
+      ff: 41 80 02     	i32.const	256
+     102: 20 05        	local.get	5
+     104: 36 02 88 80 84 80 00 	i32.store	65544
+     10b: 41 00        	i32.const	0
+     10d: 21 06        	local.set	6
+     10f: 41 00        	i32.const	0
+     111: 21 03        	local.set	3
+     113: 02 40        	block   	
+     115: 02 40        	block   	
+     117: 20 01        	local.get	1
+     119: 41 7f        	i32.const	-1
+     11b: 6a           	i32.add 
+     11c: 41 01        	i32.const	1
+     11e: 76           	i32.shr_u
+     11f: 22 00        	local.tee	0
+     121: 45           	i32.eqz
+     122: 0d 00        	br_if   	0                       # 0: down to label9
+     124: 20 00        	local.get	0
+     126: 41 01        	i32.const	1
+     128: 6a           	i32.add 
+     129: 22 03        	local.tee	3
+     12b: 41 01        	i32.const	1
+     12d: 71           	i32.and 
+     12e: 21 07        	local.set	7
+     130: 20 03        	local.get	3
+     132: 41 7e        	i32.const	-2
+     134: 71           	i32.and 
+     135: 21 02        	local.set	2
+     137: 41 00        	i32.const	0
+     139: 21 06        	local.set	6
+     13b: 41 00        	i32.const	0
+     13d: 21 03        	local.set	3
+     13f: 41 00        	i32.const	0
+     141: 21 04        	local.set	4
+     143: 03 40        	loop    	                        # label10:
+     145: 41 00        	i32.const	0
+     147: 20 03        	local.get	3
+     149: 41 02        	i32.const	2
+     14b: 72           	i32.or  
+     14c: 22 00        	local.tee	0
+     14e: 6b           	i32.sub 
+     14f: 20 00        	local.get	0
+     151: 20 00        	local.get	0
+     153: 41 05        	i32.const	5
+     155: 70           	i32.rem_u
+     156: 1b           	f32.select
+     157: 41 00        	i32.const	0
+     159: 20 03        	local.get	3
+     15b: 6b           	i32.sub 
+     15c: 20 03        	local.get	3
+     15e: 20 03        	local.get	3
+     160: 41 05        	i32.const	5
+     162: 70           	i32.rem_u
+     163: 1b           	f32.select
+     164: 20 06        	local.get	6
+     166: 6a           	i32.add 
+     167: 6a           	i32.add 
+     168: 21 06        	local.set	6
+     16a: 20 03        	local.get	3
+     16c: 41 04        	i32.const	4
+     16e: 6a           	i32.add 
+     16f: 21 03        	local.set	3
+     171: 20 04        	local.get	4
+     173: 41 02        	i32.const	2
+     175: 6a           	i32.add 
+     176: 22 04        	local.tee	4
+     178: 20 02        	local.get	2
+     17a: 47           	i32.ne  
+     17b: 0d 00        	br_if   	0                       # 0: up to label10
+     17d: 0b           	end
+     17e: 20 07        	local.get	7
+     180: 45           	i32.eqz
+     181: 0d 01        	br_if   	1                       # 1: down to label9
+     183: 0b           	end
+     184: 41 00        	i32.const	0
+     186: 20 03        	local.get	3
+     188: 6b           	i32.sub 
+     189: 20 03        	local.get	3
+     18b: 20 03        	local.get	3
+     18d: 41 05        	i32.const	5
+     18f: 70           	i32.rem_u
+     190: 1b           	f32.select
+     191: 20 06        	local.get	6
+     193: 6a           	i32.add 
+     194: 21 06        	local.set	6
+     196: 0b           	end
+     197: 41 84 02     	i32.const	260
+     19a: 20 06        	local.get	6
+     19c: 36 02 88 80 84 80 00 	i32.store	65544
+     1a3: 20 01        	local.get	1
+     1a5: 41 01        	i32.const	1
+     1a7: 74           	i32.shl 
+     1a8: 22 03        	local.tee	3
+     1aa: 41 01        	i32.const	1
+     1ac: 20 03        	local.get	3
+     1ae: 41 01        	i32.const	1
+     1b0: 4a           	i32.gt_s
+     1b1: 1b           	f32.select
+     1b2: 21 02        	local.set	2
+     1b4: 41 00        	i32.const	0
+     1b6: 21 03        	local.set	3
+     1b8: 41 00        	i32.const	0
+     1ba: 21 00        	local.set	0
+     1bc: 03 40        	loop    	                        # label11:
+     1be: 02 40        	block   	
+     1c0: 02 40        	block   	
+     1c2: 02 40        	block   	
+     1c4: 02 40        	block   	
+     1c6: 02 40        	block   	
+     1c8: 02 40        	block   	
+     1ca: 02 40        	block   	
+     1cc: 02 40        	block   	
+     1ce: 02 40        	block   	
+     1d0: 41 00        	i32.const	0
+     1d2: 28 02 84 80 84 80 00 	i32.load	65540
+     1d9: 20 03        	local.get	3
+     1db: 6a           	i32.add 
+     1dc: 22 04        	local.tee	4
+     1de: 41 07        	i32.const	7
+     1e0: 71           	i32.and 
+     1e1: 0e 08 00 01 02 03 04 05 06 07 00     	br_table 	{0, 1, 2, 3, 4, 5, 6, 7, 0} # 1: down to label19
+                                                        # 2: down to label18
+                                                        # 3: down to label17
+                                                        # 4: down to label16
+                                                        # 5: down to label15
+                                                        # 6: down to label14
+                                                        # 7: down to label13
+                                                        # 0: down to label20
+     1ec: 0b           	end
+     1ed: 20 04        	local.get	4
+     1ef: 41 03        	i32.const	3
+     1f1: 6c           	i32.mul 
+     1f2: 21 04        	local.set	4
+     1f4: 0c 07        	br      	7                       # 7: down to label13
+     1f6: 0b           	end
+     1f7: 20 04        	local.get	4
+     1f9: 41 75        	i32.const	-11
+     1fb: 6a           	i32.add 
+     1fc: 21 04        	local.set	4
+     1fe: 0c 06        	br      	6                       # 6: down to label14
+     200: 0b           	end
+     201: 20 04        	local.get	4
+     203: 41 da 00     	i32.const	90
+     206: 73           	i32.xor 
+     207: 21 04        	local.set	4
+     209: 0c 05        	br      	5                       # 5: down to label15
+     20b: 0b           	end
+     20c: 41 00        	i32.const	0
+     20e: 20 04        	local.get	4
+     210: 6b           	i32.sub 
+     211: 21 04        	local.set	4
+     213: 0c 04        	br      	4                       # 4: down to label16
+     215: 0b           	end
+     216: 20 04        	local.get	4
+     218: 41 02        	i32.const	2
+     21a: 74           	i32.shl 
+     21b: 21 04        	local.set	4
+     21d: 0c 03        	br      	3                       # 3: down to label17
+     21f: 0b           	end
+     220: 20 04        	local.get	4
+     222: 41 03        	i32.const	3
+     224: 6d           	i32.div_s
+     225: 21 04        	local.set	4
+     227: 0c 02        	br      	2                       # 2: down to label18
+     229: 0b           	end
+     22a: 20 04        	local.get	4
+     22c: 41 05        	i32.const	5
+     22e: 6f           	i32.rem_s
+     22f: 21 04        	local.set	4
+     231: 0c 01        	br      	1                       # 1: down to label19
+     233: 0b           	end
+     234: 20 04        	local.get	4
+     236: 41 7f        	i32.const	-1
+     238: 73           	i32.xor 
+     239: 21 04        	local.set	4
+     23b: 0b           	end
+     23c: 20 04        	local.get	4
+     23e: 20 00        	local.get	0
+     240: 6a           	i32.add 
+     241: 21 00        	local.set	0
+     243: 20 02        	local.get	2
+     245: 20 03        	local.get	3
+     247: 41 01        	i32.const	1
+     249: 6a           	i32.add 
+     24a: 22 03        	local.tee	3
+     24c: 46           	i32.eq  
+     24d: 0d 02        	br_if   	2                       # 2: down to label18
+     24f: 0c 00        	br      	0                       # 0: down to label20
+     251: 0b           	end
+     252: 0b           	end
+     253: 41 80 02     	i32.const	256
+     256: 42 00        	i64.const	0
+     258: 37 03 88 80 84 80 00 	i64.store	65544
+     25f: 41 00        	i32.const	0
+     261: 21 03        	local.set	3
+     263: 0c 01        	br      	1                       # 1: down to label19
+     265: 0b           	end
+     266: 20 06        	local.get	6
+     268: 20 05        	local.get	5
+     26a: 73           	i32.xor 
+     26b: 20 00        	local.get	0
+     26d: 73           	i32.xor 
+     26e: 21 03        	local.set	3
+     270: 0b           	end
+     271: 41 8c 02     	i32.const	268
+     274: 42 81 80 80 80 f0 07 	i64.const	270582939649
+     27b: 37 02 88 80 84 80 00 	i64.store	65544:p2align=2
+     282: 41 88 02     	i32.const	264
+     285: 20 00        	local.get	0
+     287: 36 02 88 80 84 80 00 	i32.store	65544
+     28e: 20 03        	local.get	3
+     290: 0b           	end
+
+00000291 <isa_entry>:
+
+     293: 10 80 80 80 80 00    	call	0
+     299: 0b           	end
+
+0000029a <dump_address>:
+
+     29c: 41 88 80 84 80 00    	i32.const	65544
+     2a2: 0b           	end

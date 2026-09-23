@@ -81,21 +81,31 @@ implementation.
 
 ## Real instruction sets
 
-Seven of the eight also have a **real** backend: **RV64GC**, **AArch64**,
-**x86-64**, **MIPS32**, **MOS 6502**, **SPARC V8** and **POWER**. These are interpreters that decode
-and execute genuine machine code — the same precompiled binaries that the
-differential test suite compares against a reference. For the first four the
-comparison is instruction by instruction against `qemu-riscv64`,
-`qemu-aarch64`, `qemu-mipsel` and, for x86-64, against the host processor
-itself.
+All eight also have a **real** backend: **RV64GC**, **AArch64**,
+**x86-64**, **MIPS32**, **MOS 6502**, **SPARC V8**, **POWER** and
+**WebAssembly**. These are interpreters that decode and execute genuine
+machine code — the same precompiled binaries that the differential test
+suite compares against a reference. For the first four the comparison is
+instruction by instruction against `qemu-riscv64`, `qemu-aarch64`,
+`qemu-mipsel` and, for x86-64, against the host processor itself.
 
-The 6502 is verified differently and says so: no 6502 simulator can be
-traced, so instead of a lockstep run it is checked against 23,502
-single-instruction cases recorded from hardware — every documented opcode,
-from arbitrary machine state — and then on whole programs against
-`mos-sim`. That is stronger than lockstep for one instruction and weaker
-for a sequence, and the app states the pair rather than borrowing the
-other targets' sentence.
+Two are verified differently and say so, because for both of them no
+reference exists that can be stepped alongside.
+
+The 6502 is checked against 23,502 single-instruction cases recorded from
+hardware — every documented opcode, from arbitrary machine state — and
+then on whole programs against `mos-sim`. That is stronger than lockstep
+for one instruction and weaker for a sequence, and the app states the
+pair rather than borrowing the other targets' sentence.
+
+WebAssembly is compiled to machine code by every engine that runs it, so
+there is no operand stack left to step through. Instead every one of its
+operations is compared against a real engine on every edge value of its
+operand types — both zeros, both infinities, both signs of NaN — and then
+whole modules are compared on *all* of linear memory, byte for byte,
+rather than on a chosen set of registers. The app's fourteen corpus
+programs are checked against `wasmtime`, a second engine from a different
+vendor.
 
 They live in their own lane and are never mixed into the eight-way
 comparison, because putting a real instruction stream in the same table as a
@@ -111,11 +121,12 @@ before every instruction, and the final state byte for byte -- but do
 not yet run whole programs against a libc, and the app says so rather
 than offering them.
 
-The remaining target has a pseudo-backend only. An instruction a real
-backend does not implement is refused by name and address; it is never
-executed as an approximation. On the 6502 that extends to the 105 opcodes
-the architecture leaves undefined, and to the simulator's cycle counter,
-which this app will not answer because it has no measured number to give.
+An instruction a real backend does not implement is refused by name and
+address; it is never executed as an approximation. On the 6502 that
+extends to the 105 opcodes the architecture leaves undefined, and to the
+simulator's cycle counter, which this app will not answer because it has
+no measured number to give. On WebAssembly it extends to the reference
+types, SIMD and threads, none of which a C toolchain emits.
 
 ## The two models
 

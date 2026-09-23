@@ -9,19 +9,17 @@ describe('real-ISA registry', () => {
     expect(hasRealBackend(IsaId.RISCV)).toBe(true)
   })
 
-  it('reports the targets that still run a pseudo-backend', () => {
+  it('has a real backend for every target the app offers', () => {
+    // None remain. Asserted as an equality rather than a count so that
+    // removing one is as deliberate an act as adding one was.
     const pending = ALL_ISAS.filter((isa) => !hasRealBackend(isa))
-    // One remains. This number is expected to fall; it is asserted so that
-    // adding a backend is a deliberate act that updates the count here.
-    expect(pending).toHaveLength(1)
-    expect(pending).not.toContain(IsaId.RISCV)
-    expect(pending).not.toContain(IsaId.ARM)
-    expect(pending).not.toContain(IsaId.X86)
-    expect(pending).not.toContain(IsaId.MIPS)
-    expect(pending).not.toContain(IsaId.MOS)
-    expect(pending).not.toContain(IsaId.SPARC)
-    expect(pending).not.toContain(IsaId.POWER)
-    for (const isa of pending) expect(backendFor(isa)).toBeUndefined()
+    expect(pending).toEqual([])
+    expect(realBackends()).toHaveLength(ALL_ISAS.length)
+  })
+
+  it('names the one target that is not an ELF target', () => {
+    const notElf = realBackends().filter((backend) => backend.elfMachine === 0)
+    expect(notElf.map((backend) => backend.id)).toEqual([IsaId.WASM])
   })
 
   it('registers each target at most once', () => {
@@ -33,7 +31,12 @@ describe('real-ISA registry', () => {
     for (const backend of realBackends()) {
       expect(ALL_ISAS).toContain(backend.id)
       expect(backend.name.length).toBeGreaterThan(0)
-      expect(backend.elfMachine).toBeGreaterThan(0)
+      // An ELF machine, or zero for a target whose container is not ELF.
+      // WebAssembly is the only one: a module is its own format, there is
+      // no registered `e_machine` to give, and inventing one would mean
+      // claiming the loader accepts something it cannot read.
+      expect(backend.elfMachine).toBeGreaterThanOrEqual(0)
+      if (backend.id !== IsaId.WASM) expect(backend.elfMachine).toBeGreaterThan(0)
       expect(backend.gprCount).toBeGreaterThan(0)
       // Register naming must cover at least the general-purpose file.
       expect(backend.naming.count).toBeGreaterThanOrEqual(backend.gprCount)
