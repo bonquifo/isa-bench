@@ -17,7 +17,9 @@ const root = process.cwd()
 const dir = join(root, 'toolchain')
 const lockText = readFileSync(join(root, 'tools/isa/toolchain.lock.json'))
 const lock = JSON.parse(lockText.toString('utf8'))
-const tag = `toolchain-${createHash('sha256').update(lockText).digest('hex').slice(0, 12)}`
+// Hashed with LF line endings, so a Windows checkout names the same release.
+const lockLf = lockText.toString('utf8').replace(/\r\n/g, '\n')
+const tag = `toolchain-${createHash('sha256').update(lockLf).digest('hex').slice(0, 12)}`
 const base = process.argv[2] ?? `https://github.com/bonquifo/isa-bench/releases/download/${tag}/`
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
 
@@ -38,14 +40,16 @@ for (const name of [...Object.keys(lock.files), 'manifest.json']) {
       console.error('\nThe bundle this lock pins has not been published. From a checkout that built it:\n' +
         `  gh release create ${tag} --title "In-app compiler" --notes "tools/isa/build-toolchain.ts output" ${files.join(' ')}`)
     }
-    process.exit(1)
+    process.exitCode = 1
+    break
   }
   const bytes = new Uint8Array(await response.arrayBuffer())
   // manifest.json is description, not code, and the lock does not pin it;
   // it is kept only beside files that were.
   if (expected && sha256(bytes) !== expected) {
     console.error(`${name}: checksum does not match tools/isa/toolchain.lock.json; discarded`)
-    process.exit(1)
+    process.exitCode = 1
+    break
   }
   writeFileSync(`${path}.part`, bytes)
   renameSync(`${path}.part`, path)
