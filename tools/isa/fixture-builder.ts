@@ -53,9 +53,15 @@ export interface Oracle {
 export function qemuOracle(image: string, qemu: string): Oracle {
   return {
     image,
-    run: (elf) => `${qemu} ${elf}`,
+    // qemu places the guest's stack wherever the host's mmap puts it, so
+    // with address-space randomisation on, the initial stack pointer in
+    // every lockstep fixture changed on every capture and regenerating
+    // could never come out clean. `setarch -R` turns it off, for which the
+    // container needs the same relaxation as the native oracle below.
+    dockerArgs: ['--security-opt', 'seccomp=unconfined'],
+    run: (elf) => `setarch -R ${qemu} ${elf}`,
     trace: (elf, log) =>
-      `${qemu} -one-insn-per-tb -d in_asm,cpu,nochain -D ${log} ${elf} > /dev/null`,
+      `setarch -R ${qemu} -one-insn-per-tb -d in_asm,cpu,nochain -D ${log} ${elf} > /dev/null`,
   }
 }
 
