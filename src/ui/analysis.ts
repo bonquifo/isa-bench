@@ -1,6 +1,7 @@
-import { ISA_META, type IsaId, type Metrics } from '../engine/types.ts'
+import { type IsaId, type Metrics } from '../engine/types.ts'
 import type { CompareResult } from '../engine/compare.ts'
 import { fmtFixed, fmtInt, pct } from './format.ts'
+import { targetShort } from './targetNames.ts'
 
 export interface Insight {
   tag: string
@@ -150,7 +151,7 @@ export function pickModelRankLeaders(
 export function analyze(result: CompareResult): Insight[] {
   const rows = result.rows
   if (rows.length === 0) return []
-  const name = (id: IsaId) => ISA_META[id].short
+  const name = (id: IsaId) => targetShort(result, id)
   const byCycles = [...rows].sort((a, b) => a.cycles - b.cycles)
   const lead = byCycles[0]
   const out: Insight[] = []

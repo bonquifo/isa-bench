@@ -1459,35 +1459,76 @@ claims FP support needs the same.
 
 ## 6. How it reaches the app
 
-The real backends appear in a lane of their own, beside the two modelling
-lanes, with an instruction-set selector at the top of it. They are
-deliberately not extra columns in the eight-way comparison.
+In two places: the **eight-way comparison**, which is what the app is for,
+and a **lane** of its own for looking at one target at a time.
 
-Putting a real instruction stream next to a pseudo-backend in a single table
-would invite reading both as equally real, and the project's honesty
-guarantees are the thing that would pay for that. The lane therefore runs one
-target at a time, says at the top which one and what about it is executed
-versus modelled, and states that it is not comparable to the other lanes.
-Existing numbers, saved runs and exported reports are untouched.
+### In the comparison
 
-The claims the lane makes about a target are data rather than prose:
-[realTargets.ts](../../src/lanes/realTargets.ts) carries the oracle's name and
-how far the comparison against it goes, so a target cannot be added to the
-menu without saying what verified it.
+For the fourteen canned C programs, the comparison runs every target on its
+real binary by default. The workload panel offers the choice — *Real ISA*
+or *Model lowering* — and the real path is
+[compareReal.ts](../../src/engine/compareReal.ts): for each target it loads
+the binary clang compiled from that program, runs the verified interpreter,
+and hands the retired instructions to the trace-driven timing model, whose
+caches, branch predictor and energy accounting are the same ones the
+lowering is timed with.
 
-Three consequences worth knowing:
+This was not the first design. The first kept the real backends out of the
+comparison entirely, in their own lane, on the argument that a real
+instruction stream in the same table as a lowered one would invite reading
+both as equally real. The argument was right about mixing and wrong about
+the conclusion: the fix for mixing is not to keep real results out of the
+comparison, it is to make **every table one kind or the other, and say
+which**. So a table is all real or all lowered, never both, and a real one
+names every target by its real name, states "real instructions, modelled
+timing" in its header, and gives each target's library, oracle and
+verification in its protocol pane.
+
+What keeps a real result honest is the same thing that keeps a lowered one
+honest: every row answers to the IR interpreter reference, and a row whose
+return value or output differs rejects the run. The one exception is
+stated in the report rather than excused — the 6502's `int` is sixteen bits,
+so where the answer does not fit in one it computes a different value, and
+must still return one its `int` can hold. Where a target has no binary for
+a program at all (`struct`, on the 6502), the others run and the report
+names the gap.
+
+The rest of the comparison's workloads stay on the lowering, and not by
+choice: the app cannot compile at runtime, so the built-in IR kernels, your
+own C and custom IR have no binaries. A canned program whose saved source
+differs from the catalogue's is refused on the real path for the same
+reason rather than run against a binary built from something else.
+
+Saved results record which path made them. One saved before this existed
+carries no mode and replays on the lowering, with its fingerprint
+unchanged; a real result fingerprints differently from a lowered one of the
+same program, because it is a different measurement.
+
+### In the lane
+
+The lane runs one target at a time and shows its disassembly, its output
+and its model numbers side by side, which the comparison's table has no
+room for. The claims it makes about a target are data rather than prose:
+[realTargets.ts](../../src/lanes/realTargets.ts) carries the oracle's name
+and how far the comparison against it goes, so a target cannot be added to
+the menu without saying what verified it — and the comparison takes its
+claims from the same list.
+
+### What is shared by both
 
 - **The programs are fixed.** The app cannot compile at runtime — the minimal
-  clang image is 912 MB and needs Docker — so the lane runs binaries built
-  ahead of time. Editing the C and re-running stays a pseudo-backend feature.
-- **The shipped bytes are the verified bytes.** The lane loads the same
-  `corpus-*.elf` files the differential suite compares against qemu, not a
-  rebuild of them. A test asserts that.
-- **They are inlined, and the lane is code-split.** The packaged app loads
-  over `file://`, where fetching a sibling file is blocked, so the binaries
-  become `data:` URIs in the bundle. Four targets' worth is 2.18 MB, which
-  would be dead weight for anyone who never opens the lane, so the lane is a
-  lazy chunk and the main bundle is unchanged at 657 KB.
+  clang image is 912 MB and needs Docker — so both run binaries built ahead
+  of time. Editing the C and re-running stays a lowering feature.
+- **The shipped bytes are the verified bytes.** Both load the same corpus
+  files the differential suite compares against its references, not a
+  rebuild of them. A test in each backend asserts that.
+- **They are inlined, and loaded lazily.** The packaged app loads over
+  `file://`, where fetching a sibling file is blocked, so the binaries
+  become `data:` URIs in the bundle. All eight targets' worth is too much
+  to put in the first chunk, so the comparison reaches them through a
+  dynamic import only when a real run is asked for, and the engine itself
+  never imports them: it is handed a provider and asks it for bytes. That
+  is also what lets the real path be tested in Node, from the fixture files.
 
 ## 7. Running it
 

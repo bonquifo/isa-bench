@@ -7,6 +7,7 @@ import { MIX_COLORS, REPORT_METRICS, analyze, mixShare, type MetricDef } from '.
 import { resultToCsv, resultToJson } from './exports.ts'
 import { reportContractLabels, reportParameterLabels } from './reportMetadata.ts'
 import { EvidenceBadgeView } from './Evidence.tsx'
+import { isRealResult, targetFull, targetShort } from './targetNames.ts'
 import {
   buildLegacyReportView,
   isCurrentCompareResult,
@@ -86,6 +87,7 @@ function CurrentReport({
               <span className="led led-ok" />
               REFERENCE MATCH {fmtNum(result.gold, result.fp)}
             </div>
+            {isRealResult(result) ? <RealExecutionNote result={result} /> : null}
             <div className="flex flex-wrap justify-end gap-2">
               {onSave && result.contract && (
                 <div className="flex gap-2">
@@ -111,7 +113,7 @@ function CurrentReport({
       </section>
 
       <section className="hud-panel p-4 reveal" style={delay(90)}>
-        <div className="hud-kicker mb-3">Model-cycle rank · vs {ISA_META[baselineRow.isa].short}</div>
+        <div className="hud-kicker mb-3">Model-cycle rank · vs {targetShort(result, baselineRow.isa)}</div>
         <div className="space-y-2">
           {ranked.map((row, i) => {
             const rel = row.cycles / Math.max(1, lead.cycles)
@@ -125,7 +127,7 @@ function CurrentReport({
               >
                 <div className="font-display text-sm" style={{ color: ISA_META[row.isa].color }}>
                   <span className="mr-2 font-mono text-[10px] text-white/35">0{i + 1}</span>
-                  {ISA_META[row.isa].short}
+                  {targetShort(result, row.isa)}
                   <div className="mt-0.5 font-mono text-[9px] leading-tight text-white/35">
                     {result.hardwareMode !== 'same' ? `${row.hardwareName} · illustrative · ` : ''}
                     {row.cores}C/{row.threads}T · {row.activeThreads} active
@@ -204,7 +206,7 @@ function CurrentReport({
                 <option value="leader">Lowest model cycles</option>
                 {result.rows.map((r) => (
                   <option key={r.isa} value={r.isa}>
-                    {ISA_META[r.isa].short}
+                    {targetShort(result, r.isa)}
                   </option>
                 ))}
               </select>
@@ -230,7 +232,7 @@ function CurrentReport({
             return (
               <div key={row.isa}>
                 <div className="mb-1 flex items-center justify-between font-mono text-[11px]">
-                  <span style={{ color: ISA_META[row.isa].color }}>{ISA_META[row.isa].full}</span>
+                  <span style={{ color: ISA_META[row.isa].color }}>{targetFull(result, row.isa)}</span>
                   <span className="text-white/40">{fmtInt(row.completedOperations)} completed modeled ops after drain</span>
                 </div>
                 <div className="mix-track">
@@ -278,12 +280,14 @@ function CurrentReport({
                   boxShadow: traceIsa === r.isa ? `0 0 12px ${ISA_META[r.isa].color}55` : undefined,
                 }}
               >
-                {ISA_META[r.isa].full}
+                {targetFull(result, r.isa)}
               </button>
             ))}
           </div>
           <p className="border-b border-cyan-400/20 px-4 py-2 text-xs text-white/45">
-            Modeled lowering stream for this pseudo-backend; not executable disassembly or a generated binary.
+            {isRealResult(result)
+              ? 'The first instructions this binary executed, as the verified decoder renders them. Real instructions, compiled by clang; the timing beside them is the model.'
+              : 'Modeled lowering stream for this pseudo-backend; not executable disassembly or a generated binary.'}
           </p>
           <pre className="crt max-h-[560px] overflow-auto p-4 font-mono text-xs leading-6 text-cyan-100/80">
             {(result.rows.find((r) => r.isa === traceIsa) ?? result.rows[0]).disasm.join('\n')}
@@ -291,7 +295,7 @@ function CurrentReport({
         </section>
       )}
 
-      {pane === 'protocol' && <Protocol />}
+      {pane === 'protocol' && (isRealResult(result) ? <RealProtocol result={result} /> : <Protocol />)}
     </div>
   )
 }
@@ -381,7 +385,7 @@ function MetricRow({
           return (
             <div key={row.isa} className="grid grid-cols-[72px_1fr_auto] items-center gap-3">
               <div className="font-mono text-[11px]" style={{ color: ISA_META[row.isa].color }}>
-                {ISA_META[row.isa].short}
+                {targetShort(result, row.isa)}
               </div>
               <div className="race-track h-2">
                 <div
@@ -407,6 +411,67 @@ function MetricRow({
         })}
       </div>
     </div>
+  )
+}
+
+/** What a real run executed, what it could not, and what it did not claim. */
+function RealExecutionNote({ result }: { result: CompareResult }) {
+  const execution = result.execution!
+  const narrow = execution.targets.filter((target) => target.verdict === 'unreachable')
+  return (
+    <div className="max-w-xs text-right font-mono text-[10px] leading-4 text-cyan-100/70">
+      <div className="text-cyan-200">REAL INSTRUCTIONS · MODELLED TIMING</div>
+      {narrow.map((target) => (
+        <div key={target.isa} className="text-amber-200/80">
+          {target.label}: its C int is too narrow to hold this answer, so it computes a different value
+        </div>
+      ))}
+      {execution.unavailable.map((item) => (
+        <div key={item.isa} className="text-white/45">{item.reason}</div>
+      ))}
+    </div>
+  )
+}
+
+function RealProtocol({ result }: { result: CompareResult }) {
+  const execution = result.execution!
+  return (
+    <section className="hud-panel pane-enter space-y-4 p-5 text-sm leading-relaxed text-white/65">
+      <p>
+        Each target ran this program compiled by clang for that instruction set and linked against a
+        real C library, executed by an interpreter that is verified against a reference. The
+        instructions and the program&apos;s own output are real. Everything else here -- model cycles,
+        cache behaviour, energy -- comes from the same deterministic model as every other result.
+        This is a deterministic educational software model, with no physical hardware measurements
+        or performance prediction.
+      </p>
+      <p>
+        Every row answers to the IR interpreter reference: its return value and its output must
+        equal the reference&apos;s, or the run is rejected. The one exception is stated rather than
+        excused -- a target whose C int is too narrow to hold the answer computes a different value,
+        and must still return one its int can hold.
+      </p>
+      <ul className="space-y-2 font-mono text-xs">
+        {execution.targets.map((target) => (
+          <li key={target.isa} style={{ color: ISA_META[target.isa].color }}>
+            {target.label} — linked against {target.libc}; verified against {target.oracle},{' '}
+            {target.verified}.
+            {target.verdict === 'unreachable' ? ' Its int cannot hold this answer.' : ''}
+          </li>
+        ))}
+        {execution.unavailable.map((item) => (
+          <li key={item.isa} className="text-white/45">{item.reason}.</li>
+        ))}
+      </ul>
+      <p>
+        The timing model consumes the instructions that actually retired: their classes, the
+        registers they read and wrote, which way each branch went and which address each access
+        touched. It models one core and one thread, in order, with the same caches, branch predictor
+        and energy accounting as the lowering. The libraries differ between targets -- most link
+        musl, SPARC links picolibc, WebAssembly links wasi-libc and the 6502 llvm-mos&apos;s own -- so
+        instructions inside library calls are that library&apos;s.
+      </p>
+    </section>
   )
 }
 

@@ -174,6 +174,19 @@ const rerunInput = z.strictObject({
   cpuByIsa: z.partialRecord(isa, z.string()).optional(),
   resolvedCpuByIsa: z.partialRecord(isa, z.string()).optional(),
   resolvedProfileByIsa: z.partialRecord(isa, hardware),
+  execution: z.literal('real-isa').optional(),
+})
+const execution = z.strictObject({
+  mode: z.literal('real-isa'),
+  targets: z.array(z.strictObject({
+    isa,
+    label: z.string().min(1),
+    libc: z.string().min(1),
+    oracle: z.string().min(1),
+    verified: z.string().min(1),
+    verdict: z.enum(['match', 'unreachable']),
+  })).min(1),
+  unavailable: z.array(z.strictObject({ isa, reason: z.string().min(1) })),
 })
 
 export const CompareResultSchema: z.ZodType<CompareResult> = z.strictObject({
@@ -194,6 +207,7 @@ export const CompareResultSchema: z.ZodType<CompareResult> = z.strictObject({
   rerunInput,
   inputFingerprint: z.string().min(1),
   resolvedHardware: z.array(z.strictObject({ isa, profile: hardware })).min(1),
+  execution: execution.optional(),
 })
 
 export function parseCompareResult(value: unknown): CompareResult {

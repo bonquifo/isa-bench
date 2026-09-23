@@ -49,6 +49,45 @@ export interface CompareInput {
   resolvedProfileByIsa?: Partial<Record<IsaId, HardwareProfile>>
   /** Illustrative preset id per ISA. Used in `cpus` mode. */
   cpuByIsa?: Partial<Record<IsaId, string>>
+  /**
+   * How each target's instruction stream is produced. Absent means the
+   * engine's own lowering, which is what every result made before real
+   * execution existed used -- so an old save replays exactly as it was.
+   */
+  execution?: ExecutionMode
+}
+
+/**
+ * Where a comparison's instructions come from.
+ *
+ * `model-lowering` is the engine's pseudo-backends: an instruction stream
+ * shaped like each architecture's, generated from the IR. `real-isa` is
+ * clang-compiled binaries executed by interpreters verified against a real
+ * reference. The timing model is the same in both, and it is a model in
+ * both: what changes is whether the instructions it is timing are real.
+ */
+export type ExecutionMode = 'model-lowering' | 'real-isa'
+
+/** What a real-ISA comparison ran, and how far each row can be trusted. */
+export interface RealExecutionRecord {
+  mode: 'real-isa'
+  targets: RealTargetRecord[]
+  /** Selected targets with no binary for this program, and why. */
+  unavailable: { isa: IsaId; reason: string }[]
+}
+
+export interface RealTargetRecord {
+  isa: IsaId
+  /** What the architecture is called, e.g. "RV64GC". */
+  label: string
+  libc: string
+  oracle: string
+  verified: string
+  /**
+   * `unreachable`: the reference answer needs a wider C `int` than this
+   * target has, so it computes a different value and is right to.
+   */
+  verdict: 'match' | 'unreachable'
 }
 
 export type WorkloadKind = 'builtin-ir' | 'fixed-c' | 'custom-ir' | 'custom-c'
@@ -83,6 +122,8 @@ export interface RerunInputSnapshot {
   cpuByIsa?: Partial<Record<IsaId, string>>
   resolvedCpuByIsa?: Partial<Record<IsaId, string>>
   resolvedProfileByIsa: Partial<Record<IsaId, HardwareProfile>>
+  /** Present only for real-ISA runs; absent means the engine's lowering. */
+  execution?: 'real-isa'
 }
 
 export interface ResolvedHardwareSnapshot {
@@ -108,6 +149,8 @@ export interface CompareResult {
   rerunInput: RerunInputSnapshot
   inputFingerprint: string
   resolvedHardware: ResolvedHardwareSnapshot[]
+  /** Present only for real-ISA runs; absent means the engine's lowering. */
+  execution?: RealExecutionRecord
 }
 
 export interface JackProgress {
@@ -268,7 +311,7 @@ export function buildInput(input: CompareInput): BuiltInput {
   }
 }
 
-function referenceForBuilt(built: BuiltInput): ReturnType<typeof interpretIr> {
+export function referenceForBuilt(built: BuiltInput): ReturnType<typeof interpretIr> {
   const custom = built.workload.kind === 'custom-ir' || built.workload.kind === 'custom-c'
   return custom && built.workload.parallelSemantics === 'source-defined'
     ? interpretIrWorkers(built.ir, cloneMem(built.memory), built.maxWorkers)
@@ -289,7 +332,7 @@ function cloneHardwareProfile(profile: HardwareProfile): HardwareProfile {
   }
 }
 
-function resolvedHardwareFor(isas: IsaId[], input: CompareInput): ResolvedHardwareSnapshot[] {
+export function resolvedHardwareFor(isas: IsaId[], input: CompareInput): ResolvedHardwareSnapshot[] {
   return isas.map((isa) => ({ isa, profile: cloneHardwareProfile(hardwareFor(isa, input)) }))
 }
 
@@ -298,6 +341,7 @@ function rerunSnapshot(
   isas: IsaId[],
   built: BuiltInput,
   resolvedHardware: ResolvedHardwareSnapshot[],
+  execution: ExecutionMode,
 ): RerunInputSnapshot {
   const customKind = built.workload.kind === 'custom-ir' || built.workload.kind === 'custom-c'
   return {
@@ -335,6 +379,9 @@ function rerunSnapshot(
     resolvedProfileByIsa: Object.fromEntries(
       resolvedHardware.map(({ isa, profile }) => [isa, cloneHardwareProfile(profile)]),
     ) as Partial<Record<IsaId, HardwareProfile>>,
+    // Recorded only when real, so a lowered result's snapshot -- and its
+    // fingerprint -- is exactly what it was before real execution existed.
+    ...(execution === 'real-isa' ? { execution: 'real-isa' as const } : {}),
   }
 }
 
@@ -352,15 +399,16 @@ export function computeInputFingerprint(
   })
 }
 
-function makeResult(
+export function makeResult(
   input: CompareInput,
   isas: IsaId[],
   built: BuiltInput,
   gold: ReturnType<typeof interpretIr>,
   rows: Metrics[],
   resolvedHardware: ResolvedHardwareSnapshot[],
+  execution: ExecutionMode = 'model-lowering',
 ): CompareResult {
-  const rerunInput = rerunSnapshot(input, isas, built, resolvedHardware)
+  const rerunInput = rerunSnapshot(input, isas, built, resolvedHardware, execution)
   const hardwareSnapshots = resolvedHardware.map(({ isa, profile }) => ({
     isa,
     profile: cloneHardwareProfile(profile),

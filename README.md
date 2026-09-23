@@ -70,24 +70,45 @@ Programs can come from three places:
 
 ## The eight targets
 
-RISC-V-style, AArch64-like, x86-64-style, MIPS32-like, PowerPC/POWER-like,
-SPARC V8-like, WebAssembly-like, and MOS 6502-style.
+RISC-V, AArch64, x86-64, MIPS32, POWER, SPARC V8, WebAssembly and the MOS
+6502 — and each can be run two ways.
 
-These are **pseudo-backends**: models of how each architecture's instruction
-set shapes a program, not real assemblers. Their output is a modeled lowering
-stream, not executable machine code or vendor disassembly. The RISC-V-style
-backend includes floating-point pseudo-operations and is not an RV32IM
-implementation.
+**Real instruction sets.** For the fourteen canned C programs, every target
+runs the program compiled by clang for that architecture — **RV64GC**,
+**AArch64**, **x86-64**, **MIPS32**, **POWER**, **SPARC V8**,
+**WebAssembly** and the **MOS 6502** — linked against a real C library and
+executed by an interpreter verified against a reference. This is the
+default for those programs, because it is the comparison the app exists to
+make: the instruction counts, encodings and register pressure are the
+architectures' own, not a caricature of them.
 
-## Real instruction sets
+**Model lowering.** Everything else — the built-in kernels, your own C and
+custom IR — runs on **pseudo-backends**: models of how each architecture's
+instruction set shapes a program, not real assemblers. Their output is a
+modeled lowering stream, not executable machine code or vendor
+disassembly. They are there because the app cannot compile at runtime:
+the real binaries were built ahead of time, and only for the canned
+programs. A canned program can be switched to the lowering too, to see the
+difference.
 
-All eight also have a **real** backend: **RV64GC**, **AArch64**,
-**x86-64**, **MIPS32**, **MOS 6502**, **SPARC V8**, **POWER** and
-**WebAssembly**. These are interpreters that decode and execute genuine
-machine code — the same precompiled binaries that the differential test
-suite compares against a reference. For the first four the comparison is
-instruction by instruction against `qemu-riscv64`, `qemu-aarch64`,
-`qemu-mipsel` and, for x86-64, against the host processor itself.
+A comparison table is always one or the other and says which. Real rows
+and lowered rows side by side would invite reading both as the same kind
+of number.
+
+Every real row must return the same value and print the same output as the
+IR reference, or the run is rejected. The one exception is stated rather
+than excused: the 6502's C `int` is sixteen bits, so where a program's
+answer does not fit in one, it computes a different value and is right to.
+One program (`struct`) cannot be built for it at all, for the same reason,
+and the report says so.
+
+## How each real target is verified
+
+For RV64GC, AArch64, x86-64, MIPS32, POWER and SPARC V8 the check is
+instruction by instruction — every register before every instruction —
+against `qemu-riscv64`, `qemu-aarch64`, `qemu-mipsel`, `qemu-ppc64le`,
+`qemu-sparc` and, for x86-64, the host processor itself, then the final
+state byte for byte, then whole programs against the reference's output.
 
 Two are verified differently and say so, because for both of them no
 reference exists that can be stepped alongside.
@@ -107,18 +128,15 @@ rather than on a chosen set of registers. The app's fourteen corpus
 programs are checked against `wasmtime`, a second engine from a different
 vendor.
 
-They live in their own lane and are never mixed into the eight-way
-comparison, because putting a real instruction stream in the same table as a
-lowering would invite reading both as equally real.
+What is real is the instruction stream and the program's own output.
+Everything else — cycles, cache behavior, energy — is the same
+deterministic model either way. **Nothing anywhere in this app is measured
+on hardware.**
 
-What is real there is the instruction stream and the program's own output.
-Everything else on that screen — cycles, cache behavior, energy — is the same
-deterministic model the other lanes use. **Nothing anywhere in this app is
-measured on hardware.**
-
-SPARC links picolibc rather than musl, which has no SPARC port, so the
-library code inside a SPARC program is a different implementation of the
-same functions. The app names each target's library for that reason.
+The libraries differ, and the app names them. Most targets link musl;
+SPARC links picolibc, because musl has no SPARC port; WebAssembly links
+wasi-libc and the 6502 llvm-mos's own. Instructions inside `printf` are
+that library's, so a difference there is partly a difference of library.
 
 An instruction a real backend does not implement is refused by name and
 address; it is never executed as an approximation. On the 6502 that

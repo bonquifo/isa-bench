@@ -3,8 +3,8 @@ import {
   parseTaggedJson,
   stablePrettySerialize,
 } from '../engine/measurement.ts'
-import { ISA_META } from '../engine/types.ts'
 import type { CompareResult } from '../engine/compare.ts'
+import { targetFull } from './targetNames.ts'
 
 export const RESULT_EXPORT_VERSION = 2
 export const EXPORT_DISCLAIMER =
@@ -113,7 +113,7 @@ export function resultToCsv(result: CompareResult): string {
       'flattened-summary-only-json-is-canonical',
       EXPORT_DISCLAIMER,
       row.isa,
-      ISA_META[row.isa].full,
+      targetFull(result, row.isa),
       row.hardwareName,
       result.hardwareMode,
       result.workloadId,

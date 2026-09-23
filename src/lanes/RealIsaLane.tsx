@@ -123,8 +123,8 @@ export function RealIsaLane() {
 
       <div className="brief brief-warn mt-4" role="note">
         <p className="brief-lead">
-          This lane executes real {target.instructions} instructions. It does not compare
-          targets.
+          This lane executes real {target.instructions} instructions, one target at a time. To
+          compare targets on real instructions, run a canned C program in the comparison.
         </p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
           <li>

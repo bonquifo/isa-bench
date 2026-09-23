@@ -27,6 +27,8 @@ import { isCurrentCompareResult, type ReportableResult } from './ui/reportLegacy
 import { currentCatalogProfile, replayProfileState } from './ui/replayProfile.ts'
 import { deleteSave, loadSavesState, restoreInput, saveRun, type StoredRun } from './ui/saves.ts'
 import { runComparisonAsync } from './engine/index.ts'
+import type { CompareResult, ExecutionMode } from './engine/compare.ts'
+import { realExecutionAvailable } from './engine/compareReal.ts'
 
 export default function App() {
   const [workloadId, setWorkloadId] = useState('dot_product')
@@ -52,6 +54,9 @@ export default function App() {
   >()
   const [replayCustomHw, setReplayCustomHw] = useState<Partial<HardwareProfile> | undefined>()
   const [effectiveSourceOverride, setEffectiveSourceOverride] = useState<string | undefined>()
+  // Real by default wherever it is possible: the canned C programs have a
+  // clang-compiled binary for every target, and running those is the point.
+  const [execution, setExecution] = useState<ExecutionMode>('real-isa')
   const initialSaves = useMemo(() => loadSavesState(), [])
   const [saves, setSaves] = useState<StoredRun[]>(initialSaves.saves)
   const [result, setResult] = useState<ReportableResult | null>(null)
@@ -72,6 +77,8 @@ export default function App() {
 
   const workload = WORKLOADS.find((w) => w.id === workloadId)
   const cProgram = cExampleByWorkloadId(workloadId)
+  const realAvailable = realExecutionAvailable({ workloadId, effectiveSourceOverride })
+  const effectiveExecution: ExecutionMode = realAvailable ? execution : 'model-lowering'
   const catalogProfile = HARDWARE_PROFILES.find((p) => p.id === profileId)
   const replayDisplayProfile = isas
     .map((isa) => replayProfiles?.[isa])
@@ -110,6 +117,7 @@ export default function App() {
 
   function selectWorkload(id: string) {
     setEffectiveSourceOverride(undefined)
+    setExecution('real-isa')
     setWorkloadId(id)
     if (id === 'custom' || id === 'custom-c') setN(4)
     else {
@@ -124,6 +132,9 @@ export default function App() {
     const input = restoreInput(save)
     if (!input) return
     setWorkloadId(input.workloadId)
+    // A save made before real execution existed has no mode, and replays
+    // as what it was: the lowering.
+    setExecution(input.execution === 'real-isa' ? 'real-isa' : 'model-lowering')
     setN(input.n)
     setSeed(input.seed)
     setIsas([...input.selectedIsas])
@@ -218,27 +229,37 @@ export default function App() {
     setError(null)
     setProgress({ ratio: 0.02, phase: 'MODEL', detail: 'opening the pipeline' })
     try {
-      const next = await runComparisonAsync(
-        {
-          workloadId,
-          n,
-          seed,
-          isas,
-          hardwareMode,
-          profileId,
-          customHw: replayProfiles ? replayCustomHw : customHw,
-          ...(workloadId === 'custom'
-            ? { customSource }
-            : workloadId === 'custom-c'
-              ? { customSource: customC }
-              : {}),
-          ...(effectiveSourceOverride !== undefined ? { effectiveSourceOverride } : {}),
-          ...(replayProfiles ? { resolvedProfileByIsa: replayProfiles } : {}),
-          cpuByIsa,
-        },
-        setProgress,
-        { signal: controller.signal },
-      )
+      const input = {
+        workloadId,
+        n,
+        seed,
+        isas,
+        hardwareMode,
+        profileId,
+        customHw: replayProfiles ? replayCustomHw : customHw,
+        ...(workloadId === 'custom'
+          ? { customSource }
+          : workloadId === 'custom-c'
+            ? { customSource: customC }
+            : {}),
+        ...(effectiveSourceOverride !== undefined ? { effectiveSourceOverride } : {}),
+        ...(replayProfiles ? { resolvedProfileByIsa: replayProfiles } : {}),
+        cpuByIsa,
+        execution: effectiveExecution,
+      }
+      let next: CompareResult
+      if (effectiveExecution === 'real-isa') {
+        // Loaded only now: the provider imports every target's binaries.
+        const [{ runRealComparisonAsync }, { shippedRealProvider }] = await Promise.all([
+          import('./engine/compareReal.ts'),
+          import('./lanes/realProvider.ts'),
+        ])
+        next = await runRealComparisonAsync(input, shippedRealProvider, setProgress, {
+          signal: controller.signal,
+        })
+      } else {
+        next = await runComparisonAsync(input, setProgress, { signal: controller.signal })
+      }
       setResult(next)
     } catch (err) {
       setResult(null)
@@ -330,6 +351,35 @@ export default function App() {
                     ? cProgram.blurb
                     : workload?.blurb}
             </p>
+            {cProgram && (
+              <fieldset className="mt-3" disabled={!realAvailable}>
+                <legend className="hud-kicker">Instructions</legend>
+                <div className="mt-1 flex gap-2" role="radiogroup" aria-label="Instructions">
+                  {([
+                    ['real-isa', 'Real ISA'],
+                    ['model-lowering', 'Model lowering'],
+                  ] as const).map(([mode, label]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      role="radio"
+                      aria-checked={effectiveExecution === mode}
+                      className="hud-tab"
+                      onClick={() => setExecution(mode)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-white/45">
+                  {!realAvailable
+                    ? 'This replay’s source differs from the catalogue’s, so there is no compiled binary for it; it runs on the model lowering.'
+                    : effectiveExecution === 'real-isa'
+                      ? 'Each target runs this program compiled by clang for that instruction set, executed by an interpreter verified against a reference. Timing is still the model.'
+                      : 'Each target runs the engine’s own lowering of the program: an instruction stream shaped like that architecture’s, not compiled code.'}
+                </p>
+              </fieldset>
+            )}
             {cProgram && (
               <details className="mt-3">
                 <summary className="hud-kicker cursor-pointer text-cyan-100/50">C source</summary>
