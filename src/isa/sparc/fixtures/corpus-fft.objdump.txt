@@ -1,0 +1,4708 @@
+
+/work/out.elf:	file format elf32-sparc
+
+Disassembly of section .text:
+
+000100b4 <.text>:
+   100b4: 9d e3 bf a0  	save %sp, -0x60, %sp
+   100b8: 40 00 00 fb  	call 0x104a4
+   100bc: 01 00 00 00  	nop
+   100c0: 40 00 00 e0  	call 0x10440
+   100c4: 90 10 00 18  	mov	%i0, %o0
+   100c8: bc 10 00 00  	mov	%g0, %fp
+   100cc: 90 03 a0 40  	add %sp, 0x40, %o0
+   100d0: 9c 23 a0 60  	sub %sp, 0x60, %sp
+   100d4: 40 00 00 e7  	call 0x10470
+   100d8: 01 00 00 00  	nop
+   100dc: 00 00 00 00  	unimp 0x0
+   100e0: 90 1a 40 08  	xor %o1, %o0, %o0
+   100e4: 13 00 40 00  	sethi 0x4000, %o1
+   100e8: 92 12 61 93  	or %o1, 0x193, %o1
+   100ec: 81 c3 e0 08  	retl
+   100f0: 90 5a 00 09  	smul %o0, %o1, %o0
+   100f4: 90 5a 40 08  	smul %o1, %o0, %o0
+   100f8: 81 c3 e0 08  	retl
+   100fc: 91 3a 20 0c  	sra %o0, 0xc, %o0
+   10100: 9d e3 bf 60  	save %sp, -0xa0, %sp
+   10104: b0 10 00 00  	mov	%g0, %i0
+   10108: b2 07 bf c0  	add %fp, -0x40, %i1
+   1010c: 35 3f ff c0  	sethi 0x3fffc0, %i2
+   10110: 37 01 99 99  	sethi 0x19999, %i3
+   10114: b6 16 e2 67  	or %i3, 0x267, %i3
+   10118: b8 5e 20 11  	smul %i0, 0x11, %i4
+   1011c: b8 07 20 03  	add %i4, 0x3, %i4
+   10120: b8 2f 00 1a  	andn %i4, %i2, %i4
+   10124: ba 57 00 1b  	umul %i4, %i3, %i5
+   10128: bb 40 00 00  	rd %y, %i5
+   1012c: ba 5f 60 28  	smul %i5, 0x28, %i5
+   10130: b8 27 00 1d  	sub %i4, %i5, %i4
+   10134: b8 07 3f ec  	add %i4, -0x14, %i4
+   10138: f8 26 40 00  	st %i4, [%i1]
+   1013c: b0 06 20 01  	add %i0, 0x1, %i0
+   10140: 80 a6 20 10  	cmp	%i0, 0x10
+   10144: 12 bf ff f5  	bne	0x10118
+   10148: b2 06 60 04  	add %i1, 0x4, %i1
+   1014c: b2 10 00 00  	mov	%g0, %i1
+   10150: 92 10 00 00  	mov	%g0, %o1
+   10154: 31 20 47 27  	sethi 0x204727, %i0
+   10158: b0 16 21 c5  	or %i0, 0x1c5, %i0
+   1015c: b4 07 bf c0  	add %fp, -0x40, %i2
+   10160: 37 00 00 52  	sethi 0x52, %i3
+   10164: b6 06 e2 30  	add %i3, 0x230, %i3
+   10168: 39 00 00 52  	sethi 0x52, %i4
+   1016c: b8 07 22 70  	add %i4, 0x270, %i4
+   10170: 3b 00 40 00  	sethi 0x4000, %i5
+   10174: ba 17 61 93  	or %i5, 0x193, %i5
+   10178: 86 10 00 00  	mov	%g0, %g3
+   1017c: 88 10 00 00  	mov	%g0, %g4
+   10180: 84 10 00 00  	mov	%g0, %g2
+   10184: a0 10 00 00  	mov	%g0, %l0
+   10188: e2 06 80 04  	ld [%i2+%g4], %l1
+   1018c: a5 28 e0 02  	sll %g3, 0x2, %l2
+   10190: a4 0c a0 3c  	and %l2, 0x3c, %l2
+   10194: e6 06 c0 12  	ld [%i3+%l2], %l3
+   10198: e4 07 00 12  	ld [%i4+%l2], %l2
+   1019c: a6 5c c0 11  	smul %l3, %l1, %l3
+   101a0: a0 04 c0 10  	add %l3, %l0, %l0
+   101a4: a2 5c 80 11  	smul %l2, %l1, %l1
+   101a8: 84 20 80 11  	sub %g2, %l1, %g2
+   101ac: 88 01 20 04  	add %g4, 0x4, %g4
+   101b0: 80 a1 20 40  	cmp	%g4, 0x40
+   101b4: 12 bf ff f5  	bne	0x10188
+   101b8: 86 00 c0 19  	add %g3, %i1, %g3
+   101bc: 87 3c 20 05  	sra %l0, 0x5, %g3
+   101c0: 85 38 a0 05  	sra %g2, 0x5, %g2
+   101c4: 88 58 c0 03  	smul %g3, %g3, %g4
+   101c8: 88 01 00 09  	add %g4, %o1, %g4
+   101cc: a0 58 80 02  	smul %g2, %g2, %l0
+   101d0: 92 01 00 10  	add %g4, %l0, %o1
+   101d4: b0 18 c0 18  	xor %g3, %i0, %i0
+   101d8: b0 5e 00 1d  	smul %i0, %i5, %i0
+   101dc: b0 1e 00 02  	xor %i0, %g2, %i0
+   101e0: b2 06 60 01  	add %i1, 0x1, %i1
+   101e4: 80 a6 60 10  	cmp	%i1, 0x10
+   101e8: 12 bf ff e4  	bne	0x10178
+   101ec: b0 5e 00 1d  	smul %i0, %i5, %i0
+   101f0: 33 00 00 52  	sethi 0x52, %i1
+   101f4: 40 00 01 30  	call 0x106b4
+   101f8: 90 06 62 b0  	add %i1, 0x2b0, %o0
+   101fc: 81 c7 e0 08  	ret
+   10200: 81 e8 00 00  	restore
+   10204: 9d e3 bf 60  	save %sp, -0xa0, %sp
+   10208: b0 10 00 00  	mov	%g0, %i0
+   1020c: b2 07 bf c0  	add %fp, -0x40, %i1
+   10210: 35 3f ff c0  	sethi 0x3fffc0, %i2
+   10214: 37 01 99 99  	sethi 0x19999, %i3
+   10218: b6 16 e2 67  	or %i3, 0x267, %i3
+   1021c: b8 5e 20 11  	smul %i0, 0x11, %i4
+   10220: b8 07 20 03  	add %i4, 0x3, %i4
+   10224: b8 2f 00 1a  	andn %i4, %i2, %i4
+   10228: ba 57 00 1b  	umul %i4, %i3, %i5
+   1022c: bb 40 00 00  	rd %y, %i5
+   10230: ba 5f 60 28  	smul %i5, 0x28, %i5
+   10234: b8 27 00 1d  	sub %i4, %i5, %i4
+   10238: b8 07 3f ec  	add %i4, -0x14, %i4
+   1023c: f8 26 40 00  	st %i4, [%i1]
+   10240: b0 06 20 01  	add %i0, 0x1, %i0
+   10244: 80 a6 20 10  	cmp	%i0, 0x10
+   10248: 12 bf ff f5  	bne	0x1021c
+   1024c: b2 06 60 04  	add %i1, 0x4, %i1
+   10250: b2 10 00 00  	mov	%g0, %i1
+   10254: 92 10 00 00  	mov	%g0, %o1
+   10258: 31 20 47 27  	sethi 0x204727, %i0
+   1025c: b0 16 21 c5  	or %i0, 0x1c5, %i0
+   10260: b4 07 bf c0  	add %fp, -0x40, %i2
+   10264: 37 00 00 52  	sethi 0x52, %i3
+   10268: b6 06 e2 30  	add %i3, 0x230, %i3
+   1026c: 39 00 00 52  	sethi 0x52, %i4
+   10270: b8 07 22 70  	add %i4, 0x270, %i4
+   10274: 3b 00 40 00  	sethi 0x4000, %i5
+   10278: ba 17 61 93  	or %i5, 0x193, %i5
+   1027c: 86 10 00 00  	mov	%g0, %g3
+   10280: 88 10 00 00  	mov	%g0, %g4
+   10284: 84 10 00 00  	mov	%g0, %g2
+   10288: a0 10 00 00  	mov	%g0, %l0
+   1028c: e2 06 80 04  	ld [%i2+%g4], %l1
+   10290: a5 28 e0 02  	sll %g3, 0x2, %l2
+   10294: a4 0c a0 3c  	and %l2, 0x3c, %l2
+   10298: e6 06 c0 12  	ld [%i3+%l2], %l3
+   1029c: e4 07 00 12  	ld [%i4+%l2], %l2
+   102a0: a6 5c c0 11  	smul %l3, %l1, %l3
+   102a4: a0 04 c0 10  	add %l3, %l0, %l0
+   102a8: a2 5c 80 11  	smul %l2, %l1, %l1
+   102ac: 84 20 80 11  	sub %g2, %l1, %g2
+   102b0: 88 01 20 04  	add %g4, 0x4, %g4
+   102b4: 80 a1 20 40  	cmp	%g4, 0x40
+   102b8: 12 bf ff f5  	bne	0x1028c
+   102bc: 86 00 c0 19  	add %g3, %i1, %g3
+   102c0: 87 3c 20 05  	sra %l0, 0x5, %g3
+   102c4: 85 38 a0 05  	sra %g2, 0x5, %g2
+   102c8: 88 58 c0 03  	smul %g3, %g3, %g4
+   102cc: 88 01 00 09  	add %g4, %o1, %g4
+   102d0: a0 58 80 02  	smul %g2, %g2, %l0
+   102d4: 92 01 00 10  	add %g4, %l0, %o1
+   102d8: b0 18 c0 18  	xor %g3, %i0, %i0
+   102dc: b0 5e 00 1d  	smul %i0, %i5, %i0
+   102e0: b0 1e 00 02  	xor %i0, %g2, %i0
+   102e4: b2 06 60 01  	add %i1, 0x1, %i1
+   102e8: 80 a6 60 10  	cmp	%i1, 0x10
+   102ec: 12 bf ff e4  	bne	0x1027c
+   102f0: b0 5e 00 1d  	smul %i0, %i5, %i0
+   102f4: 33 00 00 52  	sethi 0x52, %i1
+   102f8: 40 00 00 ef  	call 0x106b4
+   102fc: 90 06 62 b0  	add %i1, 0x2b0, %o0
+   10300: 33 00 00 53  	sethi 0x53, %i1
+   10304: d0 06 62 14  	ld [%i1+0x214], %o0
+   10308: 33 00 00 52  	sethi 0x52, %i1
+   1030c: 92 06 62 ba  	add %i1, 0x2ba, %o1
+   10310: 40 00 00 dd  	call 0x10684
+   10314: 94 10 00 18  	mov	%i0, %o2
+   10318: 81 c7 e0 08  	ret
+   1031c: 91 e8 00 00  	restore %g0, %g0, %o0
+   10320: 9d e3 bf a0  	save %sp, -0x60, %sp
+   10324: 94 10 00 1a  	mov	%i2, %o2
+   10328: 92 10 00 19  	mov	%i1, %o1
+   1032c: 90 10 00 18  	mov	%i0, %o0
+   10330: 82 10 20 04  	mov	0x4, %g1
+   10334: 91 d0 20 10  	ta	16
+   10338: 1a 80 00 03  	bcc	0x10344
+   1033c: 01 00 00 00  	nop
+   10340: 90 20 00 08  	sub %g0, %o0, %o0
+   10344: 80 a2 3f ff  	cmp	%o0, -0x1
+   10348: 14 80 00 06  	bg	0x10360
+   1034c: 01 00 00 00  	nop
+   10350: b0 20 00 08  	sub %g0, %o0, %i0
+   10354: 33 00 40 c0  	sethi 0x40c0, %i1
+   10358: f0 26 60 a0  	st %i0, [%i1+0xa0]
+   1035c: 90 10 3f ff  	mov	-0x1, %o0
+   10360: 81 c7 e0 08  	ret
+   10364: 91 e8 00 08  	restore %g0, %o0, %o0
+   10368: 9d e3 bf a0  	save %sp, -0x60, %sp
+   1036c: 94 10 00 1a  	mov	%i2, %o2
+   10370: 92 10 00 19  	mov	%i1, %o1
+   10374: 90 10 00 18  	mov	%i0, %o0
+   10378: 82 10 20 03  	mov	0x3, %g1
+   1037c: 91 d0 20 10  	ta	16
+   10380: 1a 80 00 03  	bcc	0x1038c
+   10384: 01 00 00 00  	nop
+   10388: 90 20 00 08  	sub %g0, %o0, %o0
+   1038c: 80 a2 3f ff  	cmp	%o0, -0x1
+   10390: 14 80 00 06  	bg	0x103a8
+   10394: 01 00 00 00  	nop
+   10398: b0 20 00 08  	sub %g0, %o0, %i0
+   1039c: 33 00 40 c0  	sethi 0x40c0, %i1
+   103a0: f0 26 60 a0  	st %i0, [%i1+0xa0]
+   103a4: 90 10 3f ff  	mov	-0x1, %o0
+   103a8: 81 c7 e0 08  	ret
+   103ac: 91 e8 00 08  	restore %g0, %o0, %o0
+   103b0: 9d e3 bf a0  	save %sp, -0x60, %sp
+   103b4: 94 10 00 1a  	mov	%i2, %o2
+   103b8: 92 10 00 19  	mov	%i1, %o1
+   103bc: 90 10 00 18  	mov	%i0, %o0
+   103c0: 82 10 20 13  	mov	0x13, %g1
+   103c4: 91 d0 20 10  	ta	16
+   103c8: 1a 80 00 03  	bcc	0x103d4
+   103cc: 01 00 00 00  	nop
+   103d0: 90 20 00 08  	sub %g0, %o0, %o0
+   103d4: 80 a2 3f ff  	cmp	%o0, -0x1
+   103d8: 14 80 00 06  	bg	0x103f0
+   103dc: 01 00 00 00  	nop
+   103e0: b0 20 00 08  	sub %g0, %o0, %i0
+   103e4: 33 00 40 c0  	sethi 0x40c0, %i1
+   103e8: f0 26 60 a0  	st %i0, [%i1+0xa0]
+   103ec: 90 10 3f ff  	mov	-0x1, %o0
+   103f0: 81 c7 e0 08  	ret
+   103f4: 91 e8 00 08  	restore %g0, %o0, %o0
+   103f8: 9d e3 bf a0  	save %sp, -0x60, %sp
+   103fc: 90 10 00 18  	mov	%i0, %o0
+   10400: 82 10 20 06  	mov	0x6, %g1
+   10404: 92 10 00 00  	mov	%g0, %o1
+   10408: 94 10 00 00  	mov	%g0, %o2
+   1040c: 91 d0 20 10  	ta	16
+   10410: 1a 80 00 03  	bcc	0x1041c
+   10414: 01 00 00 00  	nop
+   10418: 90 20 00 08  	sub %g0, %o0, %o0
+   1041c: 80 a2 3f ff  	cmp	%o0, -0x1
+   10420: 14 80 00 06  	bg	0x10438
+   10424: 01 00 00 00  	nop
+   10428: b0 20 00 08  	sub %g0, %o0, %i0
+   1042c: 33 00 40 c0  	sethi 0x40c0, %i1
+   10430: f0 26 60 a0  	st %i0, [%i1+0xa0]
+   10434: 90 10 3f ff  	mov	-0x1, %o0
+   10438: 81 c7 e0 08  	ret
+   1043c: 91 e8 00 08  	restore %g0, %o0, %o0
+   10440: 9d e3 bf a0  	save %sp, -0x60, %sp
+   10444: 90 10 00 18  	mov	%i0, %o0
+   10448: 82 10 20 bc  	mov	0xbc, %g1
+   1044c: 92 10 00 00  	mov	%g0, %o1
+   10450: 94 10 00 00  	mov	%g0, %o2
+   10454: 91 d0 20 10  	ta	16
+   10458: 1a 80 00 03  	bcc	0x10464
+   1045c: 01 00 00 00  	nop
+   10460: 90 20 00 08  	sub %g0, %o0, %o0
+   10464: 00 00 00 00  	unimp 0x0
+   10468: 10 bf ff ff  	ba 0x10464
+   1046c: 01 00 00 00  	nop
+   10470: 9d e3 bf a0  	save %sp, -0x60, %sp
+   10474: f2 06 00 00  	ld [%i0], %i1
+   10478: b0 06 20 04  	add %i0, 0x4, %i0
+   1047c: 35 00 00 41  	sethi 0x41, %i2
+   10480: 40 00 00 29  	call 0x10524
+   10484: 90 06 a0 a4  	add %i2, 0xa4, %o0
+   10488: 40 00 00 17  	call 0x104e4
+   1048c: 01 00 00 00  	nop
+   10490: 90 10 00 19  	mov	%i1, %o0
+   10494: 7f ff ff 5c  	call 0x10204
+   10498: 92 10 00 18  	mov	%i0, %o1
+   1049c: 7f ff ff 06  	call 0x100b4
+   104a0: 01 00 00 00  	nop
+   104a4: 9d e3 bf a0  	save %sp, -0x60, %sp
+   104a8: 31 00 00 bf  	sethi 0xbf, %i0
+   104ac: b0 06 23 fc  	add %i0, 0x3fc, %i0
+   104b0: 33 00 00 c0  	sethi 0xc0, %i1
+   104b4: b2 06 60 00  	add %i1, 0x0, %i1
+   104b8: 80 a6 40 18  	cmp	%i1, %i0
+   104bc: 02 80 00 08  	be	0x104dc
+   104c0: 01 00 00 00  	nop
+   104c4: f4 06 7f fc  	ld [%i1+-0x4], %i2
+   104c8: 9f c6 80 00  	call %i2
+   104cc: b2 06 7f fc  	add %i1, -0x4, %i1
+   104d0: 80 a6 40 18  	cmp	%i1, %i0
+   104d4: 12 bf ff fc  	bne	0x104c4
+   104d8: 01 00 00 00  	nop
+   104dc: 81 c7 e0 08  	ret
+   104e0: 81 e8 00 00  	restore
+   104e4: 9d e3 bf a0  	save %sp, -0x60, %sp
+   104e8: 31 00 00 00  	sethi 0x0, %i0
+   104ec: b0 06 20 00  	add %i0, 0x0, %i0
+   104f0: 33 00 00 00  	sethi 0x0, %i1
+   104f4: b2 06 60 00  	add %i1, 0x0, %i1
+   104f8: 80 a6 40 18  	cmp	%i1, %i0
+   104fc: 02 80 00 08  	be	0x1051c
+   10500: 01 00 00 00  	nop
+   10504: f4 06 40 00  	ld [%i1], %i2
+   10508: 9f c6 80 00  	call %i2
+   1050c: b2 06 60 04  	add %i1, 0x4, %i1
+   10510: 80 a6 40 18  	cmp	%i1, %i0
+   10514: 12 bf ff fc  	bne	0x10504
+   10518: 01 00 00 00  	nop
+   1051c: 81 c7 e0 08  	ret
+   10520: 81 e8 00 00  	restore
+   10524: 9d e3 bf 98  	save %sp, -0x68, %sp
+   10528: f0 27 bf fc  	st %i0, [%fp+-0x4]
+   1052c: f0 27 bf f8  	st %i0, [%fp+-0x8]
+   10530: 90 10 20 02  	mov	0x2, %o0
+   10534: 92 07 bf f8  	add %fp, -0x8, %o1
+   10538: 40 00 00 04  	call 0x10548
+   1053c: 94 10 00 00  	mov	%g0, %o2
+   10540: 81 c7 e0 08  	ret
+   10544: 91 e8 00 08  	restore %g0, %o0, %o0
+   10548: 9d e3 bf a0  	save %sp, -0x60, %sp
+   1054c: 37 00 40 c1  	sethi 0x40c1, %i3
+   10550: b6 06 e0 25  	add %i3, 0x25, %i3
+   10554: 40 00 0b 09  	call 0x13178
+   10558: 90 10 00 1b  	mov	%i3, %o0
+   1055c: ba 10 00 00  	mov	%g0, %i5
+   10560: 39 00 40 c0  	sethi 0x40c0, %i4
+   10564: 84 07 20 a4  	add %i4, 0xa4, %g2
+   10568: b8 10 3f ff  	mov	-0x1, %i4
+   1056c: 86 00 80 1d  	add %g2, %i5, %g3
+   10570: c8 00 e0 08  	ld [%g3+0x8], %g4
+   10574: 80 a1 20 00  	cmp	%g4, 0x0
+   10578: 02 80 00 08  	be	0x10598
+   1057c: 01 00 00 00  	nop
+   10580: ba 07 60 0c  	add %i5, 0xc, %i5
+   10584: 80 a7 61 80  	cmp	%i5, 0x180
+   10588: 12 bf ff f9  	bne	0x1056c
+   1058c: 01 00 00 00  	nop
+   10590: 10 80 00 07  	ba 0x105ac
+   10594: 01 00 00 00  	nop
+   10598: f2 06 40 00  	ld [%i1], %i1
+   1059c: b8 10 00 00  	mov	%g0, %i4
+   105a0: f2 20 80 1d  	st %i1, [%g2+%i5]
+   105a4: f4 20 e0 04  	st %i2, [%g3+0x4]
+   105a8: f0 20 e0 08  	st %i0, [%g3+0x8]
+   105ac: 40 00 0a f7  	call 0x13188
+   105b0: 90 10 00 1b  	mov	%i3, %o0
+   105b4: 81 c7 e0 08  	ret
+   105b8: 91 e8 00 1c  	restore %g0, %i4, %o0
+   105bc: 9d e3 bf a0  	save %sp, -0x60, %sp
+   105c0: 31 00 40 c1  	sethi 0x40c1, %i0
+   105c4: b0 06 20 25  	add %i0, 0x25, %i0
+   105c8: 33 00 40 c0  	sethi 0x40c0, %i1
+   105cc: b4 06 60 a4  	add %i1, 0xa4, %i2
+   105d0: 40 00 0a ea  	call 0x13178
+   105d4: 90 10 00 18  	mov	%i0, %o0
+   105d8: b2 10 00 00  	mov	%g0, %i1
+   105dc: ba 06 80 19  	add %i2, %i1, %i5
+   105e0: f8 07 61 7c  	ld [%i5+0x17c], %i4
+   105e4: 80 a7 20 00  	cmp	%i4, 0x0
+   105e8: 12 80 00 08  	bne	0x10608
+   105ec: 01 00 00 00  	nop
+   105f0: b2 06 7f f4  	add %i1, -0xc, %i1
+   105f4: 80 a6 7e 80  	cmp	%i1, -0x180
+   105f8: 12 bf ff f9  	bne	0x105dc
+   105fc: 01 00 00 00  	nop
+   10600: 10 80 00 1f  	ba 0x1067c
+   10604: 01 00 00 00  	nop
+   10608: f6 07 61 74  	ld [%i5+0x174], %i3
+   1060c: f2 07 61 78  	ld [%i5+0x178], %i1
+   10610: c0 27 61 7c  	st %g0, [%i5+0x17c]
+   10614: c0 27 61 74  	st %g0, [%i5+0x174]
+   10618: c0 27 61 78  	st %g0, [%i5+0x178]
+   1061c: 40 00 0a db  	call 0x13188
+   10620: 90 10 00 18  	mov	%i0, %o0
+   10624: 80 a7 20 03  	cmp	%i4, 0x3
+   10628: 02 80 00 11  	be	0x1066c
+   1062c: 01 00 00 00  	nop
+   10630: 80 a7 20 02  	cmp	%i4, 0x2
+   10634: 02 80 00 0a  	be	0x1065c
+   10638: 01 00 00 00  	nop
+   1063c: 80 a7 20 01  	cmp	%i4, 0x1
+   10640: 12 bf ff e4  	bne	0x105d0
+   10644: 01 00 00 00  	nop
+   10648: 90 10 00 00  	mov	%g0, %o0
+   1064c: 9f c6 c0 00  	call %i3
+   10650: 92 10 00 19  	mov	%i1, %o1
+   10654: 10 bf ff df  	ba 0x105d0
+   10658: 01 00 00 00  	nop
+   1065c: 9f c6 c0 00  	call %i3
+   10660: 01 00 00 00  	nop
+   10664: 10 bf ff db  	ba 0x105d0
+   10668: 01 00 00 00  	nop
+   1066c: 9f c6 c0 00  	call %i3
+   10670: 90 10 00 19  	mov	%i1, %o0
+   10674: 10 bf ff d7  	ba 0x105d0
+   10678: 01 00 00 00  	nop
+   1067c: 40 00 0a c3  	call 0x13188
+   10680: 81 e8 00 00  	restore
+   10684: 9d e3 bf a0  	save %sp, -0x60, %sp
+   10688: 92 10 00 19  	mov	%i1, %o1
+   1068c: 90 10 00 18  	mov	%i0, %o0
+   10690: fa 27 a0 58  	st %i5, [%fp+0x58]
+   10694: f8 27 a0 54  	st %i4, [%fp+0x54]
+   10698: f6 27 a0 50  	st %i3, [%fp+0x50]
+   1069c: f4 27 a0 4c  	st %i2, [%fp+0x4c]
+   106a0: 94 07 a0 4c  	add %fp, 0x4c, %o2
+   106a4: 40 00 00 12  	call 0x106ec
+   106a8: d4 27 bf fc  	st %o2, [%fp+-0x4]
+   106ac: 81 c7 e0 08  	ret
+   106b0: 91 e8 00 08  	restore %g0, %o0, %o0
+   106b4: 9d e3 bf a0  	save %sp, -0x60, %sp
+   106b8: 92 10 00 18  	mov	%i0, %o1
+   106bc: fa 27 a0 58  	st %i5, [%fp+0x58]
+   106c0: f8 27 a0 54  	st %i4, [%fp+0x54]
+   106c4: f6 27 a0 50  	st %i3, [%fp+0x50]
+   106c8: f4 27 a0 4c  	st %i2, [%fp+0x4c]
+   106cc: 31 00 00 53  	sethi 0x53, %i0
+   106d0: d0 06 22 10  	ld [%i0+0x210], %o0
+   106d4: f2 27 a0 48  	st %i1, [%fp+0x48]
+   106d8: 94 07 a0 48  	add %fp, 0x48, %o2
+   106dc: 40 00 00 04  	call 0x106ec
+   106e0: d4 27 bf fc  	st %o2, [%fp+-0x4]
+   106e4: 81 c7 e0 08  	ret
+   106e8: 91 e8 00 08  	restore %g0, %o0, %o0
+   106ec: 9d e3 bf 38  	save %sp, -0xc8, %sp
+   106f0: b6 10 00 18  	mov	%i0, %i3
+   106f4: f4 27 bf fc  	st %i2, [%fp+-0x4]
+   106f8: f0 0e 20 02  	ldub [%i0+0x2], %i0
+   106fc: 80 8e 20 02  	andcc %i0, 0x2, %g0
+   10700: 02 80 04 e4  	be	0x11a90
+   10704: 01 00 00 00  	nop
+   10708: f4 07 bf fc  	ld [%fp+-0x4], %i2
+   1070c: b0 10 00 00  	mov	%g0, %i0
+   10710: e2 06 e0 04  	ld [%i3+0x4], %l1
+   10714: f4 27 bf f8  	st %i2, [%fp+-0x8]
+   10718: b4 07 bf e0  	add %fp, -0x20, %i2
+   1071c: b8 06 a0 04  	add %i2, 0x4, %i4
+   10720: f8 27 bf bc  	st %i4, [%fp+-0x44]
+   10724: b8 06 a0 05  	add %i2, 0x5, %i4
+   10728: f8 27 bf b4  	st %i4, [%fp+-0x4c]
+   1072c: b8 06 bf ff  	add %i2, -0x1, %i4
+   10730: f8 27 bf c4  	st %i4, [%fp+-0x3c]
+   10734: f4 27 bf b8  	st %i2, [%fp+-0x48]
+   10738: b4 06 a0 06  	add %i2, 0x6, %i2
+   1073c: f4 27 bf b0  	st %i2, [%fp+-0x50]
+   10740: 2d 3f ff c0  	sethi 0x3fffc0, %l6
+   10744: f2 27 bf c0  	st %i1, [%fp+-0x40]
+   10748: ae 10 00 19  	mov	%i1, %l7
+   1074c: f4 0d c0 00  	ldub [%l7], %i2
+   10750: 80 a6 a0 25  	cmp	%i2, 0x25
+   10754: 02 80 00 07  	be	0x10770
+   10758: 01 00 00 00  	nop
+   1075c: 80 a6 a0 00  	cmp	%i2, 0x0
+   10760: 02 80 04 cd  	be	0x11a94
+   10764: 01 00 00 00  	nop
+   10768: 10 80 00 06  	ba 0x10780
+   1076c: ae 05 e0 01  	add %l7, 0x1, %l7
+   10770: f2 0d e0 01  	ldub [%l7+0x1], %i1
+   10774: 80 a6 60 25  	cmp	%i1, 0x25
+   10778: 12 80 00 0c  	bne	0x107a8
+   1077c: ae 05 e0 02  	add %l7, 0x2, %l7
+   10780: b3 2e a0 18  	sll %i2, 0x18, %i1
+   10784: 91 3e 60 18  	sra %i1, 0x18, %o0
+   10788: b0 06 20 01  	add %i0, 0x1, %i0
+   1078c: 9f c4 40 00  	call %l1
+   10790: 92 10 00 1b  	mov	%i3, %o1
+   10794: 80 a2 20 00  	cmp	%o0, 0x0
+   10798: 16 bf ff ed  	bge	0x1074c
+   1079c: 01 00 00 00  	nop
+   107a0: 10 80 04 b9  	ba 0x11a84
+   107a4: 01 00 00 00  	nop
+   107a8: b8 10 00 00  	mov	%g0, %i4
+   107ac: a0 10 00 00  	mov	%g0, %l0
+   107b0: aa 10 00 00  	mov	%g0, %l5
+   107b4: 10 80 00 0a  	ba 0x107dc
+   107b8: a6 10 00 00  	mov	%g0, %l3
+   107bc: 80 a6 60 6a  	cmp	%i1, 0x6a
+   107c0: 12 80 00 c6  	bne	0x10ad8
+   107c4: 01 00 00 00  	nop
+   107c8: a6 14 e2 80  	or %l3, 0x280, %l3
+   107cc: f2 0d c0 00  	ldub [%l7], %i1
+   107d0: 80 a6 60 00  	cmp	%i1, 0x0
+   107d4: 02 80 00 c0  	be	0x10ad4
+   107d8: ae 05 e0 01  	add %l7, 0x1, %l7
+   107dc: bb 2e 60 18  	sll %i1, 0x18, %i5
+   107e0: b4 2c c0 16  	andn %l3, %l6, %i2
+   107e4: 80 a6 a0 1f  	cmp	%i2, 0x1f
+   107e8: 18 80 00 11  	bgu	0x1082c
+   107ec: bb 3f 60 18  	sra %i5, 0x18, %i5
+   107f0: 84 0e 60 ff  	and %i1, 0xff, %g2
+   107f4: 80 a0 a0 2a  	cmp	%g2, 0x2a
+   107f8: 14 80 00 1b  	bg	0x10864
+   107fc: 01 00 00 00  	nop
+   10800: 80 a0 a0 20  	cmp	%g2, 0x20
+   10804: 02 80 00 55  	be	0x10958
+   10808: 01 00 00 00  	nop
+   1080c: 80 a0 a0 23  	cmp	%g2, 0x23
+   10810: 02 80 00 54  	be	0x10960
+   10814: 01 00 00 00  	nop
+   10818: 80 a0 a0 27  	cmp	%g2, 0x27
+   1081c: 02 bf ff ec  	be	0x107cc
+   10820: 01 00 00 00  	nop
+   10824: 10 80 00 05  	ba 0x10838
+   10828: 01 00 00 00  	nop
+   1082c: 80 a6 a0 7f  	cmp	%i2, 0x7f
+   10830: 18 80 00 18  	bgu	0x10890
+   10834: 01 00 00 00  	nop
+   10838: 84 07 7f d0  	add %i5, -0x30, %g2
+   1083c: 80 a0 a0 09  	cmp	%g2, 0x9
+   10840: 18 80 00 20  	bgu	0x108c0
+   10844: 01 00 00 00  	nop
+   10848: 80 a6 a0 40  	cmp	%i2, 0x40
+   1084c: 1a 80 00 3f  	bcc	0x10948
+   10850: 01 00 00 00  	nop
+   10854: b2 5d 60 0a  	smul %l5, 0xa, %i1
+   10858: aa 00 80 19  	add %g2, %i1, %l5
+   1085c: 10 bf ff dc  	ba 0x107cc
+   10860: a6 14 e0 20  	or %l3, 0x20, %l3
+   10864: 80 a0 a0 2b  	cmp	%g2, 0x2b
+   10868: 02 80 00 3b  	be	0x10954
+   1086c: 01 00 00 00  	nop
+   10870: 80 a0 a0 2d  	cmp	%g2, 0x2d
+   10874: 02 80 00 3d  	be	0x10968
+   10878: 01 00 00 00  	nop
+   1087c: 80 a0 a0 30  	cmp	%g2, 0x30
+   10880: 12 bf ff ee  	bne	0x10838
+   10884: 01 00 00 00  	nop
+   10888: 10 bf ff d1  	ba 0x107cc
+   1088c: a6 14 e0 01  	or %l3, 0x1, %l3
+   10890: b2 0e 60 ff  	and %i1, 0xff, %i1
+   10894: 80 a6 60 6b  	cmp	%i1, 0x6b
+   10898: 14 80 00 21  	bg	0x1091c
+   1089c: 01 00 00 00  	nop
+   108a0: 80 a6 60 4c  	cmp	%i1, 0x4c
+   108a4: 02 bf ff c9  	be	0x107c8
+   108a8: 01 00 00 00  	nop
+   108ac: 80 a6 60 68  	cmp	%i1, 0x68
+   108b0: 12 bf ff c3  	bne	0x107bc
+   108b4: 01 00 00 00  	nop
+   108b8: 10 80 00 14  	ba 0x10908
+   108bc: 01 00 00 00  	nop
+   108c0: 84 06 7f dc  	add %i1, -0x24, %g2
+   108c4: 86 08 a0 fe  	and %g2, 0xfe, %g3
+   108c8: 85 28 a0 07  	sll %g2, 0x7, %g2
+   108cc: 87 30 e0 01  	srl %g3, 0x1, %g3
+   108d0: 84 10 80 03  	or %g2, %g3, %g2
+   108d4: 84 08 a0 ff  	and %g2, 0xff, %g2
+   108d8: 80 a0 a0 13  	cmp	%g2, 0x13
+   108dc: 04 80 00 25  	ble	0x10970
+   108e0: 01 00 00 00  	nop
+   108e4: 80 a0 a0 22  	cmp	%g2, 0x22
+   108e8: 14 80 00 30  	bg	0x109a8
+   108ec: 01 00 00 00  	nop
+   108f0: 80 a0 a0 14  	cmp	%g2, 0x14
+   108f4: 02 bf ff b5  	be	0x107c8
+   108f8: 01 00 00 00  	nop
+   108fc: 80 a0 a0 22  	cmp	%g2, 0x22
+   10900: 12 80 00 4f  	bne	0x10a3c
+   10904: 01 00 00 00  	nop
+   10908: b3 2c e0 01  	sll %l3, 0x1, %i1
+   1090c: b2 0e 62 00  	and %i1, 0x200, %i1
+   10910: b2 14 c0 19  	or %l3, %i1, %i1
+   10914: 10 bf ff ae  	ba 0x107cc
+   10918: a6 16 61 00  	or %i1, 0x100, %l3
+   1091c: 80 a6 60 7a  	cmp	%i1, 0x7a
+   10920: 02 bf ff ab  	be	0x107cc
+   10924: 01 00 00 00  	nop
+   10928: 80 a6 60 74  	cmp	%i1, 0x74
+   1092c: 02 bf ff a8  	be	0x107cc
+   10930: 01 00 00 00  	nop
+   10934: 80 a6 60 6c  	cmp	%i1, 0x6c
+   10938: 02 80 00 22  	be	0x109c0
+   1093c: 01 00 00 00  	nop
+   10940: 10 80 00 66  	ba 0x10ad8
+   10944: 01 00 00 00  	nop
+   10948: b2 5c 20 0a  	smul %l0, 0xa, %i1
+   1094c: 10 bf ff a0  	ba 0x107cc
+   10950: a0 00 80 19  	add %g2, %i1, %l0
+   10954: a6 14 e0 02  	or %l3, 0x2, %l3
+   10958: 10 bf ff 9d  	ba 0x107cc
+   1095c: a6 14 e0 04  	or %l3, 0x4, %l3
+   10960: 10 bf ff 9b  	ba 0x107cc
+   10964: a6 14 e0 10  	or %l3, 0x10, %l3
+   10968: 10 bf ff 99  	ba 0x107cc
+   1096c: a6 14 e0 08  	or %l3, 0x8, %l3
+   10970: 80 a0 a0 00  	cmp	%g2, 0x0
+   10974: 02 80 00 18  	be	0x109d4
+   10978: 01 00 00 00  	nop
+   1097c: 80 a0 a0 03  	cmp	%g2, 0x3
+   10980: 02 80 00 38  	be	0x10a60
+   10984: 01 00 00 00  	nop
+   10988: 80 a0 a0 05  	cmp	%g2, 0x5
+   1098c: 12 80 00 2c  	bne	0x10a3c
+   10990: 01 00 00 00  	nop
+   10994: 80 a6 a0 3f  	cmp	%i2, 0x3f
+   10998: 18 80 04 3f  	bgu	0x11a94
+   1099c: 01 00 00 00  	nop
+   109a0: 10 bf ff 8b  	ba 0x107cc
+   109a4: a6 14 e0 40  	or %l3, 0x40, %l3
+   109a8: 80 a0 a0 23  	cmp	%g2, 0x23
+   109ac: 02 bf ff 87  	be	0x107c8
+   109b0: 01 00 00 00  	nop
+   109b4: 80 a0 a0 24  	cmp	%g2, 0x24
+   109b8: 12 80 00 21  	bne	0x10a3c
+   109bc: 01 00 00 00  	nop
+   109c0: b3 2c e0 02  	sll %l3, 0x2, %i1
+   109c4: b2 0e 62 00  	and %i1, 0x200, %i1
+   109c8: b2 14 c0 19  	or %l3, %i1, %i1
+   109cc: 10 bf ff 80  	ba 0x107cc
+   109d0: a6 16 60 80  	or %i1, 0x80, %l3
+   109d4: 80 a7 20 00  	cmp	%i4, 0x0
+   109d8: 02 80 00 33  	be	0x10aa4
+   109dc: 01 00 00 00  	nop
+   109e0: f2 07 bf fc  	ld [%fp+-0x4], %i1
+   109e4: 80 a6 a0 40  	cmp	%i2, 0x40
+   109e8: f2 27 bf f8  	st %i1, [%fp+-0x8]
+   109ec: 0a 80 00 03  	bcs	0x109f8
+   109f0: 94 10 00 15  	mov	%l5, %o2
+   109f4: 94 10 00 10  	mov	%l0, %o2
+   109f8: 92 07 bf f8  	add %fp, -0x8, %o1
+   109fc: 40 00 04 28  	call 0x11a9c
+   10a00: d0 07 bf c0  	ld [%fp+-0x40], %o0
+   10a04: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10a08: ba 06 60 04  	add %i1, 0x4, %i5
+   10a0c: fa 27 bf f8  	st %i5, [%fp+-0x8]
+   10a10: f2 06 40 00  	ld [%i1], %i1
+   10a14: 80 a6 a0 40  	cmp	%i2, 0x40
+   10a18: 0a 80 00 03  	bcs	0x10a24
+   10a1c: 01 00 00 00  	nop
+   10a20: a0 10 00 19  	mov	%i1, %l0
+   10a24: 80 a6 a0 40  	cmp	%i2, 0x40
+   10a28: 0a 80 00 03  	bcs	0x10a34
+   10a2c: 01 00 00 00  	nop
+   10a30: b2 10 00 15  	mov	%l5, %i1
+   10a34: 10 bf ff 66  	ba 0x107cc
+   10a38: aa 10 00 19  	mov	%i1, %l5
+   10a3c: b2 0e 60 ff  	and %i1, 0xff, %i1
+   10a40: 80 a6 60 7a  	cmp	%i1, 0x7a
+   10a44: 02 bf ff 62  	be	0x107cc
+   10a48: 01 00 00 00  	nop
+   10a4c: 80 a6 60 74  	cmp	%i1, 0x74
+   10a50: 02 bf ff 5f  	be	0x107cc
+   10a54: 01 00 00 00  	nop
+   10a58: 10 80 00 20  	ba 0x10ad8
+   10a5c: 01 00 00 00  	nop
+   10a60: 80 a7 20 00  	cmp	%i4, 0x0
+   10a64: 12 bf ff 5a  	bne	0x107cc
+   10a68: 01 00 00 00  	nop
+   10a6c: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10a70: b8 06 60 04  	add %i1, 0x4, %i4
+   10a74: f8 27 bf f8  	st %i4, [%fp+-0x8]
+   10a78: f2 06 40 00  	ld [%i1], %i1
+   10a7c: 80 a6 a0 3f  	cmp	%i2, 0x3f
+   10a80: 18 80 00 0e  	bgu	0x10ab8
+   10a84: 01 00 00 00  	nop
+   10a88: 80 a6 7f ff  	cmp	%i1, -0x1
+   10a8c: 04 80 00 0e  	ble	0x10ac4
+   10a90: 01 00 00 00  	nop
+   10a94: b8 10 00 00  	mov	%g0, %i4
+   10a98: a6 14 e0 20  	or %l3, 0x20, %l3
+   10a9c: 10 bf ff 4c  	ba 0x107cc
+   10aa0: aa 10 00 19  	mov	%i1, %l5
+   10aa4: a0 10 00 00  	mov	%g0, %l0
+   10aa8: a6 10 00 00  	mov	%g0, %l3
+   10aac: b8 10 00 15  	mov	%l5, %i4
+   10ab0: 10 bf ff 47  	ba 0x107cc
+   10ab4: aa 10 00 00  	mov	%g0, %l5
+   10ab8: b8 10 00 00  	mov	%g0, %i4
+   10abc: 10 bf ff 44  	ba 0x107cc
+   10ac0: a0 10 00 19  	mov	%i1, %l0
+   10ac4: b8 10 00 00  	mov	%g0, %i4
+   10ac8: aa 20 00 19  	sub %g0, %i1, %l5
+   10acc: 10 bf ff 40  	ba 0x107cc
+   10ad0: a6 14 e0 28  	or %l3, 0x28, %l3
+   10ad4: ba 10 00 00  	mov	%g0, %i5
+   10ad8: 80 a7 20 00  	cmp	%i4, 0x0
+   10adc: 02 80 00 08  	be	0x10afc
+   10ae0: 01 00 00 00  	nop
+   10ae4: f2 07 bf fc  	ld [%fp+-0x4], %i1
+   10ae8: f2 27 bf f8  	st %i1, [%fp+-0x8]
+   10aec: 92 07 bf f8  	add %fp, -0x8, %o1
+   10af0: d0 07 bf c0  	ld [%fp+-0x40], %o0
+   10af4: 40 00 03 ea  	call 0x11a9c
+   10af8: 94 10 00 1c  	mov	%i4, %o2
+   10afc: 80 a4 20 00  	cmp	%l0, 0x0
+   10b00: 14 80 00 03  	bg	0x10b0c
+   10b04: b8 10 00 10  	mov	%l0, %i4
+   10b08: b8 10 00 00  	mov	%g0, %i4
+   10b0c: 80 a4 20 00  	cmp	%l0, 0x0
+   10b10: 16 80 00 03  	bge	0x10b1c
+   10b14: 01 00 00 00  	nop
+   10b18: a6 0c ff bf  	and %l3, -0x41, %l3
+   10b1c: b2 17 60 20  	or %i5, 0x20, %i1
+   10b20: 80 a6 60 61  	cmp	%i1, 0x61
+   10b24: 02 80 00 16  	be	0x10b7c
+   10b28: 01 00 00 00  	nop
+   10b2c: b4 06 7f 9b  	add %i1, -0x65, %i2
+   10b30: 80 a6 a0 02  	cmp	%i2, 0x2
+   10b34: 08 80 00 12  	bleu	0x10b7c
+   10b38: 01 00 00 00  	nop
+   10b3c: 80 a7 60 6e  	cmp	%i5, 0x6e
+   10b40: 04 80 00 43  	ble	0x10c4c
+   10b44: 01 00 00 00  	nop
+   10b48: 80 a7 60 72  	cmp	%i5, 0x72
+   10b4c: 14 80 00 55  	bg	0x10ca0
+   10b50: 01 00 00 00  	nop
+   10b54: 80 a7 60 6f  	cmp	%i5, 0x6f
+   10b58: 02 80 00 79  	be	0x10d3c
+   10b5c: 01 00 00 00  	nop
+   10b60: 80 a7 60 70  	cmp	%i5, 0x70
+   10b64: 12 80 00 70  	bne	0x10d24
+   10b68: 01 00 00 00  	nop
+   10b6c: a6 14 e0 10  	or %l3, 0x10, %l3
+   10b70: ba 10 20 78  	mov	0x78, %i5
+   10b74: 10 80 00 74  	ba 0x10d44
+   10b78: 96 10 20 10  	mov	0x10, %o3
+   10b7c: f4 07 bf f8  	ld [%fp+-0x8], %i2
+   10b80: 84 06 a0 08  	add %i2, 0x8, %g2
+   10b84: c4 27 bf f8  	st %g2, [%fp+-0x8]
+   10b88: c4 06 a0 04  	ld [%i2+0x4], %g2
+   10b8c: 86 07 bf d8  	add %fp, -0x28, %g3
+   10b90: 86 10 e0 04  	or %g3, 0x4, %g3
+   10b94: c4 20 c0 00  	st %g2, [%g3]
+   10b98: f4 06 80 00  	ld [%i2], %i2
+   10b9c: f4 27 bf d8  	st %i2, [%fp+-0x28]
+   10ba0: c1 1f bf d8  	ldd [%fp+-0x28], %f0
+   10ba4: 80 a6 60 61  	cmp	%i1, 0x61
+   10ba8: 12 80 00 18  	bne	0x10c08
+   10bac: a4 26 40 1d  	sub %i1, %i5, %l2
+   10bb0: 80 8c e0 40  	andcc %l3, 0x40, %g0
+   10bb4: 12 80 00 03  	bne	0x10bc0
+   10bb8: 01 00 00 00  	nop
+   10bbc: b8 10 3f ff  	mov	-0x1, %i4
+   10bc0: c1 3f bf c8  	std %f0, [%fp+-0x38]
+   10bc4: d0 1f bf c8  	ldd [%fp+-0x38], %o0
+   10bc8: 98 0c a0 ff  	and %l2, 0xff, %o4
+   10bcc: 94 07 bf e0  	add %fp, -0x20, %o2
+   10bd0: 40 00 0c 1f  	call 0x13c4c
+   10bd4: 96 10 00 1c  	mov	%i4, %o3
+   10bd8: ba 02 20 01  	add %o0, 0x1, %i5
+   10bdc: b2 0f 60 ff  	and %i5, 0xff, %i1
+   10be0: 80 a7 00 19  	cmp	%i4, %i1
+   10be4: 14 80 00 03  	bg	0x10bf0
+   10be8: 01 00 00 00  	nop
+   10bec: b8 06 7f ff  	add %i1, -0x1, %i4
+   10bf0: 33 00 00 06  	sethi 0x6, %i1
+   10bf4: a6 14 c0 19  	or %l3, %i1, %l3
+   10bf8: b2 10 20 70  	mov	0x70, %i1
+   10bfc: f2 27 bf ac  	st %i1, [%fp+-0x54]
+   10c00: 10 80 00 da  	ba 0x10f68
+   10c04: 86 10 20 01  	mov	0x1, %g3
+   10c08: 80 8c e0 40  	andcc %l3, 0x40, %g0
+   10c0c: 12 80 00 03  	bne	0x10c18
+   10c10: 01 00 00 00  	nop
+   10c14: b8 10 20 06  	mov	0x6, %i4
+   10c18: 80 a6 60 66  	cmp	%i1, 0x66
+   10c1c: 02 80 00 2d  	be	0x10cd0
+   10c20: 01 00 00 00  	nop
+   10c24: 80 a6 60 65  	cmp	%i1, 0x65
+   10c28: 12 80 00 32  	bne	0x10cf0
+   10c2c: 01 00 00 00  	nop
+   10c30: 9a 10 00 00  	mov	%g0, %o5
+   10c34: 98 10 00 00  	mov	%g0, %o4
+   10c38: b4 07 20 01  	add %i4, 0x1, %i2
+   10c3c: 33 00 00 04  	sethi 0x4, %i1
+   10c40: a6 14 c0 19  	or %l3, %i1, %l3
+   10c44: 10 80 00 bd  	ba 0x10f38
+   10c48: b2 10 20 65  	mov	0x65, %i1
+   10c4c: 80 a7 60 63  	cmp	%i5, 0x63
+   10c50: 02 80 00 2d  	be	0x10d04
+   10c54: 01 00 00 00  	nop
+   10c58: 80 a7 60 64  	cmp	%i5, 0x64
+   10c5c: 02 80 00 05  	be	0x10c70
+   10c60: 01 00 00 00  	nop
+   10c64: 80 a7 60 69  	cmp	%i5, 0x69
+   10c68: 12 80 00 2f  	bne	0x10d24
+   10c6c: 01 00 00 00  	nop
+   10c70: 80 8c e0 80  	andcc %l3, 0x80, %g0
+   10c74: 12 80 00 98  	bne	0x10ed4
+   10c78: b4 2c c0 16  	andn %l3, %l6, %i2
+   10c7c: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10c80: 84 06 60 04  	add %i1, 0x4, %g2
+   10c84: c4 27 bf f8  	st %g2, [%fp+-0x8]
+   10c88: f2 06 40 00  	ld [%i1], %i1
+   10c8c: 80 8e a1 00  	andcc %i2, 0x100, %g0
+   10c90: 12 80 01 5b  	bne	0x111fc
+   10c94: 01 00 00 00  	nop
+   10c98: 10 80 02 53  	ba 0x115e4
+   10c9c: b5 3e 60 1f  	sra %i1, 0x1f, %i2
+   10ca0: 80 a7 60 73  	cmp	%i5, 0x73
+   10ca4: 02 80 00 5b  	be	0x10e10
+   10ca8: 01 00 00 00  	nop
+   10cac: 80 a7 60 75  	cmp	%i5, 0x75
+   10cb0: 12 80 00 1d  	bne	0x10d24
+   10cb4: 01 00 00 00  	nop
+   10cb8: 33 00 00 3f  	sethi 0x3f, %i1
+   10cbc: b2 16 63 ef  	or %i1, 0x3ef, %i1
+   10cc0: a6 0c c0 19  	and %l3, %i1, %l3
+   10cc4: ba 10 20 75  	mov	0x75, %i5
+   10cc8: 10 80 00 1f  	ba 0x10d44
+   10ccc: 96 10 20 0a  	mov	0xa, %o3
+   10cd0: 33 00 00 08  	sethi 0x8, %i1
+   10cd4: a6 14 c0 19  	or %l3, %i1, %l3
+   10cd8: b2 10 20 66  	mov	0x66, %i1
+   10cdc: f2 27 bf ac  	st %i1, [%fp+-0x54]
+   10ce0: 98 10 20 01  	mov	0x1, %o4
+   10ce4: b4 10 20 11  	mov	0x11, %i2
+   10ce8: 10 80 00 95  	ba 0x10f3c
+   10cec: 9a 10 00 1c  	mov	%i4, %o5
+   10cf0: 80 8f 20 ff  	andcc %i4, 0xff, %g0
+   10cf4: 02 80 00 8d  	be	0x10f28
+   10cf8: 01 00 00 00  	nop
+   10cfc: 10 80 00 8c  	ba 0x10f2c
+   10d00: b4 10 00 1c  	mov	%i4, %i2
+   10d04: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10d08: b4 06 60 04  	add %i1, 0x4, %i2
+   10d0c: f4 27 bf f8  	st %i2, [%fp+-0x8]
+   10d10: f2 06 40 00  	ld [%i1], %i1
+   10d14: f2 2f bf e0  	stb %i1, [%fp+-0x20]
+   10d18: b8 10 20 01  	mov	0x1, %i4
+   10d1c: 10 80 00 4e  	ba 0x10e54
+   10d20: fa 07 bf b8  	ld [%fp+-0x48], %i5
+   10d24: 80 a6 60 78  	cmp	%i1, 0x78
+   10d28: 12 80 01 2c  	bne	0x111d8
+   10d2c: 01 00 00 00  	nop
+   10d30: b2 10 20 88  	mov	0x88, %i1
+   10d34: 10 80 00 04  	ba 0x10d44
+   10d38: 96 26 40 1d  	sub %i1, %i5, %o3
+   10d3c: ba 10 00 00  	mov	%g0, %i5
+   10d40: 96 10 20 08  	mov	0x8, %o3
+   10d44: 35 00 00 3f  	sethi 0x3f, %i2
+   10d48: b2 16 a3 f9  	or %i2, 0x3f9, %i1
+   10d4c: 80 8c e0 80  	andcc %l3, 0x80, %g0
+   10d50: 12 80 00 13  	bne	0x10d9c
+   10d54: a4 0c c0 19  	and %l3, %i1, %l2
+   10d58: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10d5c: 84 06 60 04  	add %i1, 0x4, %g2
+   10d60: c4 27 bf f8  	st %g2, [%fp+-0x8]
+   10d64: d2 06 40 00  	ld [%i1], %o1
+   10d68: 80 8c a1 00  	andcc %l2, 0x100, %g0
+   10d6c: 02 80 00 13  	be	0x10db8
+   10d70: 01 00 00 00  	nop
+   10d74: 80 8c a2 00  	andcc %l2, 0x200, %g0
+   10d78: 12 80 01 2f  	bne	0x11234
+   10d7c: 01 00 00 00  	nop
+   10d80: 90 10 00 00  	mov	%g0, %o0
+   10d84: 92 2a 40 16  	andn %o1, %l6, %o1
+   10d88: b2 92 40 08  	orcc %o1, %o0, %i1
+   10d8c: 02 80 00 0f  	be	0x10dc8
+   10d90: 01 00 00 00  	nop
+   10d94: 10 80 00 0e  	ba 0x10dcc
+   10d98: 01 00 00 00  	nop
+   10d9c: 80 8c a2 00  	andcc %l2, 0x200, %g0
+   10da0: 12 80 00 56  	bne	0x10ef8
+   10da4: 01 00 00 00  	nop
+   10da8: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10dac: 84 06 60 04  	add %i1, 0x4, %g2
+   10db0: c4 27 bf f8  	st %g2, [%fp+-0x8]
+   10db4: d2 06 40 00  	ld [%i1], %o1
+   10db8: 90 10 00 00  	mov	%g0, %o0
+   10dbc: b2 92 40 08  	orcc %o1, %o0, %i1
+   10dc0: 12 80 00 03  	bne	0x10dcc
+   10dc4: 01 00 00 00  	nop
+   10dc8: a4 0c ff e9  	and %l3, -0x17, %l2
+   10dcc: 80 a6 60 00  	cmp	%i1, 0x0
+   10dd0: 12 80 02 30  	bne	0x11690
+   10dd4: 01 00 00 00  	nop
+   10dd8: 80 8c e0 40  	andcc %l3, 0x40, %g0
+   10ddc: 02 80 02 2d  	be	0x11690
+   10de0: 01 00 00 00  	nop
+   10de4: 80 a4 20 01  	cmp	%l0, 0x1
+   10de8: 16 80 02 2a  	bge	0x11690
+   10dec: 01 00 00 00  	nop
+   10df0: b2 10 00 00  	mov	%g0, %i1
+   10df4: b4 16 a3 e9  	or %i2, 0x3e9, %i2
+   10df8: a4 0c c0 1a  	and %l3, %i2, %l2
+   10dfc: 80 8c a0 40  	andcc %l2, 0x40, %g0
+   10e00: 02 80 02 38  	be	0x116e0
+   10e04: 01 00 00 00  	nop
+   10e08: 10 80 02 29  	ba 0x116ac
+   10e0c: 01 00 00 00  	nop
+   10e10: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10e14: b4 06 60 04  	add %i1, 0x4, %i2
+   10e18: f4 27 bf f8  	st %i2, [%fp+-0x8]
+   10e1c: fa 06 40 00  	ld [%i1], %i5
+   10e20: 80 a7 60 00  	cmp	%i5, 0x0
+   10e24: 12 80 00 04  	bne	0x10e34
+   10e28: 01 00 00 00  	nop
+   10e2c: 33 00 00 52  	sethi 0x52, %i1
+   10e30: ba 06 62 c5  	add %i1, 0x2c5, %i5
+   10e34: 80 8c e0 40  	andcc %l3, 0x40, %g0
+   10e38: 12 80 00 03  	bne	0x10e44
+   10e3c: 01 00 00 00  	nop
+   10e40: b8 10 3f ff  	mov	-0x1, %i4
+   10e44: 90 10 00 1d  	mov	%i5, %o0
+   10e48: 40 00 08 d2  	call 0x13190
+   10e4c: 92 10 00 1c  	mov	%i4, %o1
+   10e50: b8 10 00 08  	mov	%o0, %i4
+   10e54: 80 8c e0 08  	andcc %l3, 0x8, %g0
+   10e58: 12 80 00 10  	bne	0x10e98
+   10e5c: 01 00 00 00  	nop
+   10e60: 80 a5 40 1c  	cmp	%l5, %i4
+   10e64: 08 80 00 0d  	bleu	0x10e98
+   10e68: 01 00 00 00  	nop
+   10e6c: 90 10 20 20  	mov	0x20, %o0
+   10e70: 9f c4 40 00  	call %l1
+   10e74: 92 10 00 1b  	mov	%i3, %o1
+   10e78: 80 a2 20 00  	cmp	%o0, 0x0
+   10e7c: 06 80 03 02  	bl	0x11a84
+   10e80: 01 00 00 00  	nop
+   10e84: aa 05 7f ff  	add %l5, -0x1, %l5
+   10e88: 80 a5 40 1c  	cmp	%l5, %i4
+   10e8c: 18 bf ff f8  	bgu	0x10e6c
+   10e90: b0 06 20 01  	add %i0, 0x1, %i0
+   10e94: aa 10 00 1c  	mov	%i4, %l5
+   10e98: a6 25 40 1c  	sub %l5, %i4, %l3
+   10e9c: 80 a7 20 00  	cmp	%i4, 0x0
+   10ea0: 02 80 02 e3  	be	0x11a2c
+   10ea4: b0 06 00 1c  	add %i0, %i4, %i0
+   10ea8: d0 4f 40 00  	ldsb [%i5], %o0
+   10eac: 9f c4 40 00  	call %l1
+   10eb0: 92 10 00 1b  	mov	%i3, %o1
+   10eb4: 80 a2 20 00  	cmp	%o0, 0x0
+   10eb8: 06 80 02 f3  	bl	0x11a84
+   10ebc: 01 00 00 00  	nop
+   10ec0: b8 87 3f ff  	addcc %i4, -0x1, %i4
+   10ec4: 12 bf ff f9  	bne	0x10ea8
+   10ec8: ba 07 60 01  	add %i5, 0x1, %i5
+   10ecc: 10 80 02 d8  	ba 0x11a2c
+   10ed0: 01 00 00 00  	nop
+   10ed4: 80 8e a2 00  	andcc %i2, 0x200, %g0
+   10ed8: 12 80 00 cf  	bne	0x11214
+   10edc: 01 00 00 00  	nop
+   10ee0: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10ee4: b4 06 60 04  	add %i1, 0x4, %i2
+   10ee8: f4 27 bf f8  	st %i2, [%fp+-0x8]
+   10eec: f2 06 40 00  	ld [%i1], %i1
+   10ef0: 10 80 01 bd  	ba 0x115e4
+   10ef4: b5 3e 60 1f  	sra %i1, 0x1f, %i2
+   10ef8: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   10efc: 84 06 60 04  	add %i1, 0x4, %g2
+   10f00: c4 27 bf f8  	st %g2, [%fp+-0x8]
+   10f04: d0 06 40 00  	ld [%i1], %o0
+   10f08: 84 06 60 08  	add %i1, 0x8, %g2
+   10f0c: c4 27 bf f8  	st %g2, [%fp+-0x8]
+   10f10: d2 06 60 04  	ld [%i1+0x4], %o1
+   10f14: b2 92 40 08  	orcc %o1, %o0, %i1
+   10f18: 12 bf ff ad  	bne	0x10dcc
+   10f1c: 01 00 00 00  	nop
+   10f20: 10 bf ff aa  	ba 0x10dc8
+   10f24: 01 00 00 00  	nop
+   10f28: b4 10 20 01  	mov	0x1, %i2
+   10f2c: 9a 10 00 00  	mov	%g0, %o5
+   10f30: 98 10 00 00  	mov	%g0, %o4
+   10f34: b2 06 7f fe  	add %i1, -0x2, %i1
+   10f38: f2 27 bf ac  	st %i1, [%fp+-0x54]
+   10f3c: 96 0e a0 ff  	and %i2, 0xff, %o3
+   10f40: 80 a2 e0 11  	cmp	%o3, 0x11
+   10f44: 0a 80 00 03  	bcs	0x10f50
+   10f48: 01 00 00 00  	nop
+   10f4c: 96 10 20 11  	mov	0x11, %o3
+   10f50: c1 3f bf d0  	std %f0, [%fp+-0x30]
+   10f54: d0 1f bf d0  	ldd [%fp+-0x30], %o0
+   10f58: 40 00 03 d7  	call 0x11eb4
+   10f5c: 94 07 bf e0  	add %fp, -0x20, %o2
+   10f60: ba 10 00 08  	mov	%o0, %i5
+   10f64: 86 10 20 02  	mov	0x2, %g3
+   10f68: e8 07 bf e0  	ld [%fp+-0x20], %l4
+   10f6c: b2 05 3f f6  	add %l4, -0xa, %i1
+   10f70: 80 a6 7f ed  	cmp	%i1, -0x13
+   10f74: 1a 80 00 03  	bcc	0x10f80
+   10f78: 01 00 00 00  	nop
+   10f7c: 86 10 20 02  	mov	0x2, %g3
+   10f80: 84 05 3f 9c  	add %l4, -0x64, %g2
+   10f84: 80 a0 bf 39  	cmp	%g2, -0xc7
+   10f88: 1a 80 00 03  	bcc	0x10f94
+   10f8c: 01 00 00 00  	nop
+   10f90: 86 10 20 03  	mov	0x3, %g3
+   10f94: f2 0f bf e4  	ldub [%fp+-0x1c], %i1
+   10f98: 80 8e 60 01  	andcc %i1, 0x1, %g0
+   10f9c: 12 80 00 0b  	bne	0x10fc8
+   10fa0: 01 00 00 00  	nop
+   10fa4: 80 8c e0 02  	andcc %l3, 0x2, %g0
+   10fa8: 12 80 00 31  	bne	0x1106c
+   10fac: 01 00 00 00  	nop
+   10fb0: b4 2c c0 16  	andn %l3, %l6, %i2
+   10fb4: 80 8e a0 04  	andcc %i2, 0x4, %g0
+   10fb8: 02 80 00 57  	be	0x11114
+   10fbc: 01 00 00 00  	nop
+   10fc0: 10 80 00 56  	ba 0x11118
+   10fc4: a0 10 00 00  	mov	%g0, %l0
+   10fc8: a0 10 00 00  	mov	%g0, %l0
+   10fcc: b4 10 20 2d  	mov	0x2d, %i2
+   10fd0: 80 8e 60 0c  	andcc %i1, 0xc, %g0
+   10fd4: 02 80 00 56  	be	0x1112c
+   10fd8: 01 00 00 00  	nop
+   10fdc: 80 a4 20 00  	cmp	%l0, 0x0
+   10fe0: 12 80 00 04  	bne	0x10ff0
+   10fe4: 01 00 00 00  	nop
+   10fe8: 10 80 00 03  	ba 0x10ff4
+   10fec: b2 10 20 04  	mov	0x4, %i1
+   10ff0: b2 10 20 03  	mov	0x3, %i1
+   10ff4: b8 10 00 1a  	mov	%i2, %i4
+   10ff8: 80 a5 40 19  	cmp	%l5, %i1
+   10ffc: 04 80 00 16  	ble	0x11054
+   11000: 01 00 00 00  	nop
+   11004: 80 8c e0 08  	andcc %l3, 0x8, %g0
+   11008: 12 80 00 20  	bne	0x11088
+   1100c: 01 00 00 00  	nop
+   11010: 10 80 00 06  	ba 0x11028
+   11014: b2 26 40 15  	sub %i1, %l5, %i1
+   11018: b4 10 00 13  	mov	%l3, %i2
+   1101c: 80 a6 a0 01  	cmp	%i2, 0x1
+   11020: 02 80 00 0e  	be	0x11058
+   11024: b0 06 20 01  	add %i0, 0x1, %i0
+   11028: 90 10 20 20  	mov	0x20, %o0
+   1102c: 9f c4 40 00  	call %l1
+   11030: 92 10 00 1b  	mov	%i3, %o1
+   11034: 80 a2 20 00  	cmp	%o0, 0x0
+   11038: 06 80 02 93  	bl	0x11a84
+   1103c: 01 00 00 00  	nop
+   11040: b2 86 60 01  	addcc %i1, 0x1, %i1
+   11044: 12 bf ff f5  	bne	0x11018
+   11048: a6 10 00 00  	mov	%g0, %l3
+   1104c: 10 bf ff f4  	ba 0x1101c
+   11050: b4 10 20 01  	mov	0x1, %i2
+   11054: a6 10 00 00  	mov	%g0, %l3
+   11058: 80 a4 20 00  	cmp	%l0, 0x0
+   1105c: 02 80 00 0e  	be	0x11094
+   11060: 01 00 00 00  	nop
+   11064: 10 80 00 13  	ba 0x110b0
+   11068: 01 00 00 00  	nop
+   1106c: a0 10 00 00  	mov	%g0, %l0
+   11070: b4 10 20 2b  	mov	0x2b, %i2
+   11074: 80 8e 60 0c  	andcc %i1, 0xc, %g0
+   11078: 12 bf ff d9  	bne	0x10fdc
+   1107c: 01 00 00 00  	nop
+   11080: 10 80 00 2b  	ba 0x1112c
+   11084: 01 00 00 00  	nop
+   11088: 80 a4 20 00  	cmp	%l0, 0x0
+   1108c: 12 80 00 09  	bne	0x110b0
+   11090: a6 25 40 19  	sub %l5, %i1, %l3
+   11094: 90 10 00 1c  	mov	%i4, %o0
+   11098: 9f c4 40 00  	call %l1
+   1109c: 92 10 00 1b  	mov	%i3, %o1
+   110a0: 80 a2 20 00  	cmp	%o0, 0x0
+   110a4: 06 80 02 78  	bl	0x11a84
+   110a8: 01 00 00 00  	nop
+   110ac: b0 06 20 01  	add %i0, 0x1, %i0
+   110b0: f2 0f bf e4  	ldub [%fp+-0x1c], %i1
+   110b4: 80 8e 60 08  	andcc %i1, 0x8, %g0
+   110b8: 02 80 00 05  	be	0x110cc
+   110bc: 01 00 00 00  	nop
+   110c0: 33 00 00 52  	sethi 0x52, %i1
+   110c4: 10 80 00 04  	ba 0x110d4
+   110c8: b2 06 62 c1  	add %i1, 0x2c1, %i1
+   110cc: 33 00 00 52  	sethi 0x52, %i1
+   110d0: b2 06 62 bd  	add %i1, 0x2bd, %i1
+   110d4: f4 0e 40 00  	ldub [%i1], %i2
+   110d8: 80 a6 a0 00  	cmp	%i2, 0x0
+   110dc: 02 80 02 54  	be	0x11a2c
+   110e0: 01 00 00 00  	nop
+   110e4: b2 06 60 01  	add %i1, 0x1, %i1
+   110e8: b0 06 20 01  	add %i0, 0x1, %i0
+   110ec: b4 26 80 12  	sub %i2, %l2, %i2
+   110f0: b5 2e a0 18  	sll %i2, 0x18, %i2
+   110f4: 91 3e a0 18  	sra %i2, 0x18, %o0
+   110f8: 9f c4 40 00  	call %l1
+   110fc: 92 10 00 1b  	mov	%i3, %o1
+   11100: 80 a2 20 00  	cmp	%o0, 0x0
+   11104: 16 bf ff f4  	bge	0x110d4
+   11108: 01 00 00 00  	nop
+   1110c: 10 80 02 5e  	ba 0x11a84
+   11110: 01 00 00 00  	nop
+   11114: a0 10 20 01  	mov	0x1, %l0
+   11118: b5 2e a0 03  	sll %i2, 0x3, %i2
+   1111c: b4 0e a0 20  	and %i2, 0x20, %i2
+   11120: 80 8e 60 0c  	andcc %i1, 0xc, %g0
+   11124: 12 bf ff ae  	bne	0x10fdc
+   11128: 01 00 00 00  	nop
+   1112c: 33 00 00 0c  	sethi 0xc, %i1
+   11130: 80 8c c0 19  	andcc %l3, %i1, %g0
+   11134: 12 80 00 48  	bne	0x11254
+   11138: f4 27 bf a4  	st %i2, [%fp+-0x5c]
+   1113c: 80 a7 20 01  	cmp	%i4, 0x1
+   11140: 18 80 00 03  	bgu	0x1114c
+   11144: 01 00 00 00  	nop
+   11148: b8 10 20 01  	mov	0x1, %i4
+   1114c: 80 8f 60 ff  	andcc %i5, 0xff, %g0
+   11150: 02 80 00 0c  	be	0x11180
+   11154: 01 00 00 00  	nop
+   11158: b2 0f 60 ff  	and %i5, 0xff, %i1
+   1115c: f4 07 bf bc  	ld [%fp+-0x44], %i2
+   11160: f4 0e 80 19  	ldub [%i2+%i1], %i2
+   11164: 80 a6 a0 30  	cmp	%i2, 0x30
+   11168: 12 80 00 08  	bne	0x11188
+   1116c: 01 00 00 00  	nop
+   11170: ba 07 7f ff  	add %i5, -0x1, %i5
+   11174: 80 8f 60 ff  	andcc %i5, 0xff, %g0
+   11178: 12 bf ff f8  	bne	0x11158
+   1117c: 01 00 00 00  	nop
+   11180: ba 10 00 00  	mov	%g0, %i5
+   11184: b2 10 00 00  	mov	%g0, %i1
+   11188: b4 2c c0 16  	andn %l3, %l6, %i2
+   1118c: 80 8e a0 10  	andcc %i2, 0x10, %g0
+   11190: 02 80 00 03  	be	0x1119c
+   11194: 01 00 00 00  	nop
+   11198: b2 10 00 1c  	mov	%i4, %i1
+   1119c: 80 a5 3f fc  	cmp	%l4, -0x4
+   111a0: 06 80 00 0c  	bl	0x111d0
+   111a4: 01 00 00 00  	nop
+   111a8: 80 a5 00 1c  	cmp	%l4, %i4
+   111ac: 16 80 00 09  	bge	0x111d0
+   111b0: 01 00 00 00  	nop
+   111b4: 35 00 00 08  	sethi 0x8, %i2
+   111b8: 80 a5 00 19  	cmp	%l4, %i1
+   111bc: 16 80 00 25  	bge	0x11250
+   111c0: a6 14 c0 1a  	or %l3, %i2, %l3
+   111c4: b4 1d 3f ff  	xor %l4, -0x1, %i2
+   111c8: 10 80 00 23  	ba 0x11254
+   111cc: b8 06 40 1a  	add %i1, %i2, %i4
+   111d0: 10 80 00 21  	ba 0x11254
+   111d4: b8 06 7f ff  	add %i1, -0x1, %i4
+   111d8: 90 10 20 25  	mov	0x25, %o0
+   111dc: 9f c4 40 00  	call %l1
+   111e0: 92 10 00 1b  	mov	%i3, %o1
+   111e4: 80 a2 20 00  	cmp	%o0, 0x0
+   111e8: 06 80 02 27  	bl	0x11a84
+   111ec: 01 00 00 00  	nop
+   111f0: b0 06 20 02  	add %i0, 0x2, %i0
+   111f4: 10 bf fd 66  	ba 0x1078c
+   111f8: 90 10 00 1d  	mov	%i5, %o0
+   111fc: 80 8e a2 00  	andcc %i2, 0x200, %g0
+   11200: 12 80 00 f6  	bne	0x115d8
+   11204: 01 00 00 00  	nop
+   11208: b5 2e 60 10  	sll %i1, 0x10, %i2
+   1120c: 10 80 00 f5  	ba 0x115e0
+   11210: b3 3e a0 10  	sra %i2, 0x10, %i1
+   11214: f2 07 bf f8  	ld [%fp+-0x8], %i1
+   11218: b4 06 60 04  	add %i1, 0x4, %i2
+   1121c: f4 27 bf f8  	st %i2, [%fp+-0x8]
+   11220: f4 06 40 00  	ld [%i1], %i2
+   11224: 84 06 60 08  	add %i1, 0x8, %g2
+   11228: c4 27 bf f8  	st %g2, [%fp+-0x8]
+   1122c: 10 80 00 ee  	ba 0x115e4
+   11230: f2 06 60 04  	ld [%i1+0x4], %i1
+   11234: 90 10 00 00  	mov	%g0, %o0
+   11238: 92 0a 60 ff  	and %o1, 0xff, %o1
+   1123c: b2 92 40 08  	orcc %o1, %o0, %i1
+   11240: 02 bf fe e2  	be	0x10dc8
+   11244: 01 00 00 00  	nop
+   11248: 10 bf fe e1  	ba 0x10dcc
+   1124c: 01 00 00 00  	nop
+   11250: b8 10 00 00  	mov	%g0, %i4
+   11254: 88 05 3c 18  	add %l4, -0x3e8, %g4
+   11258: b2 2c c0 16  	andn %l3, %l6, %i1
+   1125c: 35 00 00 08  	sethi 0x8, %i2
+   11260: a6 8c c0 1a  	andcc %l3, %i2, %l3
+   11264: b4 0e 68 00  	and %i1, 0x800, %i2
+   11268: c6 27 bf 98  	st %g3, [%fp+-0x68]
+   1126c: 12 80 00 07  	bne	0x11288
+   11270: c4 27 bf 9c  	st %g2, [%fp+-0x64]
+   11274: 80 a6 a0 00  	cmp	%i2, 0x0
+   11278: 02 80 00 0a  	be	0x112a0
+   1127c: 01 00 00 00  	nop
+   11280: 10 80 00 09  	ba 0x112a4
+   11284: 84 10 20 05  	mov	0x5, %g2
+   11288: 80 a5 20 00  	cmp	%l4, 0x0
+   1128c: 14 80 00 03  	bg	0x11298
+   11290: 84 10 00 14  	mov	%l4, %g2
+   11294: 84 10 00 00  	mov	%g0, %g2
+   11298: 10 80 00 08  	ba 0x112b8
+   1129c: 84 00 a0 01  	add %g2, 0x1, %g2
+   112a0: 84 10 20 03  	mov	0x3, %g2
+   112a4: 80 a1 38 31  	cmp	%g4, -0x7cf
+   112a8: 1a 80 00 03  	bcc	0x112b4
+   112ac: 01 00 00 00  	nop
+   112b0: 86 10 20 04  	mov	0x4, %g3
+   112b4: 84 00 80 03  	add %g2, %g3, %g2
+   112b8: 80 a7 20 00  	cmp	%i4, 0x0
+   112bc: c8 27 bf a0  	st %g4, [%fp+-0x60]
+   112c0: 02 80 00 04  	be	0x112d0
+   112c4: e6 27 bf a8  	st %l3, [%fp+-0x58]
+   112c8: 10 80 00 04  	ba 0x112d8
+   112cc: 86 07 20 01  	add %i4, 0x1, %g3
+   112d0: 87 36 60 04  	srl %i1, 0x4, %g3
+   112d4: 86 08 e0 01  	and %g3, 0x1, %g3
+   112d8: 88 1c 20 01  	xor %l0, 0x1, %g4
+   112dc: a6 00 c0 04  	add %g3, %g4, %l3
+   112e0: a6 04 c0 02  	add %l3, %g2, %l3
+   112e4: 80 a5 40 13  	cmp	%l5, %l3
+   112e8: 14 80 00 08  	bg	0x11308
+   112ec: 01 00 00 00  	nop
+   112f0: a6 10 00 00  	mov	%g0, %l3
+   112f4: 80 8e 60 09  	andcc %i1, 0x9, %g0
+   112f8: 02 80 00 08  	be	0x11318
+   112fc: 01 00 00 00  	nop
+   11300: 10 80 00 1c  	ba 0x11370
+   11304: 01 00 00 00  	nop
+   11308: a6 25 40 13  	sub %l5, %l3, %l3
+   1130c: 80 8e 60 09  	andcc %i1, 0x9, %g0
+   11310: 12 80 00 18  	bne	0x11370
+   11314: 01 00 00 00  	nop
+   11318: 80 a4 e0 00  	cmp	%l3, 0x0
+   1131c: 02 80 00 15  	be	0x11370
+   11320: 01 00 00 00  	nop
+   11324: 84 00 c0 02  	add %g3, %g2, %g2
+   11328: 84 00 80 04  	add %g2, %g4, %g2
+   1132c: 10 80 00 06  	ba 0x11344
+   11330: aa 20 80 15  	sub %g2, %l5, %l5
+   11334: 84 10 00 13  	mov	%l3, %g2
+   11338: 80 a0 a0 01  	cmp	%g2, 0x1
+   1133c: 02 80 00 0d  	be	0x11370
+   11340: b0 06 20 01  	add %i0, 0x1, %i0
+   11344: 90 10 20 20  	mov	0x20, %o0
+   11348: 9f c4 40 00  	call %l1
+   1134c: 92 10 00 1b  	mov	%i3, %o1
+   11350: 80 a2 20 00  	cmp	%o0, 0x0
+   11354: 06 80 01 cc  	bl	0x11a84
+   11358: 01 00 00 00  	nop
+   1135c: aa 85 60 01  	addcc %l5, 0x1, %l5
+   11360: 12 bf ff f5  	bne	0x11334
+   11364: a6 10 00 00  	mov	%g0, %l3
+   11368: 10 bf ff f4  	ba 0x11338
+   1136c: 84 10 20 01  	mov	0x1, %g2
+   11370: 80 a4 20 00  	cmp	%l0, 0x0
+   11374: 12 80 00 09  	bne	0x11398
+   11378: 01 00 00 00  	nop
+   1137c: d0 07 bf a4  	ld [%fp+-0x5c], %o0
+   11380: 9f c4 40 00  	call %l1
+   11384: 92 10 00 1b  	mov	%i3, %o1
+   11388: 80 a2 20 00  	cmp	%o0, 0x0
+   1138c: 06 80 01 be  	bl	0x11a84
+   11390: 01 00 00 00  	nop
+   11394: b0 06 20 01  	add %i0, 0x1, %i0
+   11398: 80 a6 a0 00  	cmp	%i2, 0x0
+   1139c: 02 80 00 12  	be	0x113e4
+   113a0: 01 00 00 00  	nop
+   113a4: 90 10 20 30  	mov	0x30, %o0
+   113a8: 9f c4 40 00  	call %l1
+   113ac: 92 10 00 1b  	mov	%i3, %o1
+   113b0: 80 a2 20 00  	cmp	%o0, 0x0
+   113b4: 06 80 01 b4  	bl	0x11a84
+   113b8: 01 00 00 00  	nop
+   113bc: b4 10 20 78  	mov	0x78, %i2
+   113c0: b4 26 80 12  	sub %i2, %l2, %i2
+   113c4: b5 2e a0 18  	sll %i2, 0x18, %i2
+   113c8: 91 3e a0 18  	sra %i2, 0x18, %o0
+   113cc: 9f c4 40 00  	call %l1
+   113d0: 92 10 00 1b  	mov	%i3, %o1
+   113d4: 80 a2 20 00  	cmp	%o0, 0x0
+   113d8: 06 80 01 ab  	bl	0x11a84
+   113dc: 01 00 00 00  	nop
+   113e0: b0 06 20 02  	add %i0, 0x2, %i0
+   113e4: 80 8e 60 08  	andcc %i1, 0x8, %g0
+   113e8: 12 80 00 10  	bne	0x11428
+   113ec: 01 00 00 00  	nop
+   113f0: 80 a4 e0 00  	cmp	%l3, 0x0
+   113f4: 02 80 00 0d  	be	0x11428
+   113f8: 01 00 00 00  	nop
+   113fc: b0 04 c0 18  	add %l3, %i0, %i0
+   11400: 90 10 20 30  	mov	0x30, %o0
+   11404: 9f c4 40 00  	call %l1
+   11408: 92 10 00 1b  	mov	%i3, %o1
+   1140c: 80 a2 20 00  	cmp	%o0, 0x0
+   11410: 06 80 01 9d  	bl	0x11a84
+   11414: 01 00 00 00  	nop
+   11418: a6 84 ff ff  	addcc %l3, -0x1, %l3
+   1141c: 12 bf ff f9  	bne	0x11400
+   11420: 01 00 00 00  	nop
+   11424: a6 10 00 00  	mov	%g0, %l3
+   11428: f4 07 bf a8  	ld [%fp+-0x58], %i2
+   1142c: 80 a6 a0 00  	cmp	%i2, 0x0
+   11430: 12 80 00 29  	bne	0x114d4
+   11434: 01 00 00 00  	nop
+   11438: d0 4f bf e5  	ldsb [%fp+-0x1b], %o0
+   1143c: 9f c4 40 00  	call %l1
+   11440: 92 10 00 1b  	mov	%i3, %o1
+   11444: 80 a2 20 00  	cmp	%o0, 0x0
+   11448: 06 80 01 8f  	bl	0x11a84
+   1144c: 01 00 00 00  	nop
+   11450: 80 a7 20 01  	cmp	%i4, 0x1
+   11454: 06 80 00 5c  	bl	0x115c4
+   11458: 01 00 00 00  	nop
+   1145c: 90 10 20 2e  	mov	0x2e, %o0
+   11460: 9f c4 40 00  	call %l1
+   11464: 92 10 00 1b  	mov	%i3, %o1
+   11468: 80 a2 20 00  	cmp	%o0, 0x0
+   1146c: 06 80 01 86  	bl	0x11a84
+   11470: 01 00 00 00  	nop
+   11474: 84 10 00 00  	mov	%g0, %g2
+   11478: b4 0f 60 ff  	and %i5, 0xff, %i2
+   1147c: b0 07 00 18  	add %i4, %i0, %i0
+   11480: b2 06 20 02  	add %i0, 0x2, %i1
+   11484: b0 00 a0 01  	add %g2, 0x1, %i0
+   11488: 80 a6 00 1a  	cmp	%i0, %i2
+   1148c: 1a 80 00 05  	bcc	0x114a0
+   11490: 01 00 00 00  	nop
+   11494: fa 07 bf b0  	ld [%fp+-0x50], %i5
+   11498: 10 80 00 03  	ba 0x114a4
+   1149c: fa 0f 40 02  	ldub [%i5+%g2], %i5
+   114a0: ba 10 20 30  	mov	0x30, %i5
+   114a4: bb 2f 60 18  	sll %i5, 0x18, %i5
+   114a8: 91 3f 60 18  	sra %i5, 0x18, %o0
+   114ac: 9f c4 40 00  	call %l1
+   114b0: 92 10 00 1b  	mov	%i3, %o1
+   114b4: 80 a2 20 00  	cmp	%o0, 0x0
+   114b8: 06 80 01 73  	bl	0x11a84
+   114bc: 01 00 00 00  	nop
+   114c0: 80 a7 00 18  	cmp	%i4, %i0
+   114c4: 12 bf ff f0  	bne	0x11484
+   114c8: 84 10 00 18  	mov	%i0, %g2
+   114cc: 10 80 00 ff  	ba 0x118c8
+   114d0: 01 00 00 00  	nop
+   114d4: 80 a5 20 00  	cmp	%l4, 0x0
+   114d8: 14 80 00 03  	bg	0x114e4
+   114dc: b4 10 00 14  	mov	%l4, %i2
+   114e0: b4 10 00 00  	mov	%g0, %i2
+   114e4: ba 0f 60 ff  	and %i5, 0xff, %i5
+   114e8: b8 20 00 1c  	sub %g0, %i4, %i4
+   114ec: a0 25 00 1a  	sub %l4, %i2, %l0
+   114f0: 80 a6 bf ff  	cmp	%i2, -0x1
+   114f4: 12 80 00 09  	bne	0x11518
+   114f8: 01 00 00 00  	nop
+   114fc: 90 10 20 2e  	mov	0x2e, %o0
+   11500: 9f c4 40 00  	call %l1
+   11504: 92 10 00 1b  	mov	%i3, %o1
+   11508: 80 a2 20 00  	cmp	%o0, 0x0
+   1150c: 06 80 01 5e  	bl	0x11a84
+   11510: 01 00 00 00  	nop
+   11514: b0 06 20 01  	add %i0, 0x1, %i0
+   11518: 80 a4 20 00  	cmp	%l0, 0x0
+   1151c: 06 80 00 07  	bl	0x11538
+   11520: 84 10 20 30  	mov	0x30, %g2
+   11524: 80 a4 00 1d  	cmp	%l0, %i5
+   11528: 16 80 00 04  	bge	0x11538
+   1152c: 01 00 00 00  	nop
+   11530: c4 07 bf b4  	ld [%fp+-0x4c], %g2
+   11534: c4 08 80 10  	ldub [%g2+%l0], %g2
+   11538: 80 a6 80 1c  	cmp	%i2, %i4
+   1153c: 04 80 00 0d  	ble	0x11570
+   11540: 01 00 00 00  	nop
+   11544: b4 06 bf ff  	add %i2, -0x1, %i2
+   11548: b0 06 20 01  	add %i0, 0x1, %i0
+   1154c: 85 28 a0 18  	sll %g2, 0x18, %g2
+   11550: 91 38 a0 18  	sra %g2, 0x18, %o0
+   11554: 9f c4 40 00  	call %l1
+   11558: 92 10 00 1b  	mov	%i3, %o1
+   1155c: 80 a2 20 00  	cmp	%o0, 0x0
+   11560: 16 bf ff e4  	bge	0x114f0
+   11564: a0 04 20 01  	add %l0, 0x1, %l0
+   11568: 10 80 01 47  	ba 0x11a84
+   1156c: 01 00 00 00  	nop
+   11570: b9 28 a0 18  	sll %g2, 0x18, %i4
+   11574: 91 3f 20 18  	sra %i4, 0x18, %o0
+   11578: 9f c4 40 00  	call %l1
+   1157c: 92 10 00 1b  	mov	%i3, %o1
+   11580: 80 a2 20 00  	cmp	%o0, 0x0
+   11584: 06 80 01 40  	bl	0x11a84
+   11588: 01 00 00 00  	nop
+   1158c: 80 8e 60 10  	andcc %i1, 0x10, %g0
+   11590: 02 80 00 c5  	be	0x118a4
+   11594: b2 06 20 01  	add %i0, 0x1, %i1
+   11598: 80 a6 a0 00  	cmp	%i2, 0x0
+   1159c: 12 80 00 c2  	bne	0x118a4
+   115a0: 01 00 00 00  	nop
+   115a4: 90 10 20 2e  	mov	0x2e, %o0
+   115a8: 9f c4 40 00  	call %l1
+   115ac: 92 10 00 1b  	mov	%i3, %o1
+   115b0: 80 a2 3f ff  	cmp	%o0, -0x1
+   115b4: 04 80 01 34  	ble	0x11a84
+   115b8: 01 00 00 00  	nop
+   115bc: 10 80 01 1c  	ba 0x11a2c
+   115c0: b0 06 20 02  	add %i0, 0x2, %i0
+   115c4: 80 8e 60 10  	andcc %i1, 0x10, %g0
+   115c8: 12 80 00 b9  	bne	0x118ac
+   115cc: 01 00 00 00  	nop
+   115d0: 10 80 00 be  	ba 0x118c8
+   115d4: b2 06 20 01  	add %i0, 0x1, %i1
+   115d8: b5 2e 60 18  	sll %i1, 0x18, %i2
+   115dc: b3 3e a0 18  	sra %i2, 0x18, %i1
+   115e0: b5 3e a0 1f  	sra %i2, 0x1f, %i2
+   115e4: 92 a0 00 19  	subcc %g0, %i1, %o1
+   115e8: 90 e0 00 1a  	subxcc %g0, %i2, %o0
+   115ec: 80 a6 a0 00  	cmp	%i2, 0x0
+   115f0: 06 80 00 0f  	bl	0x1162c
+   115f4: 01 00 00 00  	nop
+   115f8: 92 10 00 19  	mov	%i1, %o1
+   115fc: 80 a6 a0 00  	cmp	%i2, 0x0
+   11600: 16 80 00 0e  	bge	0x11638
+   11604: 01 00 00 00  	nop
+   11608: 80 a6 a0 00  	cmp	%i2, 0x0
+   1160c: 06 80 00 0f  	bl	0x11648
+   11610: 01 00 00 00  	nop
+   11614: 84 10 00 13  	mov	%l3, %g2
+   11618: 80 96 40 1a  	orcc %i1, %i2, %g0
+   1161c: 12 80 00 1b  	bne	0x11688
+   11620: 01 00 00 00  	nop
+   11624: 10 80 00 0d  	ba 0x11658
+   11628: 01 00 00 00  	nop
+   1162c: 80 a6 a0 00  	cmp	%i2, 0x0
+   11630: 06 bf ff f6  	bl	0x11608
+   11634: 01 00 00 00  	nop
+   11638: 90 10 00 1a  	mov	%i2, %o0
+   1163c: 80 a6 a0 00  	cmp	%i2, 0x0
+   11640: 16 bf ff f5  	bge	0x11614
+   11644: 01 00 00 00  	nop
+   11648: 84 14 e4 00  	or %l3, 0x400, %g2
+   1164c: 80 96 40 1a  	orcc %i1, %i2, %g0
+   11650: 12 80 00 0e  	bne	0x11688
+   11654: 01 00 00 00  	nop
+   11658: 80 8c e0 40  	andcc %l3, 0x40, %g0
+   1165c: 02 80 00 0b  	be	0x11688
+   11660: 01 00 00 00  	nop
+   11664: 80 a4 20 01  	cmp	%l0, 0x1
+   11668: 16 80 00 08  	bge	0x11688
+   1166c: 01 00 00 00  	nop
+   11670: b2 10 00 00  	mov	%g0, %i1
+   11674: 84 10 00 00  	mov	%g0, %g2
+   11678: 35 00 00 3f  	sethi 0x3f, %i2
+   1167c: b4 16 a3 ee  	or %i2, 0x3ee, %i2
+   11680: 10 80 00 19  	ba 0x116e4
+   11684: a4 0c c0 1a  	and %l3, %i2, %l2
+   11688: a4 08 bf ef  	and %g2, -0x11, %l2
+   1168c: 96 10 20 0a  	mov	0xa, %o3
+   11690: f2 07 bf b8  	ld [%fp+-0x48], %i1
+   11694: 40 00 01 e0  	call 0x11e14
+   11698: 94 10 00 19  	mov	%i1, %o2
+   1169c: b2 22 00 19  	sub %o0, %i1, %i1
+   116a0: 80 8c a0 40  	andcc %l2, 0x40, %g0
+   116a4: 02 80 00 0f  	be	0x116e0
+   116a8: 01 00 00 00  	nop
+   116ac: 35 00 00 3f  	sethi 0x3f, %i2
+   116b0: b4 16 a3 fe  	or %i2, 0x3fe, %i2
+   116b4: 80 a6 40 1c  	cmp	%i1, %i4
+   116b8: 16 80 00 09  	bge	0x116dc
+   116bc: b4 0c 80 1a  	and %l2, %i2, %i2
+   116c0: 80 a7 60 00  	cmp	%i5, 0x0
+   116c4: 12 80 00 03  	bne	0x116d0
+   116c8: 01 00 00 00  	nop
+   116cc: b4 0c bf ee  	and %l2, -0x12, %i2
+   116d0: a4 10 00 1a  	mov	%i2, %l2
+   116d4: 10 80 00 04  	ba 0x116e4
+   116d8: 84 10 00 1c  	mov	%i4, %g2
+   116dc: a4 10 00 1a  	mov	%i2, %l2
+   116e0: 84 10 00 19  	mov	%i1, %g2
+   116e4: a6 8c a0 10  	andcc %l2, 0x10, %l3
+   116e8: 12 80 00 07  	bne	0x11704
+   116ec: b4 2c 80 16  	andn %l2, %l6, %i2
+   116f0: 80 8e a4 06  	andcc %i2, 0x406, %g0
+   116f4: 12 80 00 09  	bne	0x11718
+   116f8: 01 00 00 00  	nop
+   116fc: 10 80 00 08  	ba 0x1171c
+   11700: 86 10 00 00  	mov	%g0, %g3
+   11704: 80 a7 60 00  	cmp	%i5, 0x0
+   11708: 02 80 00 04  	be	0x11718
+   1170c: 01 00 00 00  	nop
+   11710: 10 80 00 03  	ba 0x1171c
+   11714: 86 10 20 02  	mov	0x2, %g3
+   11718: 86 10 20 01  	mov	0x1, %g3
+   1171c: 80 8e a0 08  	andcc %i2, 0x8, %g0
+   11720: 12 80 00 19  	bne	0x11784
+   11724: a0 00 c0 02  	add %g3, %g2, %l0
+   11728: 80 8e a0 01  	andcc %i2, 0x1, %g0
+   1172c: 02 80 00 08  	be	0x1174c
+   11730: 01 00 00 00  	nop
+   11734: 80 a4 00 15  	cmp	%l0, %l5
+   11738: 16 80 00 05  	bge	0x1174c
+   1173c: b8 10 00 19  	mov	%i1, %i4
+   11740: b8 06 40 15  	add %i1, %l5, %i4
+   11744: 10 80 00 0f  	ba 0x11780
+   11748: b8 27 00 10  	sub %i4, %l0, %i4
+   1174c: 80 a4 00 15  	cmp	%l0, %l5
+   11750: 16 80 00 0d  	bge	0x11784
+   11754: 01 00 00 00  	nop
+   11758: 90 10 20 20  	mov	0x20, %o0
+   1175c: 9f c4 40 00  	call %l1
+   11760: 92 10 00 1b  	mov	%i3, %o1
+   11764: 80 a2 20 00  	cmp	%o0, 0x0
+   11768: 06 80 00 c7  	bl	0x11a84
+   1176c: 01 00 00 00  	nop
+   11770: a0 04 20 01  	add %l0, 0x1, %l0
+   11774: 80 a5 40 10  	cmp	%l5, %l0
+   11778: 12 bf ff f8  	bne	0x11758
+   1177c: b0 06 20 01  	add %i0, 0x1, %i0
+   11780: a0 10 00 15  	mov	%l5, %l0
+   11784: 80 a4 e0 00  	cmp	%l3, 0x0
+   11788: 12 80 00 0a  	bne	0x117b0
+   1178c: 01 00 00 00  	nop
+   11790: 80 8e a4 06  	andcc %i2, 0x406, %g0
+   11794: 02 80 00 23  	be	0x11820
+   11798: 01 00 00 00  	nop
+   1179c: 80 8e a0 02  	andcc %i2, 0x2, %g0
+   117a0: 02 80 00 15  	be	0x117f4
+   117a4: 01 00 00 00  	nop
+   117a8: 10 80 00 14  	ba 0x117f8
+   117ac: 90 10 20 2b  	mov	0x2b, %o0
+   117b0: 90 10 20 30  	mov	0x30, %o0
+   117b4: 9f c4 40 00  	call %l1
+   117b8: 92 10 00 1b  	mov	%i3, %o1
+   117bc: 80 a2 20 00  	cmp	%o0, 0x0
+   117c0: 06 80 00 b1  	bl	0x11a84
+   117c4: 01 00 00 00  	nop
+   117c8: 80 a7 60 00  	cmp	%i5, 0x0
+   117cc: 02 80 00 14  	be	0x1181c
+   117d0: 01 00 00 00  	nop
+   117d4: 90 10 00 1d  	mov	%i5, %o0
+   117d8: 9f c4 40 00  	call %l1
+   117dc: 92 10 00 1b  	mov	%i3, %o1
+   117e0: 80 a2 20 00  	cmp	%o0, 0x0
+   117e4: 06 80 00 a8  	bl	0x11a84
+   117e8: 01 00 00 00  	nop
+   117ec: 10 80 00 0d  	ba 0x11820
+   117f0: b0 06 20 02  	add %i0, 0x2, %i0
+   117f4: 90 10 20 20  	mov	0x20, %o0
+   117f8: 80 8e a4 00  	andcc %i2, 0x400, %g0
+   117fc: 02 80 00 03  	be	0x11808
+   11800: 01 00 00 00  	nop
+   11804: 90 10 20 2d  	mov	0x2d, %o0
+   11808: 9f c4 40 00  	call %l1
+   1180c: 92 10 00 1b  	mov	%i3, %o1
+   11810: 80 a2 20 00  	cmp	%o0, 0x0
+   11814: 06 80 00 9c  	bl	0x11a84
+   11818: 01 00 00 00  	nop
+   1181c: b0 06 20 01  	add %i0, 0x1, %i0
+   11820: 80 a7 00 19  	cmp	%i4, %i1
+   11824: 04 80 00 0c  	ble	0x11854
+   11828: b4 10 00 1c  	mov	%i4, %i2
+   1182c: 90 10 20 30  	mov	0x30, %o0
+   11830: 9f c4 40 00  	call %l1
+   11834: 92 10 00 1b  	mov	%i3, %o1
+   11838: 80 a2 20 00  	cmp	%o0, 0x0
+   1183c: 06 80 00 92  	bl	0x11a84
+   11840: 01 00 00 00  	nop
+   11844: b4 06 bf ff  	add %i2, -0x1, %i2
+   11848: 80 a6 80 19  	cmp	%i2, %i1
+   1184c: 14 bf ff f8  	bg	0x1182c
+   11850: 01 00 00 00  	nop
+   11854: 80 a6 40 1c  	cmp	%i1, %i4
+   11858: 14 80 00 03  	bg	0x11864
+   1185c: b4 10 00 19  	mov	%i1, %i2
+   11860: b4 10 00 1c  	mov	%i4, %i2
+   11864: a6 25 40 10  	sub %l5, %l0, %l3
+   11868: 80 a6 60 00  	cmp	%i1, 0x0
+   1186c: 02 80 00 70  	be	0x11a2c
+   11870: b0 06 00 1a  	add %i0, %i2, %i0
+   11874: f4 07 bf c4  	ld [%fp+-0x3c], %i2
+   11878: d0 4e 80 19  	ldsb [%i2+%i1], %o0
+   1187c: 9f c4 40 00  	call %l1
+   11880: 92 10 00 1b  	mov	%i3, %o1
+   11884: 80 a2 20 00  	cmp	%o0, 0x0
+   11888: 06 80 00 7f  	bl	0x11a84
+   1188c: 01 00 00 00  	nop
+   11890: b2 86 7f ff  	addcc %i1, -0x1, %i1
+   11894: 12 bf ff f8  	bne	0x11874
+   11898: 01 00 00 00  	nop
+   1189c: 10 80 00 64  	ba 0x11a2c
+   118a0: 01 00 00 00  	nop
+   118a4: 10 80 00 62  	ba 0x11a2c
+   118a8: b0 10 00 19  	mov	%i1, %i0
+   118ac: 90 10 20 2e  	mov	0x2e, %o0
+   118b0: 9f c4 40 00  	call %l1
+   118b4: 92 10 00 1b  	mov	%i3, %o1
+   118b8: 80 a2 20 00  	cmp	%o0, 0x0
+   118bc: 06 80 00 72  	bl	0x11a84
+   118c0: 01 00 00 00  	nop
+   118c4: b2 06 20 02  	add %i0, 0x2, %i1
+   118c8: f0 07 bf ac  	ld [%fp+-0x54], %i0
+   118cc: b0 26 00 12  	sub %i0, %l2, %i0
+   118d0: b1 2e 20 18  	sll %i0, 0x18, %i0
+   118d4: 91 3e 20 18  	sra %i0, 0x18, %o0
+   118d8: 9f c4 40 00  	call %l1
+   118dc: 92 10 00 1b  	mov	%i3, %o1
+   118e0: 80 a2 20 00  	cmp	%o0, 0x0
+   118e4: 06 80 00 68  	bl	0x11a84
+   118e8: 01 00 00 00  	nop
+   118ec: 80 a5 20 00  	cmp	%l4, 0x0
+   118f0: 06 80 00 04  	bl	0x11900
+   118f4: 01 00 00 00  	nop
+   118f8: 10 80 00 03  	ba 0x11904
+   118fc: 90 10 20 2b  	mov	0x2b, %o0
+   11900: 90 10 20 2d  	mov	0x2d, %o0
+   11904: 9f c4 40 00  	call %l1
+   11908: 92 10 00 1b  	mov	%i3, %o1
+   1190c: 80 a2 20 00  	cmp	%o0, 0x0
+   11910: 06 80 00 5d  	bl	0x11a84
+   11914: 01 00 00 00  	nop
+   11918: b1 3d 20 1f  	sra %l4, 0x1f, %i0
+   1191c: b4 1d 00 18  	xor %l4, %i0, %i2
+   11920: b0 26 80 18  	sub %i2, %i0, %i0
+   11924: f4 07 bf a0  	ld [%fp+-0x60], %i2
+   11928: 80 a6 b8 30  	cmp	%i2, -0x7d0
+   1192c: 18 80 00 13  	bgu	0x11978
+   11930: 35 0c 00 00  	sethi 0xc0000, %i2
+   11934: 39 04 18 93  	sethi 0x41893, %i4
+   11938: b8 17 21 d3  	or %i4, 0x1d3, %i4
+   1193c: b8 56 00 1c  	umul %i0, %i4, %i4
+   11940: b9 40 00 00  	rd %y, %i4
+   11944: b9 37 20 06  	srl %i4, 0x6, %i4
+   11948: bb 2f 20 18  	sll %i4, 0x18, %i5
+   1194c: ba 07 40 1a  	add %i5, %i2, %i5
+   11950: 91 3f 60 18  	sra %i5, 0x18, %o0
+   11954: 9f c4 40 00  	call %l1
+   11958: 92 10 00 1b  	mov	%i3, %o1
+   1195c: 80 a2 20 00  	cmp	%o0, 0x0
+   11960: 06 80 00 49  	bl	0x11a84
+   11964: 01 00 00 00  	nop
+   11968: b2 06 60 03  	add %i1, 0x3, %i1
+   1196c: b8 5f 23 e8  	smul %i4, 0x3e8, %i4
+   11970: 10 80 00 06  	ba 0x11988
+   11974: b0 26 00 1c  	sub %i0, %i4, %i0
+   11978: f8 07 bf 9c  	ld [%fp+-0x64], %i4
+   1197c: 80 a7 3f 38  	cmp	%i4, -0xc8
+   11980: 18 80 00 3b  	bgu	0x11a6c
+   11984: b2 06 60 02  	add %i1, 0x2, %i1
+   11988: 39 14 7a e1  	sethi 0x147ae1, %i4
+   1198c: b8 17 21 1f  	or %i4, 0x11f, %i4
+   11990: b8 56 00 1c  	umul %i0, %i4, %i4
+   11994: b9 40 00 00  	rd %y, %i4
+   11998: b9 37 20 05  	srl %i4, 0x5, %i4
+   1199c: bb 2f 20 18  	sll %i4, 0x18, %i5
+   119a0: ba 07 40 1a  	add %i5, %i2, %i5
+   119a4: 91 3f 60 18  	sra %i5, 0x18, %o0
+   119a8: 9f c4 40 00  	call %l1
+   119ac: 92 10 00 1b  	mov	%i3, %o1
+   119b0: 80 a2 20 00  	cmp	%o0, 0x0
+   119b4: 06 80 00 34  	bl	0x11a84
+   119b8: 01 00 00 00  	nop
+   119bc: b2 06 60 01  	add %i1, 0x1, %i1
+   119c0: b8 5f 20 64  	smul %i4, 0x64, %i4
+   119c4: b0 26 00 1c  	sub %i0, %i4, %i0
+   119c8: 39 33 33 33  	sethi 0x333333, %i4
+   119cc: b8 17 20 cd  	or %i4, 0xcd, %i4
+   119d0: b8 56 00 1c  	umul %i0, %i4, %i4
+   119d4: b9 40 00 00  	rd %y, %i4
+   119d8: b9 37 20 03  	srl %i4, 0x3, %i4
+   119dc: bb 2f 20 18  	sll %i4, 0x18, %i5
+   119e0: ba 07 40 1a  	add %i5, %i2, %i5
+   119e4: 91 3f 60 18  	sra %i5, 0x18, %o0
+   119e8: 9f c4 40 00  	call %l1
+   119ec: 92 10 00 1b  	mov	%i3, %o1
+   119f0: 80 a2 20 00  	cmp	%o0, 0x0
+   119f4: 06 80 00 24  	bl	0x11a84
+   119f8: 01 00 00 00  	nop
+   119fc: b2 06 60 01  	add %i1, 0x1, %i1
+   11a00: b8 5f 20 0a  	smul %i4, 0xa, %i4
+   11a04: b0 26 00 1c  	sub %i0, %i4, %i0
+   11a08: b1 2e 20 18  	sll %i0, 0x18, %i0
+   11a0c: b0 06 00 1a  	add %i0, %i2, %i0
+   11a10: 91 3e 20 18  	sra %i0, 0x18, %o0
+   11a14: 9f c4 40 00  	call %l1
+   11a18: 92 10 00 1b  	mov	%i3, %o1
+   11a1c: 80 a2 20 00  	cmp	%o0, 0x0
+   11a20: 06 80 00 19  	bl	0x11a84
+   11a24: 01 00 00 00  	nop
+   11a28: b0 06 60 01  	add %i1, 0x1, %i0
+   11a2c: 80 a4 e0 01  	cmp	%l3, 0x1
+   11a30: 06 bf fb 47  	bl	0x1074c
+   11a34: 01 00 00 00  	nop
+   11a38: b2 04 e0 01  	add %l3, 0x1, %i1
+   11a3c: 90 10 20 20  	mov	0x20, %o0
+   11a40: 9f c4 40 00  	call %l1
+   11a44: 92 10 00 1b  	mov	%i3, %o1
+   11a48: 80 a2 20 00  	cmp	%o0, 0x0
+   11a4c: 06 80 00 0e  	bl	0x11a84
+   11a50: 01 00 00 00  	nop
+   11a54: b2 06 7f ff  	add %i1, -0x1, %i1
+   11a58: 80 a6 60 02  	cmp	%i1, 0x2
+   11a5c: 16 bf ff f8  	bge	0x11a3c
+   11a60: b0 06 20 01  	add %i0, 0x1, %i0
+   11a64: 10 bf fb 3a  	ba 0x1074c
+   11a68: 01 00 00 00  	nop
+   11a6c: f8 07 bf 98  	ld [%fp+-0x68], %i4
+   11a70: 80 a7 20 02  	cmp	%i4, 0x2
+   11a74: 1a bf ff d5  	bcc	0x119c8
+   11a78: 01 00 00 00  	nop
+   11a7c: 10 bf ff e3  	ba 0x11a08
+   11a80: 01 00 00 00  	nop
+   11a84: f0 0e e0 02  	ldub [%i3+0x2], %i0
+   11a88: b0 16 20 04  	or %i0, 0x4, %i0
+   11a8c: f0 2e e0 02  	stb %i0, [%i3+0x2]
+   11a90: b0 10 3f ff  	mov	-0x1, %i0
+   11a94: 81 c7 e0 08  	ret
+   11a98: 81 e8 00 00  	restore
+   11a9c: 9d e3 bf 98  	save %sp, -0x68, %sp
+   11aa0: 80 a6 a0 02  	cmp	%i2, 0x2
+   11aa4: 06 80 00 da  	bl	0x11e0c
+   11aa8: 01 00 00 00  	nop
+   11aac: b6 10 20 01  	mov	0x1, %i3
+   11ab0: 39 3f ff c0  	sethi 0x3fffc0, %i4
+   11ab4: 3b 00 00 4a  	sethi 0x4a, %i5
+   11ab8: ba 17 60 89  	or %i5, 0x89, %i5
+   11abc: 84 10 20 63  	mov	0x63, %g2
+   11ac0: 86 10 00 1b  	mov	%i3, %g3
+   11ac4: a2 10 00 18  	mov	%i0, %l1
+   11ac8: 10 80 00 07  	ba 0x11ae4
+   11acc: 88 10 00 11  	mov	%l1, %g4
+   11ad0: e8 09 20 01  	ldub [%g4+0x1], %l4
+   11ad4: a2 01 20 02  	add %g4, 0x2, %l1
+   11ad8: 80 a5 20 25  	cmp	%l4, 0x25
+   11adc: 12 80 00 0b  	bne	0x11b08
+   11ae0: 88 10 00 11  	mov	%l1, %g4
+   11ae4: e0 09 00 00  	ldub [%g4], %l0
+   11ae8: 80 a4 20 25  	cmp	%l0, 0x25
+   11aec: 02 bf ff f9  	be	0x11ad0
+   11af0: 01 00 00 00  	nop
+   11af4: 80 a4 20 00  	cmp	%l0, 0x0
+   11af8: 12 bf ff fb  	bne	0x11ae4
+   11afc: 88 01 20 01  	add %g4, 0x1, %g4
+   11b00: 10 80 00 c3  	ba 0x11e0c
+   11b04: 01 00 00 00  	nop
+   11b08: a6 10 00 00  	mov	%g0, %l3
+   11b0c: a0 10 00 00  	mov	%g0, %l0
+   11b10: 10 80 00 0c  	ba 0x11b40
+   11b14: 88 10 00 00  	mov	%g0, %g4
+   11b18: 80 a5 20 6a  	cmp	%l4, 0x6a
+   11b1c: 12 80 00 7d  	bne	0x11d10
+   11b20: 01 00 00 00  	nop
+   11b24: 88 11 22 80  	or %g4, 0x280, %g4
+   11b28: a4 10 00 13  	mov	%l3, %l2
+   11b2c: e8 0c 40 00  	ldub [%l1], %l4
+   11b30: 80 a5 20 00  	cmp	%l4, 0x0
+   11b34: a2 04 60 01  	add %l1, 0x1, %l1
+   11b38: 02 80 00 75  	be	0x11d0c
+   11b3c: a6 10 00 12  	mov	%l2, %l3
+   11b40: a5 2d 20 18  	sll %l4, 0x18, %l2
+   11b44: aa 29 00 1c  	andn %g4, %i4, %l5
+   11b48: 80 a5 60 1f  	cmp	%l5, 0x1f
+   11b4c: 18 80 00 0d  	bgu	0x11b80
+   11b50: a5 3c a0 18  	sra %l2, 0x18, %l2
+   11b54: aa 0d 20 ff  	and %l4, 0xff, %l5
+   11b58: aa 05 7f e0  	add %l5, -0x20, %l5
+   11b5c: 80 a5 60 10  	cmp	%l5, 0x10
+   11b60: 18 80 00 0b  	bgu	0x11b8c
+   11b64: 01 00 00 00  	nop
+   11b68: ab 2e c0 15  	sll %i3, %l5, %l5
+   11b6c: 80 8d 40 1d  	andcc %l5, %i5, %g0
+   11b70: 12 bf ff ee  	bne	0x11b28
+   11b74: 01 00 00 00  	nop
+   11b78: 10 80 00 05  	ba 0x11b8c
+   11b7c: 01 00 00 00  	nop
+   11b80: 80 a5 60 7f  	cmp	%l5, 0x7f
+   11b84: 18 80 00 0a  	bgu	0x11bac
+   11b88: 01 00 00 00  	nop
+   11b8c: aa 04 bf d0  	add %l2, -0x30, %l5
+   11b90: 80 a5 60 09  	cmp	%l5, 0x9
+   11b94: 18 80 00 12  	bgu	0x11bdc
+   11b98: 01 00 00 00  	nop
+   11b9c: a4 5c e0 0a  	smul %l3, 0xa, %l2
+   11ba0: a4 05 40 12  	add %l5, %l2, %l2
+   11ba4: 10 bf ff e2  	ba 0x11b2c
+   11ba8: 88 11 20 20  	or %g4, 0x20, %g4
+   11bac: a8 0d 20 ff  	and %l4, 0xff, %l4
+   11bb0: 80 a5 20 6b  	cmp	%l4, 0x6b
+   11bb4: 14 80 00 21  	bg	0x11c38
+   11bb8: 01 00 00 00  	nop
+   11bbc: 80 a5 20 4c  	cmp	%l4, 0x4c
+   11bc0: 02 bf ff d9  	be	0x11b24
+   11bc4: 01 00 00 00  	nop
+   11bc8: 80 a5 20 68  	cmp	%l4, 0x68
+   11bcc: 12 bf ff d3  	bne	0x11b18
+   11bd0: 01 00 00 00  	nop
+   11bd4: 10 80 00 14  	ba 0x11c24
+   11bd8: 01 00 00 00  	nop
+   11bdc: aa 05 3f dc  	add %l4, -0x24, %l5
+   11be0: ac 0d 60 fe  	and %l5, 0xfe, %l6
+   11be4: ab 2d 60 07  	sll %l5, 0x7, %l5
+   11be8: ad 35 a0 01  	srl %l6, 0x1, %l6
+   11bec: aa 15 40 16  	or %l5, %l6, %l5
+   11bf0: aa 0d 60 ff  	and %l5, 0xff, %l5
+   11bf4: 80 a5 60 13  	cmp	%l5, 0x13
+   11bf8: 04 80 00 1b  	ble	0x11c64
+   11bfc: 01 00 00 00  	nop
+   11c00: 80 a5 60 22  	cmp	%l5, 0x22
+   11c04: 14 80 00 23  	bg	0x11c90
+   11c08: 01 00 00 00  	nop
+   11c0c: 80 a5 60 14  	cmp	%l5, 0x14
+   11c10: 02 bf ff c5  	be	0x11b24
+   11c14: 01 00 00 00  	nop
+   11c18: 80 a5 60 22  	cmp	%l5, 0x22
+   11c1c: 12 80 00 2e  	bne	0x11cd4
+   11c20: 01 00 00 00  	nop
+   11c24: a5 29 20 01  	sll %g4, 0x1, %l2
+   11c28: a4 0c a2 00  	and %l2, 0x200, %l2
+   11c2c: 88 11 00 12  	or %g4, %l2, %g4
+   11c30: 10 bf ff be  	ba 0x11b28
+   11c34: 88 11 21 00  	or %g4, 0x100, %g4
+   11c38: 80 a5 20 7a  	cmp	%l4, 0x7a
+   11c3c: 02 bf ff bb  	be	0x11b28
+   11c40: 01 00 00 00  	nop
+   11c44: 80 a5 20 74  	cmp	%l4, 0x74
+   11c48: 02 bf ff b8  	be	0x11b28
+   11c4c: 01 00 00 00  	nop
+   11c50: 80 a5 20 6c  	cmp	%l4, 0x6c
+   11c54: 02 80 00 15  	be	0x11ca8
+   11c58: 01 00 00 00  	nop
+   11c5c: 10 80 00 2d  	ba 0x11d10
+   11c60: 01 00 00 00  	nop
+   11c64: 80 a5 60 00  	cmp	%l5, 0x0
+   11c68: 02 80 00 15  	be	0x11cbc
+   11c6c: 01 00 00 00  	nop
+   11c70: 80 a5 60 03  	cmp	%l5, 0x3
+   11c74: 02 80 00 24  	be	0x11d04
+   11c78: 01 00 00 00  	nop
+   11c7c: 80 a5 60 05  	cmp	%l5, 0x5
+   11c80: 02 80 00 21  	be	0x11d04
+   11c84: 01 00 00 00  	nop
+   11c88: 10 80 00 13  	ba 0x11cd4
+   11c8c: 01 00 00 00  	nop
+   11c90: 80 a5 60 23  	cmp	%l5, 0x23
+   11c94: 02 bf ff a4  	be	0x11b24
+   11c98: 01 00 00 00  	nop
+   11c9c: 80 a5 60 24  	cmp	%l5, 0x24
+   11ca0: 12 80 00 0d  	bne	0x11cd4
+   11ca4: 01 00 00 00  	nop
+   11ca8: a5 29 20 02  	sll %g4, 0x2, %l2
+   11cac: a4 0c a2 00  	and %l2, 0x200, %l2
+   11cb0: 88 11 00 12  	or %g4, %l2, %g4
+   11cb4: 10 bf ff 9d  	ba 0x11b28
+   11cb8: 88 11 20 80  	or %g4, 0x80, %g4
+   11cbc: 80 a4 20 00  	cmp	%l0, 0x0
+   11cc0: 12 80 00 0e  	bne	0x11cf8
+   11cc4: 01 00 00 00  	nop
+   11cc8: a4 10 00 00  	mov	%g0, %l2
+   11ccc: 10 bf ff 98  	ba 0x11b2c
+   11cd0: a0 10 00 13  	mov	%l3, %l0
+   11cd4: a8 0d 20 ff  	and %l4, 0xff, %l4
+   11cd8: 80 a5 20 7a  	cmp	%l4, 0x7a
+   11cdc: 02 bf ff 93  	be	0x11b28
+   11ce0: 01 00 00 00  	nop
+   11ce4: 80 a5 20 74  	cmp	%l4, 0x74
+   11ce8: 02 bf ff 90  	be	0x11b28
+   11cec: 01 00 00 00  	nop
+   11cf0: 10 80 00 08  	ba 0x11d10
+   11cf4: 01 00 00 00  	nop
+   11cf8: 80 a4 c0 03  	cmp	%l3, %g3
+   11cfc: 02 80 00 3f  	be	0x11df8
+   11d00: 01 00 00 00  	nop
+   11d04: 10 bf ff 8a  	ba 0x11b2c
+   11d08: a4 10 00 00  	mov	%g0, %l2
+   11d0c: a4 10 00 00  	mov	%g0, %l2
+   11d10: 80 a4 20 00  	cmp	%l0, 0x0
+   11d14: 02 80 00 3e  	be	0x11e0c
+   11d18: 01 00 00 00  	nop
+   11d1c: 80 a4 00 03  	cmp	%l0, %g3
+   11d20: 12 80 00 2e  	bne	0x11dd8
+   11d24: 01 00 00 00  	nop
+   11d28: a0 14 a0 20  	or %l2, 0x20, %l0
+   11d2c: 80 a4 20 61  	cmp	%l0, 0x61
+   11d30: 02 80 00 0e  	be	0x11d68
+   11d34: 01 00 00 00  	nop
+   11d38: a0 04 3f 9b  	add %l0, -0x65, %l0
+   11d3c: 80 a4 20 02  	cmp	%l0, 0x2
+   11d40: 08 80 00 0a  	bleu	0x11d68
+   11d44: 01 00 00 00  	nop
+   11d48: 80 a4 a0 68  	cmp	%l2, 0x68
+   11d4c: 14 80 00 11  	bg	0x11d90
+   11d50: 01 00 00 00  	nop
+   11d54: 80 a4 a0 63  	cmp	%l2, 0x63
+   11d58: 02 80 00 1b  	be	0x11dc4
+   11d5c: 01 00 00 00  	nop
+   11d60: 10 80 00 12  	ba 0x11da8
+   11d64: 80 a4 a0 64  	cmp	%l2, 0x64
+   11d68: c8 06 40 00  	ld [%i1], %g4
+   11d6c: a0 01 20 08  	add %g4, 0x8, %l0
+   11d70: e0 26 40 00  	st %l0, [%i1]
+   11d74: e0 01 20 04  	ld [%g4+0x4], %l0
+   11d78: a2 07 bf f8  	add %fp, -0x8, %l1
+   11d7c: a2 14 60 04  	or %l1, 0x4, %l1
+   11d80: e0 24 40 00  	st %l0, [%l1]
+   11d84: c8 01 00 00  	ld [%g4], %g4
+   11d88: 10 80 00 12  	ba 0x11dd0
+   11d8c: c8 27 bf f8  	st %g4, [%fp+-0x8]
+   11d90: 80 a4 a0 69  	cmp	%l2, 0x69
+   11d94: 02 80 00 05  	be	0x11da8
+   11d98: 01 00 00 00  	nop
+   11d9c: 80 a4 a0 73  	cmp	%l2, 0x73
+   11da0: 02 80 00 09  	be	0x11dc4
+   11da4: 01 00 00 00  	nop
+   11da8: 80 89 20 80  	andcc %g4, 0x80, %g0
+   11dac: 02 80 00 06  	be	0x11dc4
+   11db0: 01 00 00 00  	nop
+   11db4: 88 29 00 1c  	andn %g4, %i4, %g4
+   11db8: 80 89 22 00  	andcc %g4, 0x200, %g0
+   11dbc: 12 80 00 0c  	bne	0x11dec
+   11dc0: 01 00 00 00  	nop
+   11dc4: c8 06 40 00  	ld [%i1], %g4
+   11dc8: 88 01 20 04  	add %g4, 0x4, %g4
+   11dcc: c8 26 40 00  	st %g4, [%i1]
+   11dd0: 86 00 e0 01  	add %g3, 0x1, %g3
+   11dd4: a2 10 00 18  	mov	%i0, %l1
+   11dd8: 80 a0 c0 1a  	cmp	%g3, %i2
+   11ddc: 06 bf ff 3b  	bl	0x11ac8
+   11de0: 01 00 00 00  	nop
+   11de4: 10 80 00 0a  	ba 0x11e0c
+   11de8: 01 00 00 00  	nop
+   11dec: c8 06 40 00  	ld [%i1], %g4
+   11df0: 10 bf ff f7  	ba 0x11dcc
+   11df4: 88 01 20 08  	add %g4, 0x8, %g4
+   11df8: a0 10 00 03  	mov	%g3, %l0
+   11dfc: a4 10 00 02  	mov	%g2, %l2
+   11e00: 80 a4 20 00  	cmp	%l0, 0x0
+   11e04: 12 bf ff c6  	bne	0x11d1c
+   11e08: 01 00 00 00  	nop
+   11e0c: 81 c7 e0 08  	ret
+   11e10: 81 e8 00 00  	restore
+   11e14: 9d e3 bf a0  	save %sp, -0x60, %sp
+   11e18: b8 10 00 19  	mov	%i1, %i4
+   11e1c: b2 10 00 18  	mov	%i0, %i1
+   11e20: b0 0e e0 1f  	and %i3, 0x1f, %i0
+   11e24: b7 2e e0 18  	sll %i3, 0x18, %i3
+   11e28: 3b 0d c0 00  	sethi 0xdc000, %i5
+   11e2c: b6 27 40 1b  	sub %i5, %i3, %i3
+   11e30: b7 36 e0 18  	srl %i3, 0x18, %i3
+   11e34: 10 80 00 07  	ba 0x11e50
+   11e38: ba 10 20 01  	mov	0x1, %i5
+   11e3c: 80 a7 20 00  	cmp	%i4, 0x0
+   11e40: b4 06 a0 01  	add %i2, 0x1, %i2
+   11e44: b2 10 00 08  	mov	%o0, %i1
+   11e48: 02 80 00 19  	be	0x11eac
+   11e4c: b8 10 00 09  	mov	%o1, %i4
+   11e50: 90 10 00 19  	mov	%i1, %o0
+   11e54: 92 10 00 1c  	mov	%i4, %o1
+   11e58: 94 10 00 00  	mov	%g0, %o2
+   11e5c: 40 00 0a 6e  	call 0x14814
+   11e60: 96 10 00 18  	mov	%i0, %o3
+   11e64: 84 5a 40 18  	smul %o1, %i0, %g2
+   11e68: 84 27 00 02  	sub %i4, %g2, %g2
+   11e6c: 80 a0 a0 09  	cmp	%g2, 0x9
+   11e70: 18 80 00 03  	bgu	0x11e7c
+   11e74: 86 10 00 1b  	mov	%i3, %g3
+   11e78: 86 10 00 00  	mov	%g0, %g3
+   11e7c: 84 00 c0 02  	add %g3, %g2, %g2
+   11e80: 84 00 a0 30  	add %g2, 0x30, %g2
+   11e84: 80 a7 00 18  	cmp	%i4, %i0
+   11e88: c4 2e 80 00  	stb %g2, [%i2]
+   11e8c: 1a 80 00 03  	bcc	0x11e98
+   11e90: b8 10 00 1d  	mov	%i5, %i4
+   11e94: b8 10 00 00  	mov	%g0, %i4
+   11e98: 80 a6 60 00  	cmp	%i1, 0x0
+   11e9c: 02 bf ff e8  	be	0x11e3c
+   11ea0: 01 00 00 00  	nop
+   11ea4: 10 bf ff e6  	ba 0x11e3c
+   11ea8: b8 10 00 1d  	mov	%i5, %i4
+   11eac: 81 c7 e0 08  	ret
+   11eb0: 91 e8 00 1a  	restore %g0, %i2, %o0
+   11eb4: 9d e3 bf 38  	save %sp, -0xc8, %sp
+   11eb8: ae 10 00 1b  	mov	%i3, %l7
+   11ebc: 37 3f fc 00  	sethi 0x3ffc00, %i3
+   11ec0: a4 2e 00 1b  	andn %i0, %i3, %l2
+   11ec4: 86 96 40 12  	orcc %i1, %l2, %g3
+   11ec8: 02 80 00 04  	be	0x11ed8
+   11ecc: b7 36 20 14  	srl %i0, 0x14, %i3
+   11ed0: 10 80 00 03  	ba 0x11edc
+   11ed4: 88 10 00 00  	mov	%g0, %g4
+   11ed8: 88 10 20 01  	mov	0x1, %g4
+   11edc: b6 0e e7 ff  	and %i3, 0x7ff, %i3
+   11ee0: 80 a0 e0 00  	cmp	%g3, 0x0
+   11ee4: 12 80 00 0c  	bne	0x11f14
+   11ee8: 85 36 20 1f  	srl %i0, 0x1f, %g2
+   11eec: 80 a6 e0 00  	cmp	%i3, 0x0
+   11ef0: 12 80 00 09  	bne	0x11f14
+   11ef4: 01 00 00 00  	nop
+   11ef8: b0 10 a0 02  	or %g2, 0x2, %i0
+   11efc: b2 10 20 30  	mov	0x30, %i1
+   11f00: f2 2e a0 05  	stb %i1, [%i2+0x5]
+   11f04: f0 2e a0 04  	stb %i0, [%i2+0x4]
+   11f08: c0 26 80 00  	st %g0, [%i2]
+   11f0c: 81 c7 e0 08  	ret
+   11f10: 91 e8 20 01  	restore %g0, 0x1, %o0
+   11f14: 80 a6 e7 ff  	cmp	%i3, 0x7ff
+   11f18: 12 80 00 07  	bne	0x11f34
+   11f1c: 01 00 00 00  	nop
+   11f20: 80 a1 20 00  	cmp	%g4, 0x0
+   11f24: 12 80 00 0e  	bne	0x11f5c
+   11f28: 01 00 00 00  	nop
+   11f2c: 10 80 00 0d  	ba 0x11f60
+   11f30: b2 10 20 08  	mov	0x8, %i1
+   11f34: 80 a6 e0 00  	cmp	%i3, 0x0
+   11f38: 02 80 00 04  	be	0x11f48
+   11f3c: 01 00 00 00  	nop
+   11f40: 31 00 04 00  	sethi 0x400, %i0
+   11f44: a4 14 80 18  	or %l2, %i0, %l2
+   11f48: 80 a6 e0 00  	cmp	%i3, 0x0
+   11f4c: 02 80 00 0a  	be	0x11f74
+   11f50: 01 00 00 00  	nop
+   11f54: 10 80 00 09  	ba 0x11f78
+   11f58: a0 06 fb cb  	add %i3, -0x435, %l0
+   11f5c: b2 10 20 04  	mov	0x4, %i1
+   11f60: b0 10 00 00  	mov	%g0, %i0
+   11f64: b2 16 40 02  	or %i1, %g2, %i1
+   11f68: f2 2e a0 04  	stb %i1, [%i2+0x4]
+   11f6c: 81 c7 e0 08  	ret
+   11f70: 81 e8 00 00  	restore
+   11f74: a0 10 3b cc  	mov	-0x434, %l0
+   11f78: b0 10 20 01  	mov	0x1, %i0
+   11f7c: 80 a0 e0 00  	cmp	%g3, 0x0
+   11f80: 12 80 00 03  	bne	0x11f8c
+   11f84: 86 10 00 18  	mov	%i0, %g3
+   11f88: 86 10 00 00  	mov	%g0, %g3
+   11f8c: fa 27 bf a0  	st %i5, [%fp+-0x60]
+   11f90: f4 27 bf b4  	st %i2, [%fp+-0x4c]
+   11f94: b5 2c a0 02  	sll %l2, 0x2, %i2
+   11f98: 80 a6 e0 02  	cmp	%i3, 0x2
+   11f9c: 0a 80 00 03  	bcs	0x11fa8
+   11fa0: b7 36 60 1e  	srl %i1, 0x1e, %i3
+   11fa4: b0 10 00 00  	mov	%g0, %i0
+   11fa8: c4 27 bf b0  	st %g2, [%fp+-0x50]
+   11fac: ba 0e 60 01  	and %i1, 0x1, %i5
+   11fb0: fa 27 bf b8  	st %i5, [%fp+-0x48]
+   11fb4: a2 16 80 1b  	or %i2, %i3, %l1
+   11fb8: a7 2e 60 02  	sll %i1, 0x2, %l3
+   11fbc: b4 10 c0 18  	or %g3, %i0, %i2
+   11fc0: 80 a4 20 00  	cmp	%l0, 0x0
+   11fc4: 06 80 00 09  	bl	0x11fe8
+   11fc8: 3b 33 33 33  	sethi 0x333333, %i5
+   11fcc: 40 00 03 2d  	call 0x12c80
+   11fd0: 90 10 00 10  	mov	%l0, %o0
+   11fd4: 80 a4 20 03  	cmp	%l0, 0x3
+   11fd8: 18 80 00 0c  	bgu	0x12008
+   11fdc: ac 10 00 00  	mov	%g0, %l6
+   11fe0: 10 80 00 0b  	ba 0x1200c
+   11fe4: b0 10 00 16  	mov	%l6, %i0
+   11fe8: a8 20 00 10  	sub %g0, %l0, %l4
+   11fec: 40 00 03 2a  	call 0x12c94
+   11ff0: 90 10 00 14  	mov	%l4, %o0
+   11ff4: 80 a4 3f ff  	cmp	%l0, -0x1
+   11ff8: 12 80 00 34  	bne	0x120c8
+   11ffc: 01 00 00 00  	nop
+   12000: 10 80 00 33  	ba 0x120cc
+   12004: b0 10 00 00  	mov	%g0, %i0
+   12008: b0 10 20 01  	mov	0x1, %i0
+   1200c: aa 22 00 18  	sub %o0, %i0, %l5
+   12010: 40 00 03 26  	call 0x12ca8
+   12014: 90 10 00 15  	mov	%l5, %o0
+   12018: b0 25 40 10  	sub %l5, %l0, %i0
+   1201c: b0 06 00 08  	add %i0, %o0, %i0
+   12020: a0 06 20 7c  	add %i0, 0x7c, %l0
+   12024: a8 07 bf d8  	add %fp, -0x28, %l4
+   12028: 90 10 00 15  	mov	%l5, %o0
+   1202c: 40 00 03 b1  	call 0x12ef0
+   12030: 92 10 00 14  	mov	%l4, %o1
+   12034: 98 07 bf f0  	add %fp, -0x10, %o4
+   12038: 9a 07 bf e8  	add %fp, -0x18, %o5
+   1203c: f4 23 a0 5c  	st %i2, [%sp+0x5c]
+   12040: 90 10 00 12  	mov	%l2, %o0
+   12044: 92 10 00 19  	mov	%i1, %o1
+   12048: 94 10 00 14  	mov	%l4, %o2
+   1204c: 40 00 02 57  	call 0x129a8
+   12050: 96 10 00 10  	mov	%l0, %o3
+   12054: 80 a5 60 15  	cmp	%l5, 0x15
+   12058: b2 10 00 08  	mov	%o0, %i1
+   1205c: a4 10 00 09  	mov	%o1, %l2
+   12060: 18 80 00 67  	bgu	0x121fc
+   12064: ec 27 bf c4  	st %l6, [%fp+-0x3c]
+   12068: 94 17 60 cc  	or %i5, 0xcc, %o2
+   1206c: 96 17 60 cd  	or %i5, 0xcd, %o3
+   12070: 98 07 bf f8  	add %fp, -0x8, %o4
+   12074: 90 10 00 11  	mov	%l1, %o0
+   12078: 40 00 04 0d  	call 0x130ac
+   1207c: 92 10 00 13  	mov	%l3, %o1
+   12080: c4 1f bf f8  	ldd [%fp+-0x8], %g2
+   12084: b1 28 a0 1e  	sll %g2, 0x1e, %i0
+   12088: b7 30 e0 02  	srl %g3, 0x2, %i3
+   1208c: b0 16 c0 18  	or %i3, %i0, %i0
+   12090: b0 5e 3f fb  	smul %i0, -0x5, %i0
+   12094: b6 20 00 13  	sub %g0, %l3, %i3
+   12098: 80 a6 00 1b  	cmp	%i0, %i3
+   1209c: 12 80 00 3b  	bne	0x12188
+   120a0: 01 00 00 00  	nop
+   120a4: 90 10 00 11  	mov	%l1, %o0
+   120a8: 40 00 03 06  	call 0x12cc0
+   120ac: 92 10 00 13  	mov	%l3, %o1
+   120b0: 80 a2 00 15  	cmp	%o0, %l5
+   120b4: 1a 80 00 43  	bcc	0x121c0
+   120b8: 01 00 00 00  	nop
+   120bc: ac 10 00 00  	mov	%g0, %l6
+   120c0: 10 80 00 4f  	ba 0x121fc
+   120c4: c0 27 bf c4  	st %g0, [%fp+-0x3c]
+   120c8: b0 10 20 01  	mov	0x1, %i0
+   120cc: b0 22 00 18  	sub %o0, %i0, %i0
+   120d0: a8 25 00 18  	sub %l4, %i0, %l4
+   120d4: 40 00 02 f5  	call 0x12ca8
+   120d8: 90 10 00 14  	mov	%l4, %o0
+   120dc: b6 26 00 08  	sub %i0, %o0, %i3
+   120e0: aa 06 e0 7d  	add %i3, 0x7d, %l5
+   120e4: ac 07 bf d8  	add %fp, -0x28, %l6
+   120e8: 90 10 00 14  	mov	%l4, %o0
+   120ec: 40 00 03 17  	call 0x12d48
+   120f0: 92 10 00 16  	mov	%l6, %o1
+   120f4: 98 07 bf f0  	add %fp, -0x10, %o4
+   120f8: 9a 07 bf e8  	add %fp, -0x18, %o5
+   120fc: f4 23 a0 5c  	st %i2, [%sp+0x5c]
+   12100: 90 10 00 12  	mov	%l2, %o0
+   12104: 92 10 00 19  	mov	%i1, %o1
+   12108: 94 10 00 16  	mov	%l6, %o2
+   1210c: 40 00 02 27  	call 0x129a8
+   12110: 96 10 00 15  	mov	%l5, %o3
+   12114: 80 a6 20 01  	cmp	%i0, 0x1
+   12118: b2 10 00 08  	mov	%o0, %i1
+   1211c: 18 80 00 0c  	bgu	0x1214c
+   12120: a4 10 00 09  	mov	%o1, %l2
+   12124: f6 07 bf b8  	ld [%fp+-0x48], %i3
+   12128: 80 a6 e0 00  	cmp	%i3, 0x0
+   1212c: 02 80 00 32  	be	0x121f4
+   12130: ac 10 20 01  	mov	0x1, %l6
+   12134: e8 1f bf f0  	ldd [%fp+-0x10], %l4
+   12138: b4 10 00 00  	mov	%g0, %i2
+   1213c: 86 85 7f ff  	addcc %l5, -0x1, %g3
+   12140: 84 c5 3f ff  	addxcc %l4, -0x1, %g2
+   12144: 10 80 00 2c  	ba 0x121f4
+   12148: c4 3f bf f0  	std %g2, [%fp+-0x10]
+   1214c: 80 a6 20 3e  	cmp	%i0, 0x3e
+   12150: ac 10 00 00  	mov	%g0, %l6
+   12154: 18 80 00 28  	bgu	0x121f4
+   12158: b4 10 00 00  	mov	%g0, %i2
+   1215c: 90 10 3f ff  	mov	-0x1, %o0
+   12160: 92 10 00 08  	mov	%o0, %o1
+   12164: 40 00 09 88  	call 0x14784
+   12168: 94 10 00 18  	mov	%i0, %o2
+   1216c: b4 2c 40 08  	andn %l1, %o0, %i2
+   12170: b6 2c c0 09  	andn %l3, %o1, %i3
+   12174: 80 96 c0 1a  	orcc %i3, %i2, %g0
+   12178: 02 80 00 1d  	be	0x121ec
+   1217c: 01 00 00 00  	nop
+   12180: 10 80 00 1c  	ba 0x121f0
+   12184: ac 10 00 00  	mov	%g0, %l6
+   12188: f0 07 bf b8  	ld [%fp+-0x48], %i0
+   1218c: 80 a6 20 00  	cmp	%i0, 0x0
+   12190: 12 80 00 0f  	bne	0x121cc
+   12194: 01 00 00 00  	nop
+   12198: b0 1e bf ff  	xor %i2, -0x1, %i0
+   1219c: 92 86 00 13  	addcc %i0, %l3, %o1
+   121a0: 40 00 02 c8  	call 0x12cc0
+   121a4: 90 c4 7f ff  	addxcc %l1, -0x1, %o0
+   121a8: 80 a2 00 15  	cmp	%o0, %l5
+   121ac: 1a 80 01 f3  	bcc	0x12978
+   121b0: 01 00 00 00  	nop
+   121b4: c0 27 bf c4  	st %g0, [%fp+-0x3c]
+   121b8: 10 80 00 11  	ba 0x121fc
+   121bc: ac 10 00 00  	mov	%g0, %l6
+   121c0: ac 10 20 01  	mov	0x1, %l6
+   121c4: 10 80 00 0e  	ba 0x121fc
+   121c8: c0 27 bf c4  	st %g0, [%fp+-0x3c]
+   121cc: 92 14 e0 02  	or %l3, 0x2, %o1
+   121d0: 40 00 02 bc  	call 0x12cc0
+   121d4: 90 10 00 11  	mov	%l1, %o0
+   121d8: 80 a2 00 15  	cmp	%o0, %l5
+   121dc: 1a 80 01 eb  	bcc	0x12988
+   121e0: 01 00 00 00  	nop
+   121e4: 10 80 01 ea  	ba 0x1298c
+   121e8: b0 10 00 00  	mov	%g0, %i0
+   121ec: ac 10 20 01  	mov	0x1, %l6
+   121f0: b4 10 00 00  	mov	%g0, %i2
+   121f4: aa 06 00 10  	add %i0, %l0, %l5
+   121f8: f4 27 bf c4  	st %i2, [%fp+-0x3c]
+   121fc: 80 a7 20 00  	cmp	%i4, 0x0
+   12200: 02 80 00 1c  	be	0x12270
+   12204: b0 10 00 17  	mov	%l7, %i0
+   12208: b0 10 20 01  	mov	0x1, %i0
+   1220c: 80 a4 a0 0a  	cmp	%l2, 0xa
+   12210: b4 10 00 18  	mov	%i0, %i2
+   12214: 0a 80 00 03  	bcs	0x12220
+   12218: c6 07 bf a0  	ld [%fp+-0x60], %g3
+   1221c: b4 10 00 00  	mov	%g0, %i2
+   12220: a0 10 00 1d  	mov	%i5, %l0
+   12224: 80 a6 60 00  	cmp	%i1, 0x0
+   12228: 02 80 00 03  	be	0x12234
+   1222c: 01 00 00 00  	nop
+   12230: b4 10 00 00  	mov	%g0, %i2
+   12234: 80 a6 a0 00  	cmp	%i2, 0x0
+   12238: 02 80 01 a2  	be	0x128c0
+   1223c: 01 00 00 00  	nop
+   12240: b5 30 e0 1f  	srl %g3, 0x1f, %i2
+   12244: b6 05 40 03  	add %l5, %g3, %i3
+   12248: b0 06 c0 18  	add %i3, %i0, %i0
+   1224c: 80 a6 80 18  	cmp	%i2, %i0
+   12250: 14 80 00 03  	bg	0x1225c
+   12254: 01 00 00 00  	nop
+   12258: b4 10 00 18  	mov	%i0, %i2
+   1225c: 80 a5 c0 1a  	cmp	%l7, %i2
+   12260: b0 10 00 17  	mov	%l7, %i0
+   12264: 06 80 00 03  	bl	0x12270
+   12268: ba 10 00 10  	mov	%l0, %i5
+   1226c: b0 10 00 1a  	mov	%i2, %i0
+   12270: f0 27 bf bc  	st %i0, [%fp+-0x44]
+   12274: ec 27 bf d4  	st %l6, [%fp+-0x2c]
+   12278: ea 27 bf a4  	st %l5, [%fp+-0x5c]
+   1227c: f8 27 bf a8  	st %i4, [%fp+-0x58]
+   12280: ee 27 bf ac  	st %l7, [%fp+-0x54]
+   12284: b6 10 00 00  	mov	%g0, %i3
+   12288: c0 27 bf d0  	st %g0, [%fp+-0x30]
+   1228c: c0 27 bf c0  	st %g0, [%fp+-0x40]
+   12290: ec 1f bf f0  	ldd [%fp+-0x10], %l6
+   12294: e8 1f bf e8  	ldd [%fp+-0x18], %l4
+   12298: b0 17 60 cc  	or %i5, 0xcc, %i0
+   1229c: f0 27 bf cc  	st %i0, [%fp+-0x34]
+   122a0: b0 17 60 cd  	or %i5, 0xcd, %i0
+   122a4: f0 27 bf c8  	st %i0, [%fp+-0x38]
+   122a8: a6 07 bf d8  	add %fp, -0x28, %l3
+   122ac: 10 80 00 16  	ba 0x12304
+   122b0: b0 10 20 01  	mov	0x1, %i0
+   122b4: b3 2d 20 1d  	sll %l4, 0x1d, %i1
+   122b8: b7 35 60 03  	srl %l5, 0x3, %i3
+   122bc: 88 16 c0 19  	or %i3, %i1, %g4
+   122c0: b3 35 20 03  	srl %l4, 0x3, %i1
+   122c4: b6 59 3f f6  	smul %g4, -0xa, %i3
+   122c8: b6 06 c0 12  	add %i3, %l2, %i3
+   122cc: e4 07 bf c4  	ld [%fp+-0x3c], %l2
+   122d0: a4 0c 80 03  	and %l2, %g3, %l2
+   122d4: e4 27 bf c4  	st %l2, [%fp+-0x3c]
+   122d8: ac 08 80 16  	and %g2, %l6, %l6
+   122dc: ec 27 bf d4  	st %l6, [%fp+-0x2c]
+   122e0: a8 10 00 1d  	mov	%i5, %l4
+   122e4: ac 10 00 1a  	mov	%i2, %l6
+   122e8: f4 07 bf d0  	ld [%fp+-0x30], %i2
+   122ec: b4 06 a0 01  	add %i2, 0x1, %i2
+   122f0: f4 27 bf d0  	st %i2, [%fp+-0x30]
+   122f4: aa 10 00 10  	mov	%l0, %l5
+   122f8: ae 10 00 1c  	mov	%i4, %l7
+   122fc: a4 10 00 04  	mov	%g4, %l2
+   12300: e2 27 bf c0  	st %l1, [%fp+-0x40]
+   12304: 90 10 00 16  	mov	%l6, %o0
+   12308: 92 10 00 17  	mov	%l7, %o1
+   1230c: f8 07 bf cc  	ld [%fp+-0x34], %i4
+   12310: 94 10 00 1c  	mov	%i4, %o2
+   12314: fa 07 bf c8  	ld [%fp+-0x38], %i5
+   12318: 96 10 00 1d  	mov	%i5, %o3
+   1231c: 40 00 03 64  	call 0x130ac
+   12320: 98 10 00 13  	mov	%l3, %o4
+   12324: e0 1f bf d8  	ldd [%fp+-0x28], %l0
+   12328: b5 34 20 03  	srl %l0, 0x3, %i2
+   1232c: 90 10 00 14  	mov	%l4, %o0
+   12330: 92 10 00 15  	mov	%l5, %o1
+   12334: 94 10 00 1c  	mov	%i4, %o2
+   12338: 96 10 00 1d  	mov	%i5, %o3
+   1233c: 40 00 03 5c  	call 0x130ac
+   12340: 98 10 00 13  	mov	%l3, %o4
+   12344: d0 1f bf d8  	ldd [%fp+-0x28], %o0
+   12348: bb 32 20 03  	srl %o0, 0x3, %i5
+   1234c: 80 a6 80 1d  	cmp	%i2, %i5
+   12350: 18 80 00 03  	bgu	0x1235c
+   12354: 84 10 00 18  	mov	%i0, %g2
+   12358: 84 10 00 00  	mov	%g0, %g2
+   1235c: b9 2c 20 1d  	sll %l0, 0x1d, %i4
+   12360: 87 34 60 03  	srl %l1, 0x3, %g3
+   12364: b8 10 c0 1c  	or %g3, %i4, %i4
+   12368: 87 2a 20 1d  	sll %o0, 0x1d, %g3
+   1236c: 89 32 60 03  	srl %o1, 0x3, %g4
+   12370: a0 11 00 03  	or %g4, %g3, %l0
+   12374: 80 a7 00 10  	cmp	%i4, %l0
+   12378: 18 80 00 0b  	bgu	0x123a4
+   1237c: 86 10 00 18  	mov	%i0, %g3
+   12380: 86 10 00 00  	mov	%g0, %g3
+   12384: 80 a6 80 1d  	cmp	%i2, %i5
+   12388: 12 80 00 0a  	bne	0x123b0
+   1238c: 01 00 00 00  	nop
+   12390: 80 a0 e0 00  	cmp	%g3, 0x0
+   12394: 02 80 00 0b  	be	0x123c0
+   12398: 01 00 00 00  	nop
+   1239c: 10 80 00 22  	ba 0x12424
+   123a0: e2 07 bf c0  	ld [%fp+-0x40], %l1
+   123a4: 80 a6 80 1d  	cmp	%i2, %i5
+   123a8: 02 bf ff fa  	be	0x12390
+   123ac: 01 00 00 00  	nop
+   123b0: 86 10 00 02  	mov	%g2, %g3
+   123b4: 80 a0 e0 00  	cmp	%g3, 0x0
+   123b8: 12 bf ff f9  	bne	0x1239c
+   123bc: 01 00 00 00  	nop
+   123c0: a2 10 20 01  	mov	0x1, %l1
+   123c4: 80 a4 a0 0a  	cmp	%l2, 0xa
+   123c8: 0a 80 00 03  	bcs	0x123d4
+   123cc: 84 10 00 11  	mov	%l1, %g2
+   123d0: 84 10 00 00  	mov	%g0, %g2
+   123d4: 80 a6 60 00  	cmp	%i1, 0x0
+   123d8: 02 80 00 03  	be	0x123e4
+   123dc: 01 00 00 00  	nop
+   123e0: 84 10 00 00  	mov	%g0, %g2
+   123e4: 80 a0 a0 00  	cmp	%g2, 0x0
+   123e8: 02 80 00 22  	be	0x12470
+   123ec: 84 10 00 11  	mov	%l1, %g2
+   123f0: 86 14 80 19  	or %l2, %i1, %g3
+   123f4: c8 07 bf bc  	ld [%fp+-0x44], %g4
+   123f8: 80 91 00 03  	orcc %g4, %g3, %g0
+   123fc: 02 80 00 03  	be	0x12408
+   12400: 86 10 00 11  	mov	%l1, %g3
+   12404: 86 10 00 00  	mov	%g0, %g3
+   12408: c8 07 bf bc  	ld [%fp+-0x44], %g4
+   1240c: 80 a0 80 04  	cmp	%g2, %g4
+   12410: 04 80 00 31  	ble	0x124d4
+   12414: 01 00 00 00  	nop
+   12418: 80 a0 e0 00  	cmp	%g3, 0x0
+   1241c: 12 80 00 2e  	bne	0x124d4
+   12420: 01 00 00 00  	nop
+   12424: ac 5c 3f f6  	smul %l0, -0xa, %l6
+   12428: 98 07 bf d8  	add %fp, -0x28, %o4
+   1242c: 90 10 00 19  	mov	%i1, %o0
+   12430: 92 10 00 12  	mov	%l2, %o1
+   12434: d4 07 bf cc  	ld [%fp+-0x34], %o2
+   12438: 40 00 03 1d  	call 0x130ac
+   1243c: d6 07 bf c8  	ld [%fp+-0x38], %o3
+   12440: b2 20 00 15  	sub %g0, %l5, %i1
+   12444: 84 10 20 01  	mov	0x1, %g2
+   12448: 80 a5 80 19  	cmp	%l6, %i1
+   1244c: 02 80 00 03  	be	0x12458
+   12450: 86 10 00 02  	mov	%g2, %g3
+   12454: 86 10 00 00  	mov	%g0, %g3
+   12458: e8 1f bf d8  	ldd [%fp+-0x28], %l4
+   1245c: 80 8e e0 ff  	andcc %i3, 0xff, %g0
+   12460: 02 bf ff 95  	be	0x122b4
+   12464: ec 07 bf d4  	ld [%fp+-0x2c], %l6
+   12468: 10 bf ff 93  	ba 0x122b4
+   1246c: 84 10 00 00  	mov	%g0, %g2
+   12470: 88 10 00 00  	mov	%g0, %g4
+   12474: 86 10 20 01  	mov	0x1, %g3
+   12478: 90 10 20 0a  	mov	0xa, %o0
+   1247c: 10 80 00 05  	ba 0x12490
+   12480: 84 10 00 03  	mov	%g3, %g2
+   12484: 80 a2 60 00  	cmp	%o1, 0x0
+   12488: 02 bf ff da  	be	0x123f0
+   1248c: 84 00 a0 01  	add %g2, 0x1, %g2
+   12490: 90 52 20 0a  	umul %o0, 0xa, %o0
+   12494: 95 40 00 00  	rd %y, %o2
+   12498: 80 a2 00 12  	cmp	%o0, %l2
+   1249c: 08 80 00 03  	bleu	0x124a8
+   124a0: 92 10 00 03  	mov	%g3, %o1
+   124a4: 92 10 00 00  	mov	%g0, %o1
+   124a8: 88 59 20 0a  	smul %g4, 0xa, %g4
+   124ac: 88 02 80 04  	add %o2, %g4, %g4
+   124b0: 80 a1 00 19  	cmp	%g4, %i1
+   124b4: 08 80 00 03  	bleu	0x124c0
+   124b8: 94 10 00 03  	mov	%g3, %o2
+   124bc: 94 10 00 00  	mov	%g0, %o2
+   124c0: 80 a1 00 19  	cmp	%g4, %i1
+   124c4: 02 bf ff f0  	be	0x12484
+   124c8: 01 00 00 00  	nop
+   124cc: 10 bf ff ee  	ba 0x12484
+   124d0: 92 10 00 0a  	mov	%o2, %o1
+   124d4: f0 07 bf c4  	ld [%fp+-0x3c], %i0
+   124d8: 80 8e 20 01  	andcc %i0, 0x1, %g0
+   124dc: 02 80 00 4e  	be	0x12614
+   124e0: 01 00 00 00  	nop
+   124e4: 98 07 bf d8  	add %fp, -0x28, %o4
+   124e8: 90 10 00 14  	mov	%l4, %o0
+   124ec: 92 10 00 15  	mov	%l5, %o1
+   124f0: d4 07 bf cc  	ld [%fp+-0x34], %o2
+   124f4: 40 00 02 ee  	call 0x130ac
+   124f8: d6 07 bf c8  	ld [%fp+-0x38], %o3
+   124fc: c4 1f bf d8  	ldd [%fp+-0x28], %g2
+   12500: b1 28 a0 1d  	sll %g2, 0x1d, %i0
+   12504: b5 30 e0 03  	srl %g3, 0x3, %i2
+   12508: b8 16 80 18  	or %i2, %i0, %i4
+   1250c: b0 5f 3f f6  	smul %i4, -0xa, %i0
+   12510: b4 20 00 15  	sub %g0, %l5, %i2
+   12514: 80 a6 00 1a  	cmp	%i0, %i2
+   12518: 12 80 00 3f  	bne	0x12614
+   1251c: 01 00 00 00  	nop
+   12520: bb 30 a0 03  	srl %g2, 0x3, %i5
+   12524: a6 07 bf d8  	add %fp, -0x28, %l3
+   12528: b0 10 20 01  	mov	0x1, %i0
+   1252c: e0 07 bf cc  	ld [%fp+-0x34], %l0
+   12530: 10 80 00 25  	ba 0x125c4
+   12534: e2 07 bf c8  	ld [%fp+-0x38], %l1
+   12538: b3 2f 20 1d  	sll %i4, 0x1d, %i1
+   1253c: e0 1f bf d8  	ldd [%fp+-0x28], %l0
+   12540: b5 37 60 03  	srl %i5, 0x3, %i2
+   12544: ae 16 80 19  	or %i2, %i1, %l7
+   12548: ad 37 20 03  	srl %i4, 0x3, %l6
+   1254c: b3 2c 20 1d  	sll %l0, 0x1d, %i1
+   12550: b5 34 60 03  	srl %l1, 0x3, %i2
+   12554: b4 16 80 19  	or %i2, %i1, %i2
+   12558: b3 34 20 03  	srl %l0, 0x3, %i1
+   1255c: b6 5e bf f6  	smul %i2, -0xa, %i3
+   12560: b6 06 c0 12  	add %i3, %l2, %i3
+   12564: f8 07 bf d4  	ld [%fp+-0x2c], %i4
+   12568: b8 0f 00 02  	and %i4, %g2, %i4
+   1256c: f8 27 bf d4  	st %i4, [%fp+-0x2c]
+   12570: f8 07 bf d0  	ld [%fp+-0x30], %i4
+   12574: b8 07 20 01  	add %i4, 0x1, %i4
+   12578: f8 27 bf d0  	st %i4, [%fp+-0x30]
+   1257c: 90 10 00 14  	mov	%l4, %o0
+   12580: 92 10 00 15  	mov	%l5, %o1
+   12584: e0 07 bf cc  	ld [%fp+-0x34], %l0
+   12588: 94 10 00 10  	mov	%l0, %o2
+   1258c: e2 07 bf c8  	ld [%fp+-0x38], %l1
+   12590: 96 10 00 11  	mov	%l1, %o3
+   12594: 40 00 02 c6  	call 0x130ac
+   12598: 98 10 00 13  	mov	%l3, %o4
+   1259c: c4 1f bf d8  	ldd [%fp+-0x28], %g2
+   125a0: b9 28 a0 1d  	sll %g2, 0x1d, %i4
+   125a4: bb 30 e0 03  	srl %g3, 0x3, %i5
+   125a8: b8 17 40 1c  	or %i5, %i4, %i4
+   125ac: ba 5f 3f f6  	smul %i4, -0xa, %i5
+   125b0: 88 20 00 15  	sub %g0, %l5, %g4
+   125b4: 80 a7 40 04  	cmp	%i5, %g4
+   125b8: bb 30 a0 03  	srl %g2, 0x3, %i5
+   125bc: 12 80 00 17  	bne	0x12618
+   125c0: a4 10 00 1a  	mov	%i2, %l2
+   125c4: aa 10 00 1c  	mov	%i4, %l5
+   125c8: a8 10 00 1d  	mov	%i5, %l4
+   125cc: 90 10 00 16  	mov	%l6, %o0
+   125d0: 92 10 00 17  	mov	%l7, %o1
+   125d4: 94 10 00 10  	mov	%l0, %o2
+   125d8: 96 10 00 11  	mov	%l1, %o3
+   125dc: 40 00 02 b4  	call 0x130ac
+   125e0: 98 10 00 13  	mov	%l3, %o4
+   125e4: f8 1f bf d8  	ldd [%fp+-0x28], %i4
+   125e8: 90 10 00 19  	mov	%i1, %o0
+   125ec: 92 10 00 12  	mov	%l2, %o1
+   125f0: 94 10 00 10  	mov	%l0, %o2
+   125f4: 96 10 00 11  	mov	%l1, %o3
+   125f8: 40 00 02 ad  	call 0x130ac
+   125fc: 98 10 00 13  	mov	%l3, %o4
+   12600: 80 8e e0 ff  	andcc %i3, 0xff, %g0
+   12604: 02 bf ff cd  	be	0x12538
+   12608: 84 10 00 18  	mov	%i0, %g2
+   1260c: 10 bf ff cb  	ba 0x12538
+   12610: 84 10 00 00  	mov	%g0, %g2
+   12614: b4 10 00 12  	mov	%l2, %i2
+   12618: b8 10 20 01  	mov	0x1, %i4
+   1261c: f0 07 bf b8  	ld [%fp+-0x48], %i0
+   12620: 80 a6 20 00  	cmp	%i0, 0x0
+   12624: 02 80 00 03  	be	0x12630
+   12628: b0 10 00 1c  	mov	%i4, %i0
+   1262c: b0 10 00 00  	mov	%g0, %i0
+   12630: b6 0e e0 ff  	and %i3, 0xff, %i3
+   12634: 80 a6 e0 05  	cmp	%i3, 0x5
+   12638: ba 10 00 1c  	mov	%i4, %i5
+   1263c: e2 07 bf b4  	ld [%fp+-0x4c], %l1
+   12640: e4 07 bf ac  	ld [%fp+-0x54], %l2
+   12644: 12 80 00 03  	bne	0x12650
+   12648: c8 07 bf d4  	ld [%fp+-0x2c], %g4
+   1264c: ba 10 00 00  	mov	%g0, %i5
+   12650: 84 1e 40 14  	xor %i1, %l4, %g2
+   12654: 86 1e 80 15  	xor %i2, %l5, %g3
+   12658: 80 90 c0 02  	orcc %g3, %g2, %g0
+   1265c: 12 80 00 03  	bne	0x12668
+   12660: 84 10 00 1c  	mov	%i4, %g2
+   12664: 84 10 00 00  	mov	%g0, %g2
+   12668: ba 37 40 04  	orn %i5, %g4, %i5
+   1266c: c6 07 bf c0  	ld [%fp+-0x40], %g3
+   12670: 84 10 c0 02  	or %g3, %g2, %g2
+   12674: c6 07 bf c4  	ld [%fp+-0x3c], %g3
+   12678: b0 0e 00 03  	and %i0, %g3, %i0
+   1267c: 80 a6 e0 04  	cmp	%i3, 0x4
+   12680: b0 10 80 18  	or %g2, %i0, %i0
+   12684: b6 10 00 1c  	mov	%i4, %i3
+   12688: e6 07 bf a8  	ld [%fp+-0x58], %l3
+   1268c: 18 80 00 03  	bgu	0x12698
+   12690: e8 07 bf a4  	ld [%fp+-0x5c], %l4
+   12694: b6 10 00 00  	mov	%g0, %i3
+   12698: ba 17 40 1a  	or %i5, %i2, %i5
+   1269c: b6 0f 40 1b  	and %i5, %i3, %i3
+   126a0: b0 1e 20 01  	xor %i0, 0x1, %i0
+   126a4: b6 16 00 1b  	or %i0, %i3, %i3
+   126a8: b0 0e e0 01  	and %i3, 0x1, %i0
+   126ac: b4 86 80 18  	addcc %i2, %i0, %i2
+   126b0: b2 c6 60 00  	addxcc %i1, 0x0, %i1
+   126b4: 80 a6 a0 0a  	cmp	%i2, 0xa
+   126b8: 0a 80 00 03  	bcs	0x126c4
+   126bc: b0 10 00 1c  	mov	%i4, %i0
+   126c0: b0 10 00 00  	mov	%g0, %i0
+   126c4: 80 a6 60 00  	cmp	%i1, 0x0
+   126c8: 02 80 00 03  	be	0x126d4
+   126cc: 01 00 00 00  	nop
+   126d0: b0 10 00 00  	mov	%g0, %i0
+   126d4: 80 a6 20 00  	cmp	%i0, 0x0
+   126d8: 02 80 00 2b  	be	0x12784
+   126dc: b0 10 00 1c  	mov	%i4, %i0
+   126e0: c4 07 bf bc  	ld [%fp+-0x44], %g2
+   126e4: 80 a6 00 02  	cmp	%i0, %g2
+   126e8: 14 80 00 03  	bg	0x126f4
+   126ec: 01 00 00 00  	nop
+   126f0: b8 10 00 00  	mov	%g0, %i4
+   126f4: b6 0e c0 1c  	and %i3, %i4, %i3
+   126f8: 80 a6 e0 01  	cmp	%i3, 0x1
+   126fc: f6 07 bf d0  	ld [%fp+-0x30], %i3
+   12700: 12 80 00 3a  	bne	0x127e8
+   12704: b6 06 c0 14  	add %i3, %l4, %i3
+   12708: 80 a4 e0 00  	cmp	%l3, 0x0
+   1270c: 02 80 00 0e  	be	0x12744
+   12710: 01 00 00 00  	nop
+   12714: f8 07 bf a0  	ld [%fp+-0x60], %i4
+   12718: b8 06 c0 1c  	add %i3, %i4, %i4
+   1271c: b8 07 00 18  	add %i4, %i0, %i4
+   12720: 80 a7 20 01  	cmp	%i4, 0x1
+   12724: 14 80 00 03  	bg	0x12730
+   12728: 01 00 00 00  	nop
+   1272c: b8 10 20 01  	mov	0x1, %i4
+   12730: 80 a4 80 1c  	cmp	%l2, %i4
+   12734: 06 80 00 03  	bl	0x12740
+   12738: 01 00 00 00  	nop
+   1273c: a4 10 00 1c  	mov	%i4, %l2
+   12740: 84 10 00 12  	mov	%l2, %g2
+   12744: 80 a6 00 02  	cmp	%i0, %g2
+   12748: e4 07 bf cc  	ld [%fp+-0x34], %l2
+   1274c: 04 80 00 29  	ble	0x127f0
+   12750: e6 07 bf c8  	ld [%fp+-0x38], %l3
+   12754: b4 86 a0 05  	addcc %i2, 0x5, %i2
+   12758: b2 c6 60 00  	addxcc %i1, 0x0, %i1
+   1275c: b9 2e 60 1f  	sll %i1, 0x1f, %i4
+   12760: b5 36 a0 01  	srl %i2, 0x1, %i2
+   12764: b4 16 80 1c  	or %i2, %i4, %i2
+   12768: b3 36 60 01  	srl %i1, 0x1, %i1
+   1276c: b8 06 80 19  	add %i2, %i1, %i4
+   12770: 80 a7 00 1a  	cmp	%i4, %i2
+   12774: 0a 80 00 6c  	bcs	0x12924
+   12778: 01 00 00 00  	nop
+   1277c: 10 80 00 6b  	ba 0x12928
+   12780: ba 10 00 00  	mov	%g0, %i5
+   12784: 84 10 00 00  	mov	%g0, %g2
+   12788: ba 10 20 01  	mov	0x1, %i5
+   1278c: 86 10 20 0a  	mov	0xa, %g3
+   12790: 10 80 00 05  	ba 0x127a4
+   12794: b0 10 00 1d  	mov	%i5, %i0
+   12798: 80 a1 20 00  	cmp	%g4, 0x0
+   1279c: 02 bf ff d1  	be	0x126e0
+   127a0: b0 06 20 01  	add %i0, 0x1, %i0
+   127a4: 86 50 e0 0a  	umul %g3, 0xa, %g3
+   127a8: a1 40 00 00  	rd %y, %l0
+   127ac: 80 a0 c0 1a  	cmp	%g3, %i2
+   127b0: 08 80 00 03  	bleu	0x127bc
+   127b4: 88 10 00 1d  	mov	%i5, %g4
+   127b8: 88 10 00 00  	mov	%g0, %g4
+   127bc: 84 58 a0 0a  	smul %g2, 0xa, %g2
+   127c0: 84 04 00 02  	add %l0, %g2, %g2
+   127c4: 80 a0 80 19  	cmp	%g2, %i1
+   127c8: 08 80 00 03  	bleu	0x127d4
+   127cc: a0 10 00 1d  	mov	%i5, %l0
+   127d0: a0 10 00 00  	mov	%g0, %l0
+   127d4: 80 a0 80 19  	cmp	%g2, %i1
+   127d8: 02 bf ff f0  	be	0x12798
+   127dc: 01 00 00 00  	nop
+   127e0: 10 bf ff ee  	ba 0x12798
+   127e4: 88 10 00 10  	mov	%l0, %g4
+   127e8: e4 07 bf cc  	ld [%fp+-0x34], %l2
+   127ec: e6 07 bf c8  	ld [%fp+-0x38], %l3
+   127f0: 80 a6 00 02  	cmp	%i0, %g2
+   127f4: 06 80 00 03  	bl	0x12800
+   127f8: 01 00 00 00  	nop
+   127fc: b0 10 00 02  	mov	%g2, %i0
+   12800: b1 2e 20 10  	sll %i0, 0x10, %i0
+   12804: b1 3e 20 10  	sra %i0, 0x10, %i0
+   12808: b7 2e e0 10  	sll %i3, 0x10, %i3
+   1280c: b7 3e e0 10  	sra %i3, 0x10, %i3
+   12810: b6 06 c0 18  	add %i3, %i0, %i3
+   12814: 80 a6 20 01  	cmp	%i0, 0x1
+   12818: 06 80 00 25  	bl	0x128ac
+   1281c: b6 06 ff ff  	add %i3, -0x1, %i3
+   12820: b8 04 60 04  	add %l1, 0x4, %i4
+   12824: ba 10 20 01  	mov	0x1, %i5
+   12828: 10 80 00 17  	ba 0x12884
+   1282c: 84 10 00 18  	mov	%i0, %g2
+   12830: 88 01 00 10  	add %g4, %l0, %g4
+   12834: a0 51 00 13  	umul %g4, %l3, %l0
+   12838: a1 40 00 00  	rd %y, %l0
+   1283c: a1 34 20 02  	srl %l0, 0x2, %l0
+   12840: a0 5c 20 05  	smul %l0, 0x5, %l0
+   12844: 88 21 00 10  	sub %g4, %l0, %g4
+   12848: 86 a0 c0 04  	subcc %g3, %g4, %g3
+   1284c: 88 58 c0 12  	smul %g3, %l2, %g4
+   12850: 86 50 c0 13  	umul %g3, %l3, %g3
+   12854: a1 40 00 00  	rd %y, %l0
+   12858: b2 e6 60 00  	subxcc %i1, 0x0, %i1
+   1285c: 88 04 00 04  	add %l0, %g4, %g4
+   12860: b2 5e 40 13  	smul %i1, %l3, %i1
+   12864: a0 58 e0 0a  	smul %g3, 0xa, %l0
+   12868: b4 26 80 10  	sub %i2, %l0, %i2
+   1286c: b4 16 a0 30  	or %i2, 0x30, %i2
+   12870: f4 2f 00 02  	stb %i2, [%i4+%g2]
+   12874: 84 80 bf ff  	addcc %g2, -0x1, %g2
+   12878: b2 01 00 19  	add %g4, %i1, %i1
+   1287c: 02 80 00 0c  	be	0x128ac
+   12880: b4 10 00 03  	mov	%g3, %i2
+   12884: 87 2e 60 1f  	sll %i1, 0x1f, %g3
+   12888: 89 36 a0 01  	srl %i2, 0x1, %g4
+   1288c: 86 11 00 03  	or %g4, %g3, %g3
+   12890: b3 36 60 01  	srl %i1, 0x1, %i1
+   12894: 88 00 c0 19  	add %g3, %i1, %g4
+   12898: 80 a1 00 03  	cmp	%g4, %g3
+   1289c: 0a bf ff e5  	bcs	0x12830
+   128a0: a0 10 00 1d  	mov	%i5, %l0
+   128a4: 10 bf ff e3  	ba 0x12830
+   128a8: a0 10 00 00  	mov	%g0, %l0
+   128ac: f6 24 40 00  	st %i3, [%l1]
+   128b0: f2 07 bf b0  	ld [%fp+-0x50], %i1
+   128b4: f2 2c 60 04  	stb %i1, [%l1+0x4]
+   128b8: 81 c7 e0 08  	ret
+   128bc: 81 e8 00 00  	restore
+   128c0: b6 10 00 00  	mov	%g0, %i3
+   128c4: b4 10 20 01  	mov	0x1, %i2
+   128c8: 88 10 20 0a  	mov	0xa, %g4
+   128cc: 10 80 00 05  	ba 0x128e0
+   128d0: b0 10 00 1a  	mov	%i2, %i0
+   128d4: 80 a7 60 00  	cmp	%i5, 0x0
+   128d8: 02 bf fe 5a  	be	0x12240
+   128dc: b0 06 20 01  	add %i0, 0x1, %i0
+   128e0: 88 51 20 0a  	umul %g4, 0xa, %g4
+   128e4: 85 40 00 00  	rd %y, %g2
+   128e8: 80 a1 00 12  	cmp	%g4, %l2
+   128ec: 08 80 00 03  	bleu	0x128f8
+   128f0: ba 10 00 1a  	mov	%i2, %i5
+   128f4: ba 10 00 00  	mov	%g0, %i5
+   128f8: b6 5e e0 0a  	smul %i3, 0xa, %i3
+   128fc: b6 00 80 1b  	add %g2, %i3, %i3
+   12900: 80 a6 c0 19  	cmp	%i3, %i1
+   12904: 08 80 00 03  	bleu	0x12910
+   12908: 84 10 00 1a  	mov	%i2, %g2
+   1290c: 84 10 00 00  	mov	%g0, %g2
+   12910: 80 a6 c0 19  	cmp	%i3, %i1
+   12914: 02 bf ff f0  	be	0x128d4
+   12918: 01 00 00 00  	nop
+   1291c: 10 bf ff ee  	ba 0x128d4
+   12920: ba 10 00 02  	mov	%g2, %i5
+   12924: ba 10 20 01  	mov	0x1, %i5
+   12928: b8 07 00 1d  	add %i4, %i5, %i4
+   1292c: ba 57 00 13  	umul %i4, %l3, %i5
+   12930: bb 40 00 00  	rd %y, %i5
+   12934: bb 37 60 02  	srl %i5, 0x2, %i5
+   12938: ba 5f 60 05  	smul %i5, 0x5, %i5
+   1293c: b8 27 00 1d  	sub %i4, %i5, %i4
+   12940: b4 a6 80 1c  	subcc %i2, %i4, %i2
+   12944: b8 5e 80 12  	smul %i2, %l2, %i4
+   12948: b4 56 80 13  	umul %i2, %l3, %i2
+   1294c: bb 40 00 00  	rd %y, %i5
+   12950: b2 e6 60 00  	subxcc %i1, 0x0, %i1
+   12954: b8 07 40 1c  	add %i5, %i4, %i4
+   12958: b2 5e 40 13  	smul %i1, %l3, %i1
+   1295c: b2 07 00 19  	add %i4, %i1, %i1
+   12960: b0 06 3f ff  	add %i0, -0x1, %i0
+   12964: 80 a6 00 02  	cmp	%i0, %g2
+   12968: 16 bf ff a5  	bge	0x127fc
+   1296c: b6 06 e0 01  	add %i3, 0x1, %i3
+   12970: 10 bf ff a4  	ba 0x12800
+   12974: 01 00 00 00  	nop
+   12978: b0 10 20 01  	mov	0x1, %i0
+   1297c: f0 27 bf c4  	st %i0, [%fp+-0x3c]
+   12980: 10 bf fe 1f  	ba 0x121fc
+   12984: ac 10 00 00  	mov	%g0, %l6
+   12988: b0 10 20 01  	mov	0x1, %i0
+   1298c: f4 1f bf f0  	ldd [%fp+-0x10], %i2
+   12990: ac 10 00 00  	mov	%g0, %l6
+   12994: c0 27 bf c4  	st %g0, [%fp+-0x3c]
+   12998: 86 a6 c0 18  	subcc %i3, %i0, %g3
+   1299c: 84 e6 a0 00  	subxcc %i2, 0x0, %g2
+   129a0: 10 bf fe 17  	ba 0x121fc
+   129a4: c4 3f bf f0  	std %g2, [%fp+-0x10]
+   129a8: 9d e3 bf 90  	save %sp, -0x70, %sp
+   129ac: 85 36 60 1f  	srl %i1, 0x1f, %g2
+   129b0: d4 1e 80 00  	ldd [%i2], %o2
+   129b4: b1 2e 20 01  	sll %i0, 0x1, %i0
+   129b8: b0 16 00 02  	or %i0, %g2, %i0
+   129bc: b3 2e 60 01  	sll %i1, 0x1, %i1
+   129c0: 98 07 bf f8  	add %fp, -0x8, %o4
+   129c4: 90 10 00 18  	mov	%i0, %o0
+   129c8: 40 00 01 b9  	call 0x130ac
+   129cc: 92 10 00 19  	mov	%i1, %o1
+   129d0: e4 1f bf f8  	ldd [%fp+-0x8], %l2
+   129d4: d4 1e a0 08  	ldd [%i2+0x8], %o2
+   129d8: a0 10 00 08  	mov	%o0, %l0
+   129dc: a2 10 00 09  	mov	%o1, %l1
+   129e0: 98 07 bf f0  	add %fp, -0x10, %o4
+   129e4: 90 10 00 18  	mov	%i0, %o0
+   129e8: 40 00 01 b1  	call 0x130ac
+   129ec: 92 10 00 19  	mov	%i1, %o1
+   129f0: e8 1f bf f8  	ldd [%fp+-0x8], %l4
+   129f4: b0 82 40 13  	addcc %o1, %l3, %i0
+   129f8: b2 c2 00 12  	addxcc %o0, %l2, %i1
+   129fc: 84 10 20 01  	mov	0x1, %g2
+   12a00: 80 a6 40 14  	cmp	%i1, %l4
+   12a04: 0a 80 00 03  	bcs	0x12a10
+   12a08: 86 10 00 02  	mov	%g2, %g3
+   12a0c: 86 10 00 00  	mov	%g0, %g3
+   12a10: 80 a6 00 15  	cmp	%i0, %l5
+   12a14: 0a 80 00 03  	bcs	0x12a20
+   12a18: 88 10 00 02  	mov	%g2, %g4
+   12a1c: 88 10 00 00  	mov	%g0, %g4
+   12a20: 80 a6 40 14  	cmp	%i1, %l4
+   12a24: 02 80 00 03  	be	0x12a30
+   12a28: 01 00 00 00  	nop
+   12a2c: 88 10 00 03  	mov	%g3, %g4
+   12a30: e8 1f bf f0  	ldd [%fp+-0x10], %l4
+   12a34: a6 85 40 04  	addcc %l5, %g4, %l3
+   12a38: a4 c5 20 00  	addxcc %l4, 0x0, %l2
+   12a3c: e4 3f bf f0  	std %l2, [%fp+-0x10]
+   12a40: ec 1e a0 08  	ldd [%i2+0x8], %l6
+   12a44: e8 1e 80 00  	ldd [%i2], %l4
+   12a48: 86 85 c0 18  	addcc %l7, %i0, %g3
+   12a4c: 88 c5 80 19  	addxcc %l6, %i1, %g4
+   12a50: ac 1c 3f ff  	xor %l0, -0x1, %l6
+   12a54: 80 a5 00 16  	cmp	%l4, %l6
+   12a58: 90 1c 7f ff  	xor %l1, -0x1, %o0
+   12a5c: 18 80 00 03  	bgu	0x12a68
+   12a60: ae 10 00 02  	mov	%g2, %l7
+   12a64: ae 10 00 00  	mov	%g0, %l7
+   12a68: 80 a5 40 08  	cmp	%l5, %o0
+   12a6c: 18 80 00 03  	bgu	0x12a78
+   12a70: 90 10 00 02  	mov	%g2, %o0
+   12a74: 90 10 00 00  	mov	%g0, %o0
+   12a78: 80 a5 00 16  	cmp	%l4, %l6
+   12a7c: 02 80 00 03  	be	0x12a88
+   12a80: 01 00 00 00  	nop
+   12a84: 90 10 00 17  	mov	%l7, %o0
+   12a88: 92 80 c0 08  	addcc %g3, %o0, %o1
+   12a8c: 90 c1 20 00  	addxcc %g4, 0x0, %o0
+   12a90: 80 a2 00 19  	cmp	%o0, %i1
+   12a94: 0a 80 00 03  	bcs	0x12aa0
+   12a98: 86 10 00 02  	mov	%g2, %g3
+   12a9c: 86 10 00 00  	mov	%g0, %g3
+   12aa0: 80 a2 40 18  	cmp	%o1, %i0
+   12aa4: 0a 80 00 03  	bcs	0x12ab0
+   12aa8: 01 00 00 00  	nop
+   12aac: 84 10 00 00  	mov	%g0, %g2
+   12ab0: 80 a2 00 19  	cmp	%o0, %i1
+   12ab4: 02 80 00 03  	be	0x12ac0
+   12ab8: e8 07 a0 5c  	ld [%fp+0x5c], %l4
+   12abc: 84 10 00 03  	mov	%g3, %g2
+   12ac0: 96 84 c0 02  	addcc %l3, %g2, %o3
+   12ac4: 94 c4 a0 00  	addxcc %l2, 0x0, %o2
+   12ac8: a4 06 ff bf  	add %i3, -0x41, %l2
+   12acc: 40 00 01 8c  	call 0x130fc
+   12ad0: 98 10 00 12  	mov	%l2, %o4
+   12ad4: 80 a5 20 00  	cmp	%l4, 0x0
+   12ad8: 02 80 00 25  	be	0x12b6c
+   12adc: d0 3f 00 00  	std %o0, [%i4]
+   12ae0: e8 1e a0 08  	ldd [%i2+0x8], %l4
+   12ae4: c4 1e 80 00  	ldd [%i2], %g2
+   12ae8: b6 a6 00 15  	subcc %i0, %l5, %i3
+   12aec: b8 e6 40 14  	subxcc %i1, %l4, %i4
+   12af0: b4 10 20 01  	mov	0x1, %i2
+   12af4: 80 a0 80 10  	cmp	%g2, %l0
+   12af8: 18 80 00 03  	bgu	0x12b04
+   12afc: 88 10 00 1a  	mov	%i2, %g4
+   12b00: 88 10 00 00  	mov	%g0, %g4
+   12b04: 80 a0 c0 11  	cmp	%g3, %l1
+   12b08: 18 80 00 03  	bgu	0x12b14
+   12b0c: a2 10 00 1a  	mov	%i2, %l1
+   12b10: a2 10 00 00  	mov	%g0, %l1
+   12b14: 80 a0 80 10  	cmp	%g2, %l0
+   12b18: 02 80 00 03  	be	0x12b24
+   12b1c: 01 00 00 00  	nop
+   12b20: a2 10 00 04  	mov	%g4, %l1
+   12b24: 92 a6 c0 11  	subcc %i3, %l1, %o1
+   12b28: 90 e7 20 00  	subxcc %i4, 0x0, %o0
+   12b2c: 80 a2 00 19  	cmp	%o0, %i1
+   12b30: 18 80 00 03  	bgu	0x12b3c
+   12b34: b6 10 00 1a  	mov	%i2, %i3
+   12b38: b6 10 00 00  	mov	%g0, %i3
+   12b3c: 80 a2 40 18  	cmp	%o1, %i0
+   12b40: 18 80 00 03  	bgu	0x12b4c
+   12b44: c4 1f bf f0  	ldd [%fp+-0x10], %g2
+   12b48: b4 10 00 00  	mov	%g0, %i2
+   12b4c: 80 a2 00 19  	cmp	%o0, %i1
+   12b50: 02 80 00 03  	be	0x12b5c
+   12b54: 01 00 00 00  	nop
+   12b58: b4 10 00 1b  	mov	%i3, %i2
+   12b5c: 96 a0 c0 1a  	subcc %g3, %i2, %o3
+   12b60: 94 e0 a0 00  	subxcc %g2, 0x0, %o2
+   12b64: 10 80 00 3c  	ba 0x12c54
+   12b68: 98 10 00 12  	mov	%l2, %o4
+   12b6c: 87 34 20 1f  	srl %l0, 0x1f, %g3
+   12b70: 89 2e 20 01  	sll %i0, 0x1, %g4
+   12b74: b9 2e 60 01  	sll %i1, 0x1, %i4
+   12b78: 85 36 20 1f  	srl %i0, 0x1f, %g2
+   12b7c: 84 17 00 02  	or %i4, %g2, %g2
+   12b80: b8 10 20 01  	mov	0x1, %i4
+   12b84: 80 a0 80 19  	cmp	%g2, %i1
+   12b88: 88 11 00 03  	or %g4, %g3, %g4
+   12b8c: 0a 80 00 03  	bcs	0x12b98
+   12b90: aa 10 00 1c  	mov	%i4, %l5
+   12b94: aa 10 00 00  	mov	%g0, %l5
+   12b98: 80 a1 00 18  	cmp	%g4, %i0
+   12b9c: 0a 80 00 03  	bcs	0x12ba8
+   12ba0: 86 10 00 1c  	mov	%i4, %g3
+   12ba4: 86 10 00 00  	mov	%g0, %g3
+   12ba8: a7 2c 20 01  	sll %l0, 0x1, %l3
+   12bac: a9 34 60 1f  	srl %l1, 0x1f, %l4
+   12bb0: 80 a0 80 19  	cmp	%g2, %i1
+   12bb4: 02 80 00 03  	be	0x12bc0
+   12bb8: a3 2c 60 01  	sll %l1, 0x1, %l1
+   12bbc: 86 10 00 15  	mov	%l5, %g3
+   12bc0: d0 1e a0 08  	ldd [%i2+0x8], %o0
+   12bc4: ec 1e 80 00  	ldd [%i2], %l6
+   12bc8: b4 a1 00 09  	subcc %g4, %o1, %i2
+   12bcc: a0 e0 80 08  	subxcc %g2, %o0, %l0
+   12bd0: 80 a5 c0 11  	cmp	%l7, %l1
+   12bd4: a6 14 c0 14  	or %l3, %l4, %l3
+   12bd8: 18 80 00 03  	bgu	0x12be4
+   12bdc: a2 10 00 1c  	mov	%i4, %l1
+   12be0: a2 10 00 00  	mov	%g0, %l1
+   12be4: 80 a5 80 13  	cmp	%l6, %l3
+   12be8: 18 80 00 03  	bgu	0x12bf4
+   12bec: 90 10 00 1c  	mov	%i4, %o0
+   12bf0: 90 10 00 00  	mov	%g0, %o0
+   12bf4: 80 a5 80 13  	cmp	%l6, %l3
+   12bf8: 02 80 00 03  	be	0x12c04
+   12bfc: e8 1f bf f0  	ldd [%fp+-0x10], %l4
+   12c00: a2 10 00 08  	mov	%o0, %l1
+   12c04: 92 a6 80 11  	subcc %i2, %l1, %o1
+   12c08: 90 e4 20 00  	subxcc %l0, 0x0, %o0
+   12c0c: 80 a2 00 02  	cmp	%o0, %g2
+   12c10: 18 80 00 03  	bgu	0x12c1c
+   12c14: b4 10 00 1c  	mov	%i4, %i2
+   12c18: b4 10 00 00  	mov	%g0, %i2
+   12c1c: a1 35 60 1f  	srl %l5, 0x1f, %l0
+   12c20: a3 2d 20 01  	sll %l4, 0x1, %l1
+   12c24: 80 a2 40 04  	cmp	%o1, %g4
+   12c28: 18 80 00 03  	bgu	0x12c34
+   12c2c: 89 2d 60 01  	sll %l5, 0x1, %g4
+   12c30: b8 10 00 00  	mov	%g0, %i4
+   12c34: 98 06 ff c0  	add %i3, -0x40, %o4
+   12c38: b6 14 40 10  	or %l1, %l0, %i3
+   12c3c: 80 a2 00 02  	cmp	%o0, %g2
+   12c40: 02 80 00 03  	be	0x12c4c
+   12c44: 84 11 00 03  	or %g4, %g3, %g2
+   12c48: b8 10 00 1a  	mov	%i2, %i4
+   12c4c: 96 a0 80 1c  	subcc %g2, %i4, %o3
+   12c50: 94 e6 e0 00  	subxcc %i3, 0x0, %o2
+   12c54: 40 00 01 2a  	call 0x130fc
+   12c58: 01 00 00 00  	nop
+   12c5c: d0 3f 40 00  	std %o0, [%i5]
+   12c60: d4 1f bf f0  	ldd [%fp+-0x10], %o2
+   12c64: 90 10 00 19  	mov	%i1, %o0
+   12c68: 92 10 00 18  	mov	%i0, %o1
+   12c6c: 40 00 01 24  	call 0x130fc
+   12c70: 98 10 00 12  	mov	%l2, %o4
+   12c74: b0 10 00 08  	mov	%o0, %i0
+   12c78: 81 c7 e0 08  	ret
+   12c7c: 93 e8 00 09  	restore %g0, %o1, %o1
+   12c80: 13 00 00 4d  	sethi 0x4d, %o1
+   12c84: 92 12 60 41  	or %o1, 0x41, %o1
+   12c88: 90 5a 00 09  	smul %o0, %o1, %o0
+   12c8c: 81 c3 e0 08  	retl
+   12c90: 91 32 20 12  	srl %o0, 0x12, %o0
+   12c94: 13 00 02 cb  	sethi 0x2cb, %o1
+   12c98: 92 12 62 fb  	or %o1, 0x2fb, %o1
+   12c9c: 90 5a 00 09  	smul %o0, %o1, %o0
+   12ca0: 81 c3 e0 08  	retl
+   12ca4: 91 32 20 14  	srl %o0, 0x14, %o0
+   12ca8: 13 00 04 a4  	sethi 0x4a4, %o1
+   12cac: 92 12 63 4f  	or %o1, 0x34f, %o1
+   12cb0: 90 5a 00 09  	smul %o0, %o1, %o0
+   12cb4: 91 32 20 13  	srl %o0, 0x13, %o0
+   12cb8: 81 c3 e0 08  	retl
+   12cbc: 90 02 20 01  	add %o0, 0x1, %o0
+   12cc0: 9d e3 bf a0  	save %sp, -0x60, %sp
+   12cc4: b4 10 3f ff  	mov	-0x1, %i2
+   12cc8: 39 33 33 33  	sethi 0x333333, %i4
+   12ccc: b6 17 20 cc  	or %i4, 0xcc, %i3
+   12cd0: b8 17 20 cd  	or %i4, 0xcd, %i4
+   12cd4: 07 0c cc cc  	sethi 0xccccc, %g3
+   12cd8: ba 10 e3 33  	or %g3, 0x333, %i5
+   12cdc: 84 10 20 01  	mov	0x1, %g2
+   12ce0: 10 80 00 05  	ba 0x12cf4
+   12ce4: 86 10 e3 34  	or %g3, 0x334, %g3
+   12ce8: 80 a4 20 00  	cmp	%l0, 0x0
+   12cec: 02 80 00 15  	be	0x12d40
+   12cf0: b4 06 a0 01  	add %i2, 0x1, %i2
+   12cf4: 88 5e 40 1b  	smul %i1, %i3, %g4
+   12cf8: b2 56 40 1c  	umul %i1, %i4, %i1
+   12cfc: a1 40 00 00  	rd %y, %l0
+   12d00: 88 04 00 04  	add %l0, %g4, %g4
+   12d04: b0 5e 00 1c  	smul %i0, %i4, %i0
+   12d08: b0 01 00 18  	add %g4, %i0, %i0
+   12d0c: 80 a6 00 1d  	cmp	%i0, %i5
+   12d10: 0a 80 00 03  	bcs	0x12d1c
+   12d14: 88 10 00 02  	mov	%g2, %g4
+   12d18: 88 10 00 00  	mov	%g0, %g4
+   12d1c: 80 a6 40 03  	cmp	%i1, %g3
+   12d20: 0a 80 00 03  	bcs	0x12d2c
+   12d24: a0 10 00 02  	mov	%g2, %l0
+   12d28: a0 10 00 00  	mov	%g0, %l0
+   12d2c: 80 a6 00 1d  	cmp	%i0, %i5
+   12d30: 02 bf ff ee  	be	0x12ce8
+   12d34: 01 00 00 00  	nop
+   12d38: 10 bf ff ec  	ba 0x12ce8
+   12d3c: a0 10 00 04  	mov	%g4, %l0
+   12d40: 81 c7 e0 08  	ret
+   12d44: 91 e8 00 1a  	restore %g0, %i2, %o0
+   12d48: 9d e3 bf 90  	save %sp, -0x70, %sp
+   12d4c: 35 13 b1 3b  	sethi 0x13b13b, %i2
+   12d50: b4 16 a0 4f  	or %i2, 0x4f, %i2
+   12d54: b4 56 00 1a  	umul %i0, %i2, %i2
+   12d58: b5 40 00 00  	rd %y, %i2
+   12d5c: b7 36 a0 03  	srl %i2, 0x3, %i3
+   12d60: b4 5e e0 1a  	smul %i3, 0x1a, %i2
+   12d64: b7 2e e0 04  	sll %i3, 0x4, %i3
+   12d68: 39 00 00 52  	sethi 0x52, %i4
+   12d6c: b8 07 22 d0  	add %i4, 0x2d0, %i4
+   12d70: 80 a6 00 1a  	cmp	%i0, %i2
+   12d74: 12 80 00 08  	bne	0x12d94
+   12d78: b6 07 00 1b  	add %i4, %i3, %i3
+   12d7c: f8 1e c0 00  	ldd [%i3], %i4
+   12d80: f8 3e 40 00  	std %i4, [%i1]
+   12d84: f4 1e e0 08  	ldd [%i3+0x8], %i2
+   12d88: f4 3e 60 08  	std %i2, [%i1+0x8]
+   12d8c: 81 c7 e0 08  	ret
+   12d90: 81 e8 00 00  	restore
+   12d94: b8 26 00 1a  	sub %i0, %i2, %i4
+   12d98: b9 2f 20 03  	sll %i4, 0x3, %i4
+   12d9c: 3b 00 00 52  	sethi 0x52, %i5
+   12da0: ba 07 63 a0  	add %i5, 0x3a0, %i5
+   12da4: f8 1f 40 1c  	ldd [%i5+%i4], %i4
+   12da8: d4 1e e0 08  	ldd [%i3+0x8], %o2
+   12dac: 98 07 bf f8  	add %fp, -0x8, %o4
+   12db0: 90 10 00 1c  	mov	%i4, %o0
+   12db4: 40 00 00 be  	call 0x130ac
+   12db8: 92 10 00 1d  	mov	%i5, %o1
+   12dbc: d4 1e c0 00  	ldd [%i3], %o2
+   12dc0: a0 10 00 08  	mov	%o0, %l0
+   12dc4: b6 10 00 09  	mov	%o1, %i3
+   12dc8: 98 07 bf f0  	add %fp, -0x10, %o4
+   12dcc: 90 10 00 1c  	mov	%i4, %o0
+   12dd0: 40 00 00 b7  	call 0x130ac
+   12dd4: 92 10 00 1d  	mov	%i5, %o1
+   12dd8: e4 1f bf f0  	ldd [%fp+-0x10], %l2
+   12ddc: b6 84 c0 1b  	addcc %l3, %i3, %i3
+   12de0: b8 c4 80 10  	addxcc %l2, %l0, %i4
+   12de4: 84 10 20 01  	mov	0x1, %g2
+   12de8: 80 a7 00 12  	cmp	%i4, %l2
+   12dec: ba 10 00 08  	mov	%o0, %i5
+   12df0: a0 10 00 09  	mov	%o1, %l0
+   12df4: 1a 80 00 31  	bcc	0x12eb8
+   12df8: 86 10 00 02  	mov	%g2, %g3
+   12dfc: 80 a6 c0 13  	cmp	%i3, %l3
+   12e00: 1a 80 00 32  	bcc	0x12ec8
+   12e04: 01 00 00 00  	nop
+   12e08: 80 a7 00 12  	cmp	%i4, %l2
+   12e0c: 12 80 00 33  	bne	0x12ed8
+   12e10: 01 00 00 00  	nop
+   12e14: 80 a0 a0 01  	cmp	%g2, 0x1
+   12e18: 12 80 00 06  	bne	0x12e30
+   12e1c: 01 00 00 00  	nop
+   12e20: c4 1f bf f8  	ldd [%fp+-0x8], %g2
+   12e24: a6 80 e0 01  	addcc %g3, 0x1, %l3
+   12e28: a4 c0 a0 00  	addxcc %g2, 0x0, %l2
+   12e2c: e4 3f bf f8  	std %l2, [%fp+-0x8]
+   12e30: 7f ff ff 9e  	call 0x12ca8
+   12e34: 90 10 00 18  	mov	%i0, %o0
+   12e38: a2 10 00 08  	mov	%o0, %l1
+   12e3c: 7f ff ff 9b  	call 0x12ca8
+   12e40: 90 10 00 1a  	mov	%i2, %o0
+   12e44: b4 24 40 08  	sub %l1, %o0, %i2
+   12e48: 90 10 00 1d  	mov	%i5, %o0
+   12e4c: 92 10 00 10  	mov	%l0, %o1
+   12e50: 94 10 00 1c  	mov	%i4, %o2
+   12e54: 96 10 00 1b  	mov	%i3, %o3
+   12e58: 40 00 00 a9  	call 0x130fc
+   12e5c: 98 10 00 1a  	mov	%i2, %o4
+   12e60: bb 36 20 02  	srl %i0, 0x2, %i5
+   12e64: 05 0f ff ff  	sethi 0xfffff, %g2
+   12e68: 84 10 a3 fc  	or %g2, 0x3fc, %g2
+   12e6c: ba 0f 40 02  	and %i5, %g2, %i5
+   12e70: 05 00 00 53  	sethi 0x53, %g2
+   12e74: 84 00 a0 70  	add %g2, 0x70, %g2
+   12e78: fa 00 80 1d  	ld [%g2+%i5], %i5
+   12e7c: b1 2e 20 01  	sll %i0, 0x1, %i0
+   12e80: b0 0e 20 1e  	and %i0, 0x1e, %i0
+   12e84: b1 37 40 18  	srl %i5, %i0, %i0
+   12e88: b0 0e 20 03  	and %i0, 0x3, %i0
+   12e8c: 86 82 40 18  	addcc %o1, %i0, %g3
+   12e90: 84 c2 20 00  	addxcc %o0, 0x0, %g2
+   12e94: c4 3e 40 00  	std %g2, [%i1]
+   12e98: d4 1f bf f8  	ldd [%fp+-0x8], %o2
+   12e9c: 90 10 00 1c  	mov	%i4, %o0
+   12ea0: 92 10 00 1b  	mov	%i3, %o1
+   12ea4: 40 00 00 96  	call 0x130fc
+   12ea8: 98 10 00 1a  	mov	%i2, %o4
+   12eac: d0 3e 60 08  	std %o0, [%i1+0x8]
+   12eb0: 81 c7 e0 08  	ret
+   12eb4: 81 e8 00 00  	restore
+   12eb8: 86 10 00 00  	mov	%g0, %g3
+   12ebc: 80 a6 c0 13  	cmp	%i3, %l3
+   12ec0: 0a bf ff d2  	bcs	0x12e08
+   12ec4: 01 00 00 00  	nop
+   12ec8: 84 10 00 00  	mov	%g0, %g2
+   12ecc: 80 a7 00 12  	cmp	%i4, %l2
+   12ed0: 02 bf ff d1  	be	0x12e14
+   12ed4: 01 00 00 00  	nop
+   12ed8: 84 10 00 03  	mov	%g3, %g2
+   12edc: 80 a0 a0 01  	cmp	%g2, 0x1
+   12ee0: 02 bf ff d0  	be	0x12e20
+   12ee4: 01 00 00 00  	nop
+   12ee8: 10 bf ff d2  	ba 0x12e30
+   12eec: 01 00 00 00  	nop
+   12ef0: 9d e3 bf 90  	save %sp, -0x70, %sp
+   12ef4: b4 06 20 19  	add %i0, 0x19, %i2
+   12ef8: 37 13 b1 3b  	sethi 0x13b13b, %i3
+   12efc: b6 16 e0 4f  	or %i3, 0x4f, %i3
+   12f00: b4 56 80 1b  	umul %i2, %i3, %i2
+   12f04: b5 40 00 00  	rd %y, %i2
+   12f08: b7 36 a0 03  	srl %i2, 0x3, %i3
+   12f0c: b4 5e e0 1a  	smul %i3, 0x1a, %i2
+   12f10: b7 2e e0 04  	sll %i3, 0x4, %i3
+   12f14: 39 00 00 53  	sethi 0x53, %i4
+   12f18: b8 07 20 c8  	add %i4, 0xc8, %i4
+   12f1c: 80 a6 80 18  	cmp	%i2, %i0
+   12f20: 12 80 00 08  	bne	0x12f40
+   12f24: b6 07 00 1b  	add %i4, %i3, %i3
+   12f28: f8 1e c0 00  	ldd [%i3], %i4
+   12f2c: f8 3e 40 00  	std %i4, [%i1]
+   12f30: f4 1e e0 08  	ldd [%i3+0x8], %i2
+   12f34: f4 3e 60 08  	std %i2, [%i1+0x8]
+   12f38: 81 c7 e0 08  	ret
+   12f3c: 81 e8 00 00  	restore
+   12f40: b8 26 80 18  	sub %i2, %i0, %i4
+   12f44: b9 2f 20 03  	sll %i4, 0x3, %i4
+   12f48: 3b 00 00 52  	sethi 0x52, %i5
+   12f4c: ba 07 63 a0  	add %i5, 0x3a0, %i5
+   12f50: f8 1f 40 1c  	ldd [%i5+%i4], %i4
+   12f54: d4 1e e0 08  	ldd [%i3+0x8], %o2
+   12f58: 98 07 bf f8  	add %fp, -0x8, %o4
+   12f5c: 90 10 00 1c  	mov	%i4, %o0
+   12f60: 40 00 00 53  	call 0x130ac
+   12f64: 92 10 00 1d  	mov	%i5, %o1
+   12f68: c4 1e c0 00  	ldd [%i3], %g2
+   12f6c: a0 10 00 08  	mov	%o0, %l0
+   12f70: b6 10 00 09  	mov	%o1, %i3
+   12f74: 96 80 ff ff  	addcc %g3, -0x1, %o3
+   12f78: 94 c0 bf ff  	addxcc %g2, -0x1, %o2
+   12f7c: 98 07 bf f0  	add %fp, -0x10, %o4
+   12f80: 90 10 00 1c  	mov	%i4, %o0
+   12f84: 40 00 00 4a  	call 0x130ac
+   12f88: 92 10 00 1d  	mov	%i5, %o1
+   12f8c: e4 1f bf f0  	ldd [%fp+-0x10], %l2
+   12f90: b6 84 c0 1b  	addcc %l3, %i3, %i3
+   12f94: b8 c4 80 10  	addxcc %l2, %l0, %i4
+   12f98: 84 10 20 01  	mov	0x1, %g2
+   12f9c: 80 a7 00 12  	cmp	%i4, %l2
+   12fa0: ba 10 00 08  	mov	%o0, %i5
+   12fa4: a0 10 00 09  	mov	%o1, %l0
+   12fa8: 1a 80 00 33  	bcc	0x13074
+   12fac: 86 10 00 02  	mov	%g2, %g3
+   12fb0: 80 a6 c0 13  	cmp	%i3, %l3
+   12fb4: 1a 80 00 34  	bcc	0x13084
+   12fb8: 01 00 00 00  	nop
+   12fbc: 80 a7 00 12  	cmp	%i4, %l2
+   12fc0: 12 80 00 35  	bne	0x13094
+   12fc4: 01 00 00 00  	nop
+   12fc8: 80 a0 a0 01  	cmp	%g2, 0x1
+   12fcc: 12 80 00 06  	bne	0x12fe4
+   12fd0: 01 00 00 00  	nop
+   12fd4: c4 1f bf f8  	ldd [%fp+-0x8], %g2
+   12fd8: a6 80 e0 01  	addcc %g3, 0x1, %l3
+   12fdc: a4 c0 a0 00  	addxcc %g2, 0x0, %l2
+   12fe0: e4 3f bf f8  	std %l2, [%fp+-0x8]
+   12fe4: 7f ff ff 31  	call 0x12ca8
+   12fe8: 90 10 00 1a  	mov	%i2, %o0
+   12fec: b4 10 00 08  	mov	%o0, %i2
+   12ff0: 7f ff ff 2e  	call 0x12ca8
+   12ff4: 90 10 00 18  	mov	%i0, %o0
+   12ff8: b4 26 80 08  	sub %i2, %o0, %i2
+   12ffc: 90 10 00 1d  	mov	%i5, %o0
+   13000: 92 10 00 10  	mov	%l0, %o1
+   13004: 94 10 00 1c  	mov	%i4, %o2
+   13008: 96 10 00 1b  	mov	%i3, %o3
+   1300c: 40 00 00 3c  	call 0x130fc
+   13010: 98 10 00 1a  	mov	%i2, %o4
+   13014: bb 36 20 02  	srl %i0, 0x2, %i5
+   13018: 05 0f ff ff  	sethi 0xfffff, %g2
+   1301c: 84 10 a3 fc  	or %g2, 0x3fc, %g2
+   13020: ba 0f 40 02  	and %i5, %g2, %i5
+   13024: 05 00 00 53  	sethi 0x53, %g2
+   13028: 84 00 a1 b8  	add %g2, 0x1b8, %g2
+   1302c: fa 00 80 1d  	ld [%g2+%i5], %i5
+   13030: b1 2e 20 01  	sll %i0, 0x1, %i0
+   13034: b0 0e 20 1e  	and %i0, 0x1e, %i0
+   13038: b1 37 40 18  	srl %i5, %i0, %i0
+   1303c: b0 0e 20 03  	and %i0, 0x3, %i0
+   13040: b0 82 40 18  	addcc %o1, %i0, %i0
+   13044: ba c2 20 00  	addxcc %o0, 0x0, %i5
+   13048: 86 86 20 01  	addcc %i0, 0x1, %g3
+   1304c: 84 c7 60 00  	addxcc %i5, 0x0, %g2
+   13050: c4 3e 40 00  	std %g2, [%i1]
+   13054: d4 1f bf f8  	ldd [%fp+-0x8], %o2
+   13058: 90 10 00 1c  	mov	%i4, %o0
+   1305c: 92 10 00 1b  	mov	%i3, %o1
+   13060: 40 00 00 27  	call 0x130fc
+   13064: 98 10 00 1a  	mov	%i2, %o4
+   13068: d0 3e 60 08  	std %o0, [%i1+0x8]
+   1306c: 81 c7 e0 08  	ret
+   13070: 81 e8 00 00  	restore
+   13074: 86 10 00 00  	mov	%g0, %g3
+   13078: 80 a6 c0 13  	cmp	%i3, %l3
+   1307c: 0a bf ff d0  	bcs	0x12fbc
+   13080: 01 00 00 00  	nop
+   13084: 84 10 00 00  	mov	%g0, %g2
+   13088: 80 a7 00 12  	cmp	%i4, %l2
+   1308c: 02 bf ff cf  	be	0x12fc8
+   13090: 01 00 00 00  	nop
+   13094: 84 10 00 03  	mov	%g3, %g2
+   13098: 80 a0 a0 01  	cmp	%g2, 0x1
+   1309c: 02 bf ff ce  	be	0x12fd4
+   130a0: 01 00 00 00  	nop
+   130a4: 10 bf ff d0  	ba 0x12fe4
+   130a8: 01 00 00 00  	nop
+   130ac: 9d e3 bf a0  	save %sp, -0x60, %sp
+   130b0: ba 56 c0 19  	umul %i3, %i1, %i5
+   130b4: 85 40 00 00  	rd %y, %g2
+   130b8: b2 56 80 19  	umul %i2, %i1, %i1
+   130bc: 87 40 00 00  	rd %y, %g3
+   130c0: b6 56 c0 18  	umul %i3, %i0, %i3
+   130c4: 89 40 00 00  	rd %y, %g4
+   130c8: b4 56 80 18  	umul %i2, %i0, %i2
+   130cc: a1 40 00 00  	rd %y, %l0
+   130d0: b0 80 80 1b  	addcc %g2, %i3, %i0
+   130d4: b6 c1 20 00  	addxcc %g4, 0x0, %i3
+   130d8: b0 86 00 19  	addcc %i0, %i1, %i0
+   130dc: b2 c0 e0 00  	addxcc %g3, 0x0, %i1
+   130e0: b4 86 c0 1a  	addcc %i3, %i2, %i2
+   130e4: b6 c4 20 00  	addxcc %l0, 0x0, %i3
+   130e8: 86 86 80 19  	addcc %i2, %i1, %g3
+   130ec: 84 c6 e0 00  	addxcc %i3, 0x0, %g2
+   130f0: c4 3f 00 00  	std %g2, [%i4]
+   130f4: 81 c7 e0 08  	ret
+   130f8: 93 e8 00 1d  	restore %g0, %i5, %o1
+   130fc: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13100: 92 10 00 1b  	mov	%i3, %o1
+   13104: 90 10 00 1a  	mov	%i2, %o0
+   13108: b4 10 20 40  	mov	0x40, %i2
+   1310c: 40 00 05 9e  	call 0x14784
+   13110: 94 26 80 1c  	sub %i2, %i4, %o2
+   13114: b4 10 00 08  	mov	%o0, %i2
+   13118: b6 10 00 09  	mov	%o1, %i3
+   1311c: 90 10 00 18  	mov	%i0, %o0
+   13120: 92 10 00 19  	mov	%i1, %o1
+   13124: 40 00 05 aa  	call 0x147cc
+   13128: 94 10 00 1c  	mov	%i4, %o2
+   1312c: b0 16 80 08  	or %i2, %o0, %i0
+   13130: b2 16 c0 09  	or %i3, %o1, %i1
+   13134: 81 c7 e0 08  	ret
+   13138: 81 e8 00 00  	restore
+   1313c: 11 00 00 53  	sethi 0x53, %o0
+   13140: d0 02 22 10  	ld [%o0+0x210], %o0
+   13144: 82 10 00 0f  	mov	%o7, %g1
+   13148: 40 00 03 52  	call 0x13e90
+   1314c: 9e 10 00 01  	mov	%g1, %o7
+   13150: 81 c3 e0 08  	retl
+   13154: 01 00 00 00  	nop
+   13158: 81 c3 e0 08  	retl
+   1315c: 01 00 00 00  	nop
+   13160: 81 c3 e0 08  	retl
+   13164: 01 00 00 00  	nop
+   13168: 81 c3 e0 08  	retl
+   1316c: 01 00 00 00  	nop
+   13170: 81 c3 e0 08  	retl
+   13174: 01 00 00 00  	nop
+   13178: 81 c3 e0 08  	retl
+   1317c: 01 00 00 00  	nop
+   13180: 81 c3 e0 08  	retl
+   13184: 01 00 00 00  	nop
+   13188: 81 c3 e0 08  	retl
+   1318c: 01 00 00 00  	nop
+   13190: 80 a2 60 00  	cmp	%o1, 0x0
+   13194: 02 80 00 0c  	be	0x131c4
+   13198: 94 10 00 08  	mov	%o0, %o2
+   1319c: 96 02 00 09  	add %o0, %o1, %o3
+   131a0: 94 10 00 08  	mov	%o0, %o2
+   131a4: d8 0a 80 00  	ldub [%o2], %o4
+   131a8: 80 a3 20 00  	cmp	%o4, 0x0
+   131ac: 02 80 00 06  	be	0x131c4
+   131b0: 01 00 00 00  	nop
+   131b4: 92 82 7f ff  	addcc %o1, -0x1, %o1
+   131b8: 12 bf ff fb  	bne	0x131a4
+   131bc: 94 02 a0 01  	add %o2, 0x1, %o2
+   131c0: 94 10 00 0b  	mov	%o3, %o2
+   131c4: 81 c3 e0 08  	retl
+   131c8: 90 22 80 08  	sub %o2, %o0, %o0
+   131cc: 9d e3 bf a0  	save %sp, -0x60, %sp
+   131d0: 33 00 40 c1  	sethi 0x40c1, %i1
+   131d4: b2 06 60 25  	add %i1, 0x25, %i1
+   131d8: 7f ff ff e8  	call 0x13178
+   131dc: 90 10 00 19  	mov	%i1, %o0
+   131e0: f4 06 20 48  	ld [%i0+0x48], %i2
+   131e4: 80 a6 a0 00  	cmp	%i2, 0x0
+   131e8: 12 80 00 04  	bne	0x131f8
+   131ec: 01 00 00 00  	nop
+   131f0: 7f ff ff d8  	call 0x13150
+   131f4: 90 06 20 48  	add %i0, 0x48, %o0
+   131f8: 7f ff ff e4  	call 0x13188
+   131fc: 91 e8 00 19  	restore %g0, %i1, %o0
+   13200: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13204: f2 0e 20 20  	ldub [%i0+0x20], %i1
+   13208: 80 a6 60 01  	cmp	%i1, 0x1
+   1320c: 02 80 00 1b  	be	0x13278
+   13210: 01 00 00 00  	nop
+   13214: 80 a6 60 02  	cmp	%i1, 0x2
+   13218: 12 80 00 2a  	bne	0x132c0
+   1321c: 01 00 00 00  	nop
+   13220: d4 06 20 30  	ld [%i0+0x30], %o2
+   13224: 80 a2 a0 00  	cmp	%o2, 0x0
+   13228: 02 80 00 26  	be	0x132c0
+   1322c: 01 00 00 00  	nop
+   13230: f2 06 20 28  	ld [%i0+0x28], %i1
+   13234: f4 06 20 3c  	ld [%i0+0x3c], %i2
+   13238: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   1323c: 9f c6 80 00  	call %i2
+   13240: 92 10 00 19  	mov	%i1, %o1
+   13244: 80 a2 20 01  	cmp	%o0, 0x1
+   13248: 06 80 00 20  	bl	0x132c8
+   1324c: 01 00 00 00  	nop
+   13250: f4 06 20 24  	ld [%i0+0x24], %i2
+   13254: b4 06 80 08  	add %i2, %o0, %i2
+   13258: f4 26 20 24  	st %i2, [%i0+0x24]
+   1325c: f4 06 20 30  	ld [%i0+0x30], %i2
+   13260: b2 06 40 08  	add %i1, %o0, %i1
+   13264: 94 a6 80 08  	subcc %i2, %o0, %o2
+   13268: 12 bf ff f3  	bne	0x13234
+   1326c: d4 26 20 30  	st %o2, [%i0+0x30]
+   13270: 10 80 00 14  	ba 0x132c0
+   13274: 01 00 00 00  	nop
+   13278: f2 06 20 30  	ld [%i0+0x30], %i1
+   1327c: f4 06 20 34  	ld [%i0+0x34], %i2
+   13280: 80 a6 80 19  	cmp	%i2, %i1
+   13284: 02 80 00 0d  	be	0x132b8
+   13288: 01 00 00 00  	nop
+   1328c: f6 06 20 24  	ld [%i0+0x24], %i3
+   13290: b2 26 80 19  	sub %i2, %i1, %i1
+   13294: 92 06 c0 19  	add %i3, %i1, %o1
+   13298: d2 26 20 24  	st %o1, [%i0+0x24]
+   1329c: f2 06 20 40  	ld [%i0+0x40], %i1
+   132a0: 80 a6 60 00  	cmp	%i1, 0x0
+   132a4: 02 80 00 05  	be	0x132b8
+   132a8: 01 00 00 00  	nop
+   132ac: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   132b0: 9f c6 40 00  	call %i1
+   132b4: 94 10 00 00  	mov	%g0, %o2
+   132b8: c0 26 20 30  	st %g0, [%i0+0x30]
+   132bc: c0 26 20 34  	st %g0, [%i0+0x34]
+   132c0: 81 c7 e0 08  	ret
+   132c4: 91 e8 00 00  	restore %g0, %g0, %o0
+   132c8: c0 26 20 30  	st %g0, [%i0+0x30]
+   132cc: 81 c7 e0 08  	ret
+   132d0: 91 e8 3f ff  	restore %g0, -0x1, %o0
+   132d4: 9d e3 bf a0  	save %sp, -0x60, %sp
+   132d8: c0 26 20 34  	st %g0, [%i0+0x34]
+   132dc: d2 06 20 28  	ld [%i0+0x28], %o1
+   132e0: d4 06 20 2c  	ld [%i0+0x2c], %o2
+   132e4: f2 06 20 38  	ld [%i0+0x38], %i1
+   132e8: 9f c6 40 00  	call %i1
+   132ec: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   132f0: 80 a2 20 00  	cmp	%o0, 0x0
+   132f4: 04 80 00 07  	ble	0x13310
+   132f8: 01 00 00 00  	nop
+   132fc: f4 06 20 24  	ld [%i0+0x24], %i2
+   13300: b2 10 00 00  	mov	%g0, %i1
+   13304: b4 06 80 08  	add %i2, %o0, %i2
+   13308: 10 80 00 09  	ba 0x1332c
+   1330c: f4 26 20 24  	st %i2, [%i0+0x24]
+   13310: 80 a2 20 00  	cmp	%o0, 0x0
+   13314: 02 80 00 04  	be	0x13324
+   13318: 01 00 00 00  	nop
+   1331c: 10 80 00 03  	ba 0x13328
+   13320: b2 10 3f ff  	mov	-0x1, %i1
+   13324: b2 10 3f fe  	mov	-0x2, %i1
+   13328: 90 10 00 00  	mov	%g0, %o0
+   1332c: d0 26 20 30  	st %o0, [%i0+0x30]
+   13330: 81 c7 e0 08  	ret
+   13334: 91 e8 00 19  	restore %g0, %i1, %o0
+   13338: 9d e3 bf a0  	save %sp, -0x60, %sp
+   1333c: d0 06 20 48  	ld [%i0+0x48], %o0
+   13340: 80 a2 20 00  	cmp	%o0, 0x0
+   13344: 12 80 00 05  	bne	0x13358
+   13348: b2 06 20 48  	add %i0, 0x48, %i1
+   1334c: 7f ff ff 81  	call 0x13150
+   13350: 90 10 00 19  	mov	%i1, %o0
+   13354: d0 06 40 00  	ld [%i1], %o0
+   13358: 7f ff ff 86  	call 0x13170
+   1335c: 01 00 00 00  	nop
+   13360: f4 0e 20 20  	ldub [%i0+0x20], %i2
+   13364: 80 a6 a0 01  	cmp	%i2, 0x1
+   13368: 02 80 00 1b  	be	0x133d4
+   1336c: 01 00 00 00  	nop
+   13370: 80 a6 a0 02  	cmp	%i2, 0x2
+   13374: 12 80 00 2a  	bne	0x1341c
+   13378: 01 00 00 00  	nop
+   1337c: d4 06 20 30  	ld [%i0+0x30], %o2
+   13380: 80 a2 a0 00  	cmp	%o2, 0x0
+   13384: 02 80 00 26  	be	0x1341c
+   13388: 01 00 00 00  	nop
+   1338c: f4 06 20 28  	ld [%i0+0x28], %i2
+   13390: f6 06 20 3c  	ld [%i0+0x3c], %i3
+   13394: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   13398: 9f c6 c0 00  	call %i3
+   1339c: 92 10 00 1a  	mov	%i2, %o1
+   133a0: 80 a2 20 01  	cmp	%o0, 0x1
+   133a4: 06 80 00 23  	bl	0x13430
+   133a8: 01 00 00 00  	nop
+   133ac: f6 06 20 24  	ld [%i0+0x24], %i3
+   133b0: b6 06 c0 08  	add %i3, %o0, %i3
+   133b4: f6 26 20 24  	st %i3, [%i0+0x24]
+   133b8: f6 06 20 30  	ld [%i0+0x30], %i3
+   133bc: b4 06 80 08  	add %i2, %o0, %i2
+   133c0: 94 a6 c0 08  	subcc %i3, %o0, %o2
+   133c4: 12 bf ff f3  	bne	0x13390
+   133c8: d4 26 20 30  	st %o2, [%i0+0x30]
+   133cc: 10 80 00 14  	ba 0x1341c
+   133d0: 01 00 00 00  	nop
+   133d4: f4 06 20 30  	ld [%i0+0x30], %i2
+   133d8: f6 06 20 34  	ld [%i0+0x34], %i3
+   133dc: 80 a6 c0 1a  	cmp	%i3, %i2
+   133e0: 02 80 00 0d  	be	0x13414
+   133e4: 01 00 00 00  	nop
+   133e8: f8 06 20 24  	ld [%i0+0x24], %i4
+   133ec: b4 26 c0 1a  	sub %i3, %i2, %i2
+   133f0: 92 07 00 1a  	add %i4, %i2, %o1
+   133f4: d2 26 20 24  	st %o1, [%i0+0x24]
+   133f8: f4 06 20 40  	ld [%i0+0x40], %i2
+   133fc: 80 a6 a0 00  	cmp	%i2, 0x0
+   13400: 02 80 00 05  	be	0x13414
+   13404: 01 00 00 00  	nop
+   13408: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   1340c: 9f c6 80 00  	call %i2
+   13410: 94 10 00 00  	mov	%g0, %o2
+   13414: c0 26 20 30  	st %g0, [%i0+0x30]
+   13418: c0 26 20 34  	st %g0, [%i0+0x34]
+   1341c: b0 10 00 00  	mov	%g0, %i0
+   13420: 7f ff ff 58  	call 0x13180
+   13424: d0 06 40 00  	ld [%i1], %o0
+   13428: 81 c7 e0 08  	ret
+   1342c: 81 e8 00 00  	restore
+   13430: c0 26 20 30  	st %g0, [%i0+0x30]
+   13434: 10 bf ff fb  	ba 0x13420
+   13438: b0 10 3f ff  	mov	-0x1, %i0
+   1343c: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13440: f6 0e 20 20  	ldub [%i0+0x20], %i3
+   13444: 80 a6 c0 19  	cmp	%i3, %i1
+   13448: 02 80 00 35  	be	0x1351c
+   1344c: b4 10 00 00  	mov	%g0, %i2
+   13450: 80 a6 e0 01  	cmp	%i3, 0x1
+   13454: 02 80 00 1b  	be	0x134c0
+   13458: 01 00 00 00  	nop
+   1345c: 80 a6 e0 02  	cmp	%i3, 0x2
+   13460: 12 80 00 16  	bne	0x134b8
+   13464: 01 00 00 00  	nop
+   13468: d4 06 20 30  	ld [%i0+0x30], %o2
+   1346c: 80 a2 a0 00  	cmp	%o2, 0x0
+   13470: 02 80 00 12  	be	0x134b8
+   13474: 01 00 00 00  	nop
+   13478: f4 06 20 28  	ld [%i0+0x28], %i2
+   1347c: f6 06 20 3c  	ld [%i0+0x3c], %i3
+   13480: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   13484: 9f c6 c0 00  	call %i3
+   13488: 92 10 00 1a  	mov	%i2, %o1
+   1348c: 80 a2 20 01  	cmp	%o0, 0x1
+   13490: 06 80 00 20  	bl	0x13510
+   13494: 01 00 00 00  	nop
+   13498: f6 06 20 24  	ld [%i0+0x24], %i3
+   1349c: b6 06 c0 08  	add %i3, %o0, %i3
+   134a0: f6 26 20 24  	st %i3, [%i0+0x24]
+   134a4: f6 06 20 30  	ld [%i0+0x30], %i3
+   134a8: b4 06 80 08  	add %i2, %o0, %i2
+   134ac: 94 a6 c0 08  	subcc %i3, %o0, %o2
+   134b0: 12 bf ff f3  	bne	0x1347c
+   134b4: d4 26 20 30  	st %o2, [%i0+0x30]
+   134b8: 10 80 00 18  	ba 0x13518
+   134bc: b4 10 00 00  	mov	%g0, %i2
+   134c0: f4 06 20 30  	ld [%i0+0x30], %i2
+   134c4: f6 06 20 34  	ld [%i0+0x34], %i3
+   134c8: 80 a6 c0 1a  	cmp	%i3, %i2
+   134cc: 02 80 00 0d  	be	0x13500
+   134d0: 01 00 00 00  	nop
+   134d4: f8 06 20 24  	ld [%i0+0x24], %i4
+   134d8: b4 26 c0 1a  	sub %i3, %i2, %i2
+   134dc: 92 07 00 1a  	add %i4, %i2, %o1
+   134e0: d2 26 20 24  	st %o1, [%i0+0x24]
+   134e4: f4 06 20 40  	ld [%i0+0x40], %i2
+   134e8: 80 a6 a0 00  	cmp	%i2, 0x0
+   134ec: 02 80 00 05  	be	0x13500
+   134f0: 01 00 00 00  	nop
+   134f4: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   134f8: 9f c6 80 00  	call %i2
+   134fc: 94 10 00 00  	mov	%g0, %o2
+   13500: b4 10 00 00  	mov	%g0, %i2
+   13504: c0 26 20 30  	st %g0, [%i0+0x30]
+   13508: 10 80 00 04  	ba 0x13518
+   1350c: c0 26 20 34  	st %g0, [%i0+0x34]
+   13510: c0 26 20 30  	st %g0, [%i0+0x30]
+   13514: b4 10 3f ff  	mov	-0x1, %i2
+   13518: f2 2e 20 20  	stb %i1, [%i0+0x20]
+   1351c: 81 c7 e0 08  	ret
+   13520: 91 e8 00 1a  	restore %g0, %i2, %o0
+   13524: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13528: d0 06 60 48  	ld [%i1+0x48], %o0
+   1352c: b6 10 00 18  	mov	%i0, %i3
+   13530: 80 a2 20 00  	cmp	%o0, 0x0
+   13534: 12 80 00 05  	bne	0x13548
+   13538: b4 06 60 48  	add %i1, 0x48, %i2
+   1353c: 7f ff ff 05  	call 0x13150
+   13540: 90 10 00 1a  	mov	%i2, %o0
+   13544: d0 06 80 00  	ld [%i2], %o0
+   13548: 7f ff ff 0a  	call 0x13170
+   1354c: 01 00 00 00  	nop
+   13550: f0 0e 60 20  	ldub [%i1+0x20], %i0
+   13554: 80 a6 20 02  	cmp	%i0, 0x2
+   13558: 02 80 00 19  	be	0x135bc
+   1355c: 01 00 00 00  	nop
+   13560: 80 a6 20 01  	cmp	%i0, 0x1
+   13564: 12 80 00 14  	bne	0x135b4
+   13568: 01 00 00 00  	nop
+   1356c: f0 06 60 30  	ld [%i1+0x30], %i0
+   13570: f8 06 60 34  	ld [%i1+0x34], %i4
+   13574: 80 a7 00 18  	cmp	%i4, %i0
+   13578: 02 80 00 0d  	be	0x135ac
+   1357c: 01 00 00 00  	nop
+   13580: fa 06 60 24  	ld [%i1+0x24], %i5
+   13584: b0 27 00 18  	sub %i4, %i0, %i0
+   13588: 92 07 40 18  	add %i5, %i0, %o1
+   1358c: d2 26 60 24  	st %o1, [%i1+0x24]
+   13590: f0 06 60 40  	ld [%i1+0x40], %i0
+   13594: 80 a6 20 00  	cmp	%i0, 0x0
+   13598: 02 80 00 05  	be	0x135ac
+   1359c: 01 00 00 00  	nop
+   135a0: d0 06 60 1c  	ld [%i1+0x1c], %o0
+   135a4: 9f c6 00 00  	call %i0
+   135a8: 94 10 00 00  	mov	%g0, %o2
+   135ac: c0 26 60 30  	st %g0, [%i1+0x30]
+   135b0: c0 26 60 34  	st %g0, [%i1+0x34]
+   135b4: b0 10 20 02  	mov	0x2, %i0
+   135b8: f0 2e 60 20  	stb %i0, [%i1+0x20]
+   135bc: f0 06 60 30  	ld [%i1+0x30], %i0
+   135c0: f8 06 60 28  	ld [%i1+0x28], %i4
+   135c4: ba 06 20 01  	add %i0, 0x1, %i5
+   135c8: fa 26 60 30  	st %i5, [%i1+0x30]
+   135cc: f6 2f 00 18  	stb %i3, [%i4+%i0]
+   135d0: d4 06 60 30  	ld [%i1+0x30], %o2
+   135d4: f0 06 60 2c  	ld [%i1+0x2c], %i0
+   135d8: 80 a2 80 18  	cmp	%o2, %i0
+   135dc: 16 80 00 0b  	bge	0x13608
+   135e0: b0 0e e0 ff  	and %i3, 0xff, %i0
+   135e4: 80 a6 e0 0a  	cmp	%i3, 0xa
+   135e8: 12 80 00 38  	bne	0x136c8
+   135ec: 01 00 00 00  	nop
+   135f0: f6 0e 60 21  	ldub [%i1+0x21], %i3
+   135f4: 80 8e e0 02  	andcc %i3, 0x2, %g0
+   135f8: 12 80 00 04  	bne	0x13608
+   135fc: 01 00 00 00  	nop
+   13600: 10 80 00 32  	ba 0x136c8
+   13604: b0 10 20 0a  	mov	0xa, %i0
+   13608: f6 0e 60 20  	ldub [%i1+0x20], %i3
+   1360c: 80 a6 e0 01  	cmp	%i3, 0x1
+   13610: 02 80 00 1a  	be	0x13678
+   13614: 01 00 00 00  	nop
+   13618: 80 a6 e0 02  	cmp	%i3, 0x2
+   1361c: 12 80 00 2b  	bne	0x136c8
+   13620: 01 00 00 00  	nop
+   13624: 80 a2 a0 00  	cmp	%o2, 0x0
+   13628: 02 80 00 28  	be	0x136c8
+   1362c: 01 00 00 00  	nop
+   13630: f6 06 60 28  	ld [%i1+0x28], %i3
+   13634: f8 06 60 3c  	ld [%i1+0x3c], %i4
+   13638: d0 06 60 1c  	ld [%i1+0x1c], %o0
+   1363c: 9f c7 00 00  	call %i4
+   13640: 92 10 00 1b  	mov	%i3, %o1
+   13644: 80 a2 20 01  	cmp	%o0, 0x1
+   13648: 06 80 00 1e  	bl	0x136c0
+   1364c: 01 00 00 00  	nop
+   13650: f8 06 60 24  	ld [%i1+0x24], %i4
+   13654: b8 07 00 08  	add %i4, %o0, %i4
+   13658: f8 26 60 24  	st %i4, [%i1+0x24]
+   1365c: f8 06 60 30  	ld [%i1+0x30], %i4
+   13660: b6 06 c0 08  	add %i3, %o0, %i3
+   13664: 94 a7 00 08  	subcc %i4, %o0, %o2
+   13668: 12 bf ff f3  	bne	0x13634
+   1366c: d4 26 60 30  	st %o2, [%i1+0x30]
+   13670: 10 80 00 16  	ba 0x136c8
+   13674: 01 00 00 00  	nop
+   13678: f6 06 60 34  	ld [%i1+0x34], %i3
+   1367c: 80 a6 c0 0a  	cmp	%i3, %o2
+   13680: 02 80 00 0d  	be	0x136b4
+   13684: 01 00 00 00  	nop
+   13688: f8 06 60 24  	ld [%i1+0x24], %i4
+   1368c: b6 26 c0 0a  	sub %i3, %o2, %i3
+   13690: 92 07 00 1b  	add %i4, %i3, %o1
+   13694: d2 26 60 24  	st %o1, [%i1+0x24]
+   13698: f6 06 60 40  	ld [%i1+0x40], %i3
+   1369c: 80 a6 e0 00  	cmp	%i3, 0x0
+   136a0: 02 80 00 05  	be	0x136b4
+   136a4: 01 00 00 00  	nop
+   136a8: d0 06 60 1c  	ld [%i1+0x1c], %o0
+   136ac: 9f c6 c0 00  	call %i3
+   136b0: 94 10 00 00  	mov	%g0, %o2
+   136b4: c0 26 60 30  	st %g0, [%i1+0x30]
+   136b8: 10 80 00 04  	ba 0x136c8
+   136bc: c0 26 60 34  	st %g0, [%i1+0x34]
+   136c0: c0 26 60 30  	st %g0, [%i1+0x30]
+   136c4: b0 10 3f ff  	mov	-0x1, %i0
+   136c8: 7f ff fe ae  	call 0x13180
+   136cc: d0 06 80 00  	ld [%i2], %o0
+   136d0: 81 c7 e0 08  	ret
+   136d4: 81 e8 00 00  	restore
+   136d8: 9d e3 bf a0  	save %sp, -0x60, %sp
+   136dc: 37 00 00 00  	sethi 0x0, %i3
+   136e0: 80 86 e0 00  	addcc %i3, 0x0, %g0
+   136e4: b8 10 20 01  	mov	0x1, %i4
+   136e8: 02 80 00 03  	be	0x136f4
+   136ec: b4 10 00 1c  	mov	%i4, %i2
+   136f0: b4 10 00 00  	mov	%g0, %i2
+   136f4: 3b 00 00 53  	sethi 0x53, %i5
+   136f8: 80 87 62 10  	addcc %i5, 0x210, %g0
+   136fc: 02 80 00 03  	be	0x13708
+   13700: 84 10 00 1c  	mov	%i4, %g2
+   13704: 84 10 00 00  	mov	%g0, %g2
+   13708: b2 06 20 48  	add %i0, 0x48, %i1
+   1370c: a0 16 80 02  	or %i2, %g2, %l0
+   13710: d0 06 40 00  	ld [%i1], %o0
+   13714: 80 a2 20 00  	cmp	%o0, 0x0
+   13718: 12 80 00 05  	bne	0x1372c
+   1371c: 01 00 00 00  	nop
+   13720: 7f ff fe 8c  	call 0x13150
+   13724: 90 10 00 19  	mov	%i1, %o0
+   13728: d0 06 40 00  	ld [%i1], %o0
+   1372c: 7f ff fe 91  	call 0x13170
+   13730: 01 00 00 00  	nop
+   13734: f4 0e 20 20  	ldub [%i0+0x20], %i2
+   13738: 80 a6 a0 01  	cmp	%i2, 0x1
+   1373c: 02 80 00 1a  	be	0x137a4
+   13740: 01 00 00 00  	nop
+   13744: 80 a6 a0 02  	cmp	%i2, 0x2
+   13748: 12 80 00 16  	bne	0x137a0
+   1374c: 01 00 00 00  	nop
+   13750: d4 06 20 30  	ld [%i0+0x30], %o2
+   13754: 80 a2 a0 00  	cmp	%o2, 0x0
+   13758: 02 80 00 12  	be	0x137a0
+   1375c: 01 00 00 00  	nop
+   13760: f4 06 20 28  	ld [%i0+0x28], %i2
+   13764: c4 06 20 3c  	ld [%i0+0x3c], %g2
+   13768: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   1376c: 9f c0 80 00  	call %g2
+   13770: 92 10 00 1a  	mov	%i2, %o1
+   13774: 80 a2 20 01  	cmp	%o0, 0x1
+   13778: 06 80 00 1d  	bl	0x137ec
+   1377c: 01 00 00 00  	nop
+   13780: c4 06 20 24  	ld [%i0+0x24], %g2
+   13784: 84 00 80 08  	add %g2, %o0, %g2
+   13788: c4 26 20 24  	st %g2, [%i0+0x24]
+   1378c: c4 06 20 30  	ld [%i0+0x30], %g2
+   13790: b4 06 80 08  	add %i2, %o0, %i2
+   13794: 94 a0 80 08  	subcc %g2, %o0, %o2
+   13798: 12 bf ff f3  	bne	0x13764
+   1379c: d4 26 20 30  	st %o2, [%i0+0x30]
+   137a0: f8 2e 20 20  	stb %i4, [%i0+0x20]
+   137a4: f4 06 20 34  	ld [%i0+0x34], %i2
+   137a8: c4 06 20 30  	ld [%i0+0x30], %g2
+   137ac: 80 a6 80 02  	cmp	%i2, %g2
+   137b0: 06 80 00 22  	bl	0x13838
+   137b4: 01 00 00 00  	nop
+   137b8: 80 8c 20 01  	andcc %l0, 0x1, %g0
+   137bc: 12 80 00 11  	bne	0x13800
+   137c0: 01 00 00 00  	nop
+   137c4: f4 06 e0 00  	ld [%i3], %i2
+   137c8: 80 a6 00 1a  	cmp	%i0, %i2
+   137cc: 12 80 00 0d  	bne	0x13800
+   137d0: 01 00 00 00  	nop
+   137d4: 7f ff fe 6b  	call 0x13180
+   137d8: d0 06 40 00  	ld [%i1], %o0
+   137dc: 40 00 01 ad  	call 0x13e90
+   137e0: d0 07 62 10  	ld [%i5+0x210], %o0
+   137e4: 10 bf ff cb  	ba 0x13710
+   137e8: a0 10 00 1c  	mov	%i4, %l0
+   137ec: c0 26 20 30  	st %g0, [%i0+0x30]
+   137f0: b4 10 20 01  	mov	0x1, %i2
+   137f4: f4 2e 20 20  	stb %i2, [%i0+0x20]
+   137f8: 10 80 00 1d  	ba 0x1386c
+   137fc: b0 10 3f ff  	mov	-0x1, %i0
+   13800: c0 26 20 34  	st %g0, [%i0+0x34]
+   13804: d2 06 20 28  	ld [%i0+0x28], %o1
+   13808: d4 06 20 2c  	ld [%i0+0x2c], %o2
+   1380c: f4 06 20 38  	ld [%i0+0x38], %i2
+   13810: 9f c6 80 00  	call %i2
+   13814: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   13818: 80 a2 20 01  	cmp	%o0, 0x1
+   1381c: 06 80 00 0c  	bl	0x1384c
+   13820: 01 00 00 00  	nop
+   13824: f4 06 20 24  	ld [%i0+0x24], %i2
+   13828: b4 06 80 08  	add %i2, %o0, %i2
+   1382c: f4 26 20 24  	st %i2, [%i0+0x24]
+   13830: d0 26 20 30  	st %o0, [%i0+0x30]
+   13834: f4 06 20 34  	ld [%i0+0x34], %i2
+   13838: f6 06 20 28  	ld [%i0+0x28], %i3
+   1383c: b8 06 a0 01  	add %i2, 0x1, %i4
+   13840: f8 26 20 34  	st %i4, [%i0+0x34]
+   13844: 10 80 00 0a  	ba 0x1386c
+   13848: f0 0e c0 1a  	ldub [%i3+%i2], %i0
+   1384c: 80 a2 20 00  	cmp	%o0, 0x0
+   13850: 02 80 00 04  	be	0x13860
+   13854: 01 00 00 00  	nop
+   13858: 10 80 00 03  	ba 0x13864
+   1385c: b4 10 3f ff  	mov	-0x1, %i2
+   13860: b4 10 3f fe  	mov	-0x2, %i2
+   13864: c0 26 20 30  	st %g0, [%i0+0x30]
+   13868: b0 10 00 1a  	mov	%i2, %i0
+   1386c: 7f ff fe 45  	call 0x13180
+   13870: d0 06 40 00  	ld [%i1], %o0
+   13874: 81 c7 e0 08  	ret
+   13878: 81 e8 00 00  	restore
+   1387c: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13880: d0 06 20 48  	ld [%i0+0x48], %o0
+   13884: 80 a2 20 00  	cmp	%o0, 0x0
+   13888: 12 80 00 05  	bne	0x1389c
+   1388c: b6 06 20 48  	add %i0, 0x48, %i3
+   13890: 7f ff fe 30  	call 0x13150
+   13894: 90 10 00 1b  	mov	%i3, %o0
+   13898: d0 06 c0 00  	ld [%i3], %o0
+   1389c: 7f ff fe 35  	call 0x13170
+   138a0: 01 00 00 00  	nop
+   138a4: f8 0e 20 20  	ldub [%i0+0x20], %i4
+   138a8: 80 a7 20 01  	cmp	%i4, 0x1
+   138ac: 02 80 00 1b  	be	0x13918
+   138b0: 01 00 00 00  	nop
+   138b4: 80 a7 20 02  	cmp	%i4, 0x2
+   138b8: 12 80 00 16  	bne	0x13910
+   138bc: 01 00 00 00  	nop
+   138c0: d4 06 20 30  	ld [%i0+0x30], %o2
+   138c4: 80 a2 a0 00  	cmp	%o2, 0x0
+   138c8: 02 80 00 12  	be	0x13910
+   138cc: 01 00 00 00  	nop
+   138d0: f8 06 20 28  	ld [%i0+0x28], %i4
+   138d4: fa 06 20 3c  	ld [%i0+0x3c], %i5
+   138d8: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   138dc: 9f c7 40 00  	call %i5
+   138e0: 92 10 00 1c  	mov	%i4, %o1
+   138e4: 80 a2 20 01  	cmp	%o0, 0x1
+   138e8: 06 80 00 36  	bl	0x139c0
+   138ec: 01 00 00 00  	nop
+   138f0: fa 06 20 24  	ld [%i0+0x24], %i5
+   138f4: ba 07 40 08  	add %i5, %o0, %i5
+   138f8: fa 26 20 24  	st %i5, [%i0+0x24]
+   138fc: fa 06 20 30  	ld [%i0+0x30], %i5
+   13900: b8 07 00 08  	add %i4, %o0, %i4
+   13904: 94 a7 40 08  	subcc %i5, %o0, %o2
+   13908: 12 bf ff f3  	bne	0x138d4
+   1390c: d4 26 20 30  	st %o2, [%i0+0x30]
+   13910: b8 10 20 01  	mov	0x1, %i4
+   13914: f8 2e 20 20  	stb %i4, [%i0+0x20]
+   13918: f8 06 20 24  	ld [%i0+0x24], %i4
+   1391c: fa 06 20 30  	ld [%i0+0x30], %i5
+   13920: 80 a6 a0 00  	cmp	%i2, 0x0
+   13924: 02 80 00 08  	be	0x13944
+   13928: ba 27 00 1d  	sub %i4, %i5, %i5
+   1392c: 80 a6 a0 01  	cmp	%i2, 0x1
+   13930: 12 80 00 0f  	bne	0x1396c
+   13934: 01 00 00 00  	nop
+   13938: f4 06 20 34  	ld [%i0+0x34], %i2
+   1393c: b2 07 40 19  	add %i5, %i1, %i1
+   13940: b2 06 40 1a  	add %i1, %i2, %i1
+   13944: 80 a6 40 1d  	cmp	%i1, %i5
+   13948: 06 80 00 08  	bl	0x13968
+   1394c: 01 00 00 00  	nop
+   13950: 80 a6 40 1c  	cmp	%i1, %i4
+   13954: 14 80 00 05  	bg	0x13968
+   13958: 01 00 00 00  	nop
+   1395c: b4 26 40 1d  	sub %i1, %i5, %i2
+   13960: 10 80 00 14  	ba 0x139b0
+   13964: f4 26 20 34  	st %i2, [%i0+0x34]
+   13968: b4 10 00 00  	mov	%g0, %i2
+   1396c: f8 06 20 40  	ld [%i0+0x40], %i4
+   13970: 80 a7 20 00  	cmp	%i4, 0x0
+   13974: 02 80 00 0c  	be	0x139a4
+   13978: 01 00 00 00  	nop
+   1397c: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   13980: 92 10 00 19  	mov	%i1, %o1
+   13984: 9f c7 00 00  	call %i4
+   13988: 94 10 00 1a  	mov	%i2, %o2
+   1398c: b2 10 00 08  	mov	%o0, %i1
+   13990: 80 a2 20 00  	cmp	%o0, 0x0
+   13994: 06 80 00 05  	bl	0x139a8
+   13998: 01 00 00 00  	nop
+   1399c: 10 80 00 03  	ba 0x139a8
+   139a0: f2 26 20 24  	st %i1, [%i0+0x24]
+   139a4: b2 10 3f ff  	mov	-0x1, %i1
+   139a8: c0 26 20 30  	st %g0, [%i0+0x30]
+   139ac: c0 26 20 34  	st %g0, [%i0+0x34]
+   139b0: 7f ff fd f4  	call 0x13180
+   139b4: d0 06 c0 00  	ld [%i3], %o0
+   139b8: 81 c7 e0 08  	ret
+   139bc: 91 e8 00 19  	restore %g0, %i1, %o0
+   139c0: c0 26 20 30  	st %g0, [%i0+0x30]
+   139c4: b2 10 20 01  	mov	0x1, %i1
+   139c8: f2 2e 20 20  	stb %i1, [%i0+0x20]
+   139cc: 10 bf ff f9  	ba 0x139b0
+   139d0: b2 10 3f ff  	mov	-0x1, %i1
+   139d4: 9d e3 bf a0  	save %sp, -0x60, %sp
+   139d8: d0 06 20 48  	ld [%i0+0x48], %o0
+   139dc: 80 a2 20 00  	cmp	%o0, 0x0
+   139e0: 12 80 00 05  	bne	0x139f4
+   139e4: ba 06 20 48  	add %i0, 0x48, %i5
+   139e8: 7f ff fd da  	call 0x13150
+   139ec: 90 10 00 1d  	mov	%i5, %o0
+   139f0: d0 07 40 00  	ld [%i5], %o0
+   139f4: 7f ff fd df  	call 0x13170
+   139f8: 01 00 00 00  	nop
+   139fc: c4 0e 20 21  	ldub [%i0+0x21], %g2
+   13a00: a0 08 bf fd  	and %g2, -0x3, %l0
+   13a04: e0 2e 20 21  	stb %l0, [%i0+0x21]
+   13a08: 80 a6 a0 00  	cmp	%i2, 0x0
+   13a0c: 02 80 00 0a  	be	0x13a34
+   13a10: b8 10 3f ff  	mov	-0x1, %i4
+   13a14: 80 a6 a0 02  	cmp	%i2, 0x2
+   13a18: 02 80 00 0f  	be	0x13a54
+   13a1c: 01 00 00 00  	nop
+   13a20: 80 a6 a0 01  	cmp	%i2, 0x1
+   13a24: 12 80 00 2a  	bne	0x13acc
+   13a28: 01 00 00 00  	nop
+   13a2c: a0 10 a0 02  	or %g2, 0x2, %l0
+   13a30: e0 2e 20 21  	stb %l0, [%i0+0x21]
+   13a34: 80 8c 20 01  	andcc %l0, 0x1, %g0
+   13a38: 12 80 00 12  	bne	0x13a80
+   13a3c: 01 00 00 00  	nop
+   13a40: 80 a6 60 00  	cmp	%i1, 0x0
+   13a44: 12 80 00 1f  	bne	0x13ac0
+   13a48: 01 00 00 00  	nop
+   13a4c: 10 80 00 05  	ba 0x13a60
+   13a50: 01 00 00 00  	nop
+   13a54: 80 88 a0 01  	andcc %g2, 0x1, %g0
+   13a58: 12 80 00 13  	bne	0x13aa4
+   13a5c: b6 10 20 01  	mov	0x1, %i3
+   13a60: 40 00 01 8e  	call 0x14098
+   13a64: 90 10 00 1b  	mov	%i3, %o0
+   13a68: 80 a2 20 00  	cmp	%o0, 0x0
+   13a6c: 02 80 00 18  	be	0x13acc
+   13a70: 01 00 00 00  	nop
+   13a74: b2 10 00 08  	mov	%o0, %i1
+   13a78: 10 80 00 09  	ba 0x13a9c
+   13a7c: b4 14 20 01  	or %l0, 0x1, %i2
+   13a80: 80 a6 60 00  	cmp	%i1, 0x0
+   13a84: 02 80 00 08  	be	0x13aa4
+   13a88: 01 00 00 00  	nop
+   13a8c: 40 00 01 0c  	call 0x13ebc
+   13a90: d0 06 20 28  	ld [%i0+0x28], %o0
+   13a94: f4 0e 20 21  	ldub [%i0+0x21], %i2
+   13a98: b4 0e bf fe  	and %i2, -0x2, %i2
+   13a9c: 10 80 00 09  	ba 0x13ac0
+   13aa0: f4 2e 20 21  	stb %i2, [%i0+0x21]
+   13aa4: d0 06 20 28  	ld [%i0+0x28], %o0
+   13aa8: 40 00 02 1e  	call 0x14320
+   13aac: 92 10 00 1b  	mov	%i3, %o1
+   13ab0: b2 10 00 08  	mov	%o0, %i1
+   13ab4: 80 a2 20 00  	cmp	%o0, 0x0
+   13ab8: 02 80 00 05  	be	0x13acc
+   13abc: 01 00 00 00  	nop
+   13ac0: b8 10 00 00  	mov	%g0, %i4
+   13ac4: f2 26 20 28  	st %i1, [%i0+0x28]
+   13ac8: f6 26 20 2c  	st %i3, [%i0+0x2c]
+   13acc: 7f ff fd ad  	call 0x13180
+   13ad0: d0 07 40 00  	ld [%i5], %o0
+   13ad4: 81 c7 e0 08  	ret
+   13ad8: 91 e8 00 1c  	restore %g0, %i4, %o0
+   13adc: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13ae0: d0 06 20 48  	ld [%i0+0x48], %o0
+   13ae4: 80 a2 20 00  	cmp	%o0, 0x0
+   13ae8: 12 80 00 05  	bne	0x13afc
+   13aec: b2 06 20 48  	add %i0, 0x48, %i1
+   13af0: 7f ff fd 98  	call 0x13150
+   13af4: 90 10 00 19  	mov	%i1, %o0
+   13af8: d0 06 40 00  	ld [%i1], %o0
+   13afc: 7f ff fd 9d  	call 0x13170
+   13b00: 01 00 00 00  	nop
+   13b04: f4 0e 20 20  	ldub [%i0+0x20], %i2
+   13b08: 80 a6 a0 01  	cmp	%i2, 0x1
+   13b0c: 02 80 00 1b  	be	0x13b78
+   13b10: 01 00 00 00  	nop
+   13b14: 80 a6 a0 02  	cmp	%i2, 0x2
+   13b18: 12 80 00 16  	bne	0x13b70
+   13b1c: 01 00 00 00  	nop
+   13b20: d4 06 20 30  	ld [%i0+0x30], %o2
+   13b24: 80 a2 a0 00  	cmp	%o2, 0x0
+   13b28: 02 80 00 12  	be	0x13b70
+   13b2c: 01 00 00 00  	nop
+   13b30: f4 06 20 28  	ld [%i0+0x28], %i2
+   13b34: f6 06 20 3c  	ld [%i0+0x3c], %i3
+   13b38: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   13b3c: 9f c6 c0 00  	call %i3
+   13b40: 92 10 00 1a  	mov	%i2, %o1
+   13b44: 80 a2 20 01  	cmp	%o0, 0x1
+   13b48: 06 80 00 20  	bl	0x13bc8
+   13b4c: 01 00 00 00  	nop
+   13b50: f6 06 20 24  	ld [%i0+0x24], %i3
+   13b54: b6 06 c0 08  	add %i3, %o0, %i3
+   13b58: f6 26 20 24  	st %i3, [%i0+0x24]
+   13b5c: f6 06 20 30  	ld [%i0+0x30], %i3
+   13b60: b4 06 80 08  	add %i2, %o0, %i2
+   13b64: 94 a6 c0 08  	subcc %i3, %o0, %o2
+   13b68: 12 bf ff f3  	bne	0x13b34
+   13b6c: d4 26 20 30  	st %o2, [%i0+0x30]
+   13b70: 10 80 00 18  	ba 0x13bd0
+   13b74: b4 10 00 00  	mov	%g0, %i2
+   13b78: f4 06 20 30  	ld [%i0+0x30], %i2
+   13b7c: f6 06 20 34  	ld [%i0+0x34], %i3
+   13b80: 80 a6 c0 1a  	cmp	%i3, %i2
+   13b84: 02 80 00 0d  	be	0x13bb8
+   13b88: 01 00 00 00  	nop
+   13b8c: f8 06 20 24  	ld [%i0+0x24], %i4
+   13b90: b4 26 c0 1a  	sub %i3, %i2, %i2
+   13b94: 92 07 00 1a  	add %i4, %i2, %o1
+   13b98: d2 26 20 24  	st %o1, [%i0+0x24]
+   13b9c: f4 06 20 40  	ld [%i0+0x40], %i2
+   13ba0: 80 a6 a0 00  	cmp	%i2, 0x0
+   13ba4: 02 80 00 05  	be	0x13bb8
+   13ba8: 01 00 00 00  	nop
+   13bac: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   13bb0: 9f c6 80 00  	call %i2
+   13bb4: 94 10 00 00  	mov	%g0, %o2
+   13bb8: b4 10 00 00  	mov	%g0, %i2
+   13bbc: c0 26 20 30  	st %g0, [%i0+0x30]
+   13bc0: 10 80 00 04  	ba 0x13bd0
+   13bc4: c0 26 20 34  	st %g0, [%i0+0x34]
+   13bc8: c0 26 20 30  	st %g0, [%i0+0x30]
+   13bcc: b4 10 3f ff  	mov	-0x1, %i2
+   13bd0: f6 0e 20 21  	ldub [%i0+0x21], %i3
+   13bd4: 80 8e e0 01  	andcc %i3, 0x1, %g0
+   13bd8: 02 80 00 04  	be	0x13be8
+   13bdc: 01 00 00 00  	nop
+   13be0: 40 00 00 b7  	call 0x13ebc
+   13be4: d0 06 20 28  	ld [%i0+0x28], %o0
+   13be8: d0 06 40 00  	ld [%i1], %o0
+   13bec: 80 a2 20 00  	cmp	%o0, 0x0
+   13bf0: 02 80 00 06  	be	0x13c08
+   13bf4: 01 00 00 00  	nop
+   13bf8: 7f ff fd 62  	call 0x13180
+   13bfc: 01 00 00 00  	nop
+   13c00: 7f ff fd 58  	call 0x13160
+   13c04: d0 06 40 00  	ld [%i1], %o0
+   13c08: f2 0e 20 21  	ldub [%i0+0x21], %i1
+   13c0c: 80 8e 60 04  	andcc %i1, 0x4, %g0
+   13c10: 02 80 00 0d  	be	0x13c44
+   13c14: 01 00 00 00  	nop
+   13c18: f2 06 20 44  	ld [%i0+0x44], %i1
+   13c1c: 80 a6 60 00  	cmp	%i1, 0x0
+   13c20: 02 80 00 06  	be	0x13c38
+   13c24: 01 00 00 00  	nop
+   13c28: 9f c6 40 00  	call %i1
+   13c2c: d0 06 20 1c  	ld [%i0+0x1c], %o0
+   13c30: 10 80 00 03  	ba 0x13c3c
+   13c34: b4 10 00 08  	mov	%o0, %i2
+   13c38: b4 10 00 00  	mov	%g0, %i2
+   13c3c: 40 00 00 a0  	call 0x13ebc
+   13c40: 90 10 00 18  	mov	%i0, %o0
+   13c44: 81 c7 e0 08  	ret
+   13c48: 91 e8 00 1a  	restore %g0, %i2, %o0
+   13c4c: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13c50: bb 36 20 1f  	srl %i0, 0x1f, %i5
+   13c54: fa 2e a0 04  	stb %i5, [%i2+0x4]
+   13c58: 05 3f fc 00  	sethi 0x3ffc00, %g2
+   13c5c: a4 2e 00 02  	andn %i0, %g2, %l2
+   13c60: 86 96 40 12  	orcc %i1, %l2, %g3
+   13c64: 12 80 00 04  	bne	0x13c74
+   13c68: 85 36 20 14  	srl %i0, 0x14, %g2
+   13c6c: 10 80 00 03  	ba 0x13c78
+   13c70: b0 10 00 00  	mov	%g0, %i0
+   13c74: b0 10 20 01  	mov	0x1, %i0
+   13c78: 80 a0 e0 00  	cmp	%g3, 0x0
+   13c7c: 12 80 00 10  	bne	0x13cbc
+   13c80: 84 08 a7 ff  	and %g2, 0x7ff, %g2
+   13c84: 80 a0 a0 00  	cmp	%g2, 0x0
+   13c88: 12 80 00 0d  	bne	0x13cbc
+   13c8c: 01 00 00 00  	nop
+   13c90: b0 10 00 00  	mov	%g0, %i0
+   13c94: a4 10 00 00  	mov	%g0, %l2
+   13c98: b2 10 00 00  	mov	%g0, %i1
+   13c9c: 80 a6 e0 00  	cmp	%i3, 0x0
+   13ca0: 06 80 00 0f  	bl	0x13cdc
+   13ca4: f0 26 80 00  	st %i0, [%i2]
+   13ca8: 80 a6 e0 0c  	cmp	%i3, 0xc
+   13cac: 08 80 00 17  	bleu	0x13d08
+   13cb0: 01 00 00 00  	nop
+   13cb4: 10 80 00 5b  	ba 0x13e20
+   13cb8: b6 10 20 0d  	mov	0xd, %i3
+   13cbc: 80 a0 a7 ff  	cmp	%g2, 0x7ff
+   13cc0: 12 80 00 09  	bne	0x13ce4
+   13cc4: 01 00 00 00  	nop
+   13cc8: 80 a6 20 00  	cmp	%i0, 0x0
+   13ccc: 12 80 00 31  	bne	0x13d90
+   13cd0: 01 00 00 00  	nop
+   13cd4: 10 80 00 30  	ba 0x13d94
+   13cd8: b0 10 20 04  	mov	0x4, %i0
+   13cdc: 10 80 00 51  	ba 0x13e20
+   13ce0: b6 10 00 00  	mov	%g0, %i3
+   13ce4: 80 a0 a0 00  	cmp	%g2, 0x0
+   13ce8: 12 80 00 30  	bne	0x13da8
+   13cec: 01 00 00 00  	nop
+   13cf0: b0 10 3c 02  	mov	-0x3fe, %i0
+   13cf4: 80 a0 a0 00  	cmp	%g2, 0x0
+   13cf8: 02 bf ff e9  	be	0x13c9c
+   13cfc: 01 00 00 00  	nop
+   13d00: 10 80 00 2d  	ba 0x13db4
+   13d04: 01 00 00 00  	nop
+   13d08: a7 2e e0 02  	sll %i3, 0x2, %l3
+   13d0c: b0 10 20 33  	mov	0x33, %i0
+   13d10: b0 26 00 13  	sub %i0, %l3, %i0
+   13d14: a2 10 20 01  	mov	0x1, %l1
+   13d18: 90 10 00 00  	mov	%g0, %o0
+   13d1c: 92 10 00 11  	mov	%l1, %o1
+   13d20: 40 00 02 99  	call 0x14784
+   13d24: 94 10 00 18  	mov	%i0, %o2
+   13d28: ba 10 00 08  	mov	%o0, %i5
+   13d2c: a0 10 00 09  	mov	%o1, %l0
+   13d30: 92 10 20 02  	mov	0x2, %o1
+   13d34: 90 10 00 00  	mov	%g0, %o0
+   13d38: 40 00 02 93  	call 0x14784
+   13d3c: 94 10 00 18  	mov	%i0, %o2
+   13d40: 86 82 7f ff  	addcc %o1, -0x1, %g3
+   13d44: 84 c2 3f ff  	addxcc %o0, -0x1, %g2
+   13d48: b0 a0 00 09  	subcc %g0, %o1, %i0
+   13d4c: a8 e0 00 08  	subxcc %g0, %o0, %l4
+   13d50: 84 0c 80 02  	and %l2, %g2, %g2
+   13d54: 80 a0 80 1d  	cmp	%g2, %i5
+   13d58: 88 0e 40 03  	and %i1, %g3, %g4
+   13d5c: 08 80 00 19  	bleu	0x13dc0
+   13d60: 86 10 00 11  	mov	%l1, %g3
+   13d64: 80 a1 00 10  	cmp	%g4, %l0
+   13d68: 08 80 00 1a  	bleu	0x13dd0
+   13d6c: 01 00 00 00  	nop
+   13d70: 80 a0 80 1d  	cmp	%g2, %i5
+   13d74: 12 80 00 1b  	bne	0x13de0
+   13d78: 01 00 00 00  	nop
+   13d7c: 80 a4 60 00  	cmp	%l1, 0x0
+   13d80: 02 80 00 1c  	be	0x13df0
+   13d84: 01 00 00 00  	nop
+   13d88: 10 80 00 22  	ba 0x13e10
+   13d8c: 01 00 00 00  	nop
+   13d90: b0 10 20 08  	mov	0x8, %i0
+   13d94: b6 10 00 00  	mov	%g0, %i3
+   13d98: b0 16 00 1d  	or %i0, %i5, %i0
+   13d9c: f0 2e a0 04  	stb %i0, [%i2+0x4]
+   13da0: 81 c7 e0 08  	ret
+   13da4: 91 e8 00 1b  	restore %g0, %i3, %o0
+   13da8: 80 a0 a0 00  	cmp	%g2, 0x0
+   13dac: 02 bf ff bc  	be	0x13c9c
+   13db0: b0 00 bc 01  	add %g2, -0x3ff, %i0
+   13db4: 3b 00 04 00  	sethi 0x400, %i5
+   13db8: 10 bf ff b9  	ba 0x13c9c
+   13dbc: a4 14 80 1d  	or %l2, %i5, %l2
+   13dc0: 86 10 00 00  	mov	%g0, %g3
+   13dc4: 80 a1 00 10  	cmp	%g4, %l0
+   13dc8: 18 bf ff ea  	bgu	0x13d70
+   13dcc: 01 00 00 00  	nop
+   13dd0: a2 10 00 00  	mov	%g0, %l1
+   13dd4: 80 a0 80 1d  	cmp	%g2, %i5
+   13dd8: 02 bf ff e9  	be	0x13d7c
+   13ddc: 01 00 00 00  	nop
+   13de0: a2 10 00 03  	mov	%g3, %l1
+   13de4: 80 a4 60 00  	cmp	%l1, 0x0
+   13de8: 12 80 00 0a  	bne	0x13e10
+   13dec: 01 00 00 00  	nop
+   13df0: 84 10 20 34  	mov	0x34, %g2
+   13df4: 94 20 80 13  	sub %g2, %l3, %o2
+   13df8: 90 10 00 12  	mov	%l2, %o0
+   13dfc: 40 00 02 74  	call 0x147cc
+   13e00: 92 10 00 19  	mov	%i1, %o1
+   13e04: 80 8a 60 01  	andcc %o1, 0x1, %g0
+   13e08: 02 80 00 04  	be	0x13e18
+   13e0c: 01 00 00 00  	nop
+   13e10: b2 86 40 10  	addcc %i1, %l0, %i1
+   13e14: a4 c4 80 1d  	addxcc %l2, %i5, %l2
+   13e18: a4 0c 80 14  	and %l2, %l4, %l2
+   13e1c: b2 0e 40 18  	and %i1, %i0, %i1
+   13e20: b0 10 20 27  	mov	0x27, %i0
+   13e24: b0 26 00 1c  	sub %i0, %i4, %i0
+   13e28: 10 80 00 0a  	ba 0x13e50
+   13e2c: b8 10 20 12  	mov	0x12, %i4
+   13e30: b6 10 00 1d  	mov	%i5, %i3
+   13e34: bb 2c a0 1c  	sll %l2, 0x1c, %i5
+   13e38: b3 36 60 04  	srl %i1, 0x4, %i1
+   13e3c: b2 16 40 1d  	or %i1, %i5, %i1
+   13e40: b8 07 3f ff  	add %i4, -0x1, %i4
+   13e44: 80 a7 20 04  	cmp	%i4, 0x4
+   13e48: 02 bf ff d6  	be	0x13da0
+   13e4c: a5 34 a0 04  	srl %l2, 0x4, %l2
+   13e50: 84 8e 60 0f  	andcc %i1, 0xf, %g2
+   13e54: 12 80 00 05  	bne	0x13e68
+   13e58: ba 07 3f fb  	add %i4, -0x5, %i5
+   13e5c: 80 a7 40 1b  	cmp	%i5, %i3
+   13e60: 14 bf ff f5  	bg	0x13e34
+   13e64: 01 00 00 00  	nop
+   13e68: 80 a0 a0 09  	cmp	%g2, 0x9
+   13e6c: 08 80 00 03  	bleu	0x13e78
+   13e70: 01 00 00 00  	nop
+   13e74: 84 00 80 18  	add %g2, %i0, %g2
+   13e78: 84 00 a0 30  	add %g2, 0x30, %g2
+   13e7c: 80 a7 40 1b  	cmp	%i5, %i3
+   13e80: 14 bf ff ec  	bg	0x13e30
+   13e84: c4 2e 80 1c  	stb %g2, [%i2+%i4]
+   13e88: 10 bf ff ea  	ba 0x13e30
+   13e8c: ba 10 00 1b  	mov	%i3, %i5
+   13e90: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13e94: f2 06 20 0c  	ld [%i0+0xc], %i1
+   13e98: 80 a6 60 00  	cmp	%i1, 0x0
+   13e9c: 02 80 00 06  	be	0x13eb4
+   13ea0: 01 00 00 00  	nop
+   13ea4: 9f c6 40 00  	call %i1
+   13ea8: 90 10 00 18  	mov	%i0, %o0
+   13eac: 81 c7 e0 08  	ret
+   13eb0: 91 e8 00 08  	restore %g0, %o0, %o0
+   13eb4: 81 c7 e0 08  	ret
+   13eb8: 91 e8 00 00  	restore %g0, %g0, %o0
+   13ebc: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13ec0: 80 a6 20 00  	cmp	%i0, 0x0
+   13ec4: 02 80 00 31  	be	0x13f88
+   13ec8: 01 00 00 00  	nop
+   13ecc: c0 26 00 00  	st %g0, [%i0]
+   13ed0: 33 00 40 c1  	sethi 0x40c1, %i1
+   13ed4: b2 06 60 25  	add %i1, 0x25, %i1
+   13ed8: 7f ff fc a8  	call 0x13178
+   13edc: 90 10 00 19  	mov	%i1, %o0
+   13ee0: 35 00 40 c1  	sethi 0x40c1, %i2
+   13ee4: b6 06 a0 2c  	add %i2, 0x2c, %i3
+   13ee8: f4 06 c0 00  	ld [%i3], %i2
+   13eec: 80 a6 a0 00  	cmp	%i2, 0x0
+   13ef0: 02 80 00 14  	be	0x13f40
+   13ef4: 01 00 00 00  	nop
+   13ef8: 80 a6 00 1a  	cmp	%i0, %i2
+   13efc: 08 80 00 0e  	bleu	0x13f34
+   13f00: 01 00 00 00  	nop
+   13f04: f8 06 bf fc  	ld [%i2+-0x4], %i4
+   13f08: b6 06 80 1c  	add %i2, %i4, %i3
+   13f0c: 80 a6 c0 18  	cmp	%i3, %i0
+   13f10: 12 bf ff f6  	bne	0x13ee8
+   13f14: b6 10 00 1a  	mov	%i2, %i3
+   13f18: f0 06 3f fc  	ld [%i0+-0x4], %i0
+   13f1c: b6 06 00 1c  	add %i0, %i4, %i3
+   13f20: f6 26 bf fc  	st %i3, [%i2+-0x4]
+   13f24: f8 06 80 00  	ld [%i2], %i4
+   13f28: b0 10 00 1a  	mov	%i2, %i0
+   13f2c: 10 80 00 08  	ba 0x13f4c
+   13f30: b4 10 00 1c  	mov	%i4, %i2
+   13f34: 80 a6 00 1a  	cmp	%i0, %i2
+   13f38: 02 80 00 0f  	be	0x13f74
+   13f3c: 01 00 00 00  	nop
+   13f40: f4 26 00 00  	st %i2, [%i0]
+   13f44: f0 26 c0 00  	st %i0, [%i3]
+   13f48: f6 06 3f fc  	ld [%i0+-0x4], %i3
+   13f4c: b8 06 00 1b  	add %i0, %i3, %i4
+   13f50: 80 a7 00 1a  	cmp	%i4, %i2
+   13f54: 12 80 00 0b  	bne	0x13f80
+   13f58: 01 00 00 00  	nop
+   13f5c: f8 06 bf fc  	ld [%i2+-0x4], %i4
+   13f60: b6 07 00 1b  	add %i4, %i3, %i3
+   13f64: f6 26 3f fc  	st %i3, [%i0+-0x4]
+   13f68: f4 06 80 00  	ld [%i2], %i2
+   13f6c: 10 80 00 05  	ba 0x13f80
+   13f70: f4 26 00 00  	st %i2, [%i0]
+   13f74: 31 00 40 c0  	sethi 0x40c0, %i0
+   13f78: b4 10 20 0c  	mov	0xc, %i2
+   13f7c: f4 26 20 a0  	st %i2, [%i0+0xa0]
+   13f80: 7f ff fc 82  	call 0x13188
+   13f84: 90 10 00 19  	mov	%i1, %o0
+   13f88: 81 c7 e0 08  	ret
+   13f8c: 81 e8 00 00  	restore
+   13f90: 9d e3 bf a0  	save %sp, -0x60, %sp
+   13f94: fa 06 3f fc  	ld [%i0+-0x4], %i5
+   13f98: 39 00 40 c1  	sethi 0x40c1, %i4
+   13f9c: c4 07 20 28  	ld [%i4+0x28], %g2
+   13fa0: b4 06 3f fc  	add %i0, -0x4, %i2
+   13fa4: b6 06 80 1d  	add %i2, %i5, %i3
+   13fa8: 80 a6 c0 02  	cmp	%i3, %g2
+   13fac: 02 80 00 04  	be	0x13fbc
+   13fb0: 01 00 00 00  	nop
+   13fb4: 81 c7 e0 08  	ret
+   13fb8: 91 e8 00 00  	restore %g0, %g0, %o0
+   13fbc: b0 26 40 1d  	sub %i1, %i5, %i0
+   13fc0: 80 a6 20 08  	cmp	%i0, 0x8
+   13fc4: 1a 80 00 04  	bcc	0x13fd4
+   13fc8: 01 00 00 00  	nop
+   13fcc: 10 80 00 05  	ba 0x13fe0
+   13fd0: b0 10 20 08  	mov	0x8, %i0
+   13fd4: 80 a6 20 00  	cmp	%i0, 0x0
+   13fd8: 06 80 00 16  	bl	0x14030
+   13fdc: 01 00 00 00  	nop
+   13fe0: 40 00 01 ce  	call 0x14718
+   13fe4: 90 10 00 18  	mov	%i0, %o0
+   13fe8: 80 a2 3f ff  	cmp	%o0, -0x1
+   13fec: 02 80 00 0f  	be	0x14028
+   13ff0: a0 10 3f ff  	mov	-0x1, %l0
+   13ff4: a2 02 00 18  	add %o0, %i0, %l1
+   13ff8: b2 02 20 0b  	add %o0, 0xb, %i1
+   13ffc: b2 0e 7f f8  	and %i1, -0x8, %i1
+   14000: ba 06 7f fc  	add %i1, -0x4, %i5
+   14004: 80 a7 40 08  	cmp	%i5, %o0
+   14008: 02 80 00 0e  	be	0x14040
+   1400c: e2 27 20 28  	st %l1, [%i4+0x28]
+   14010: b2 27 40 08  	sub %i5, %o0, %i1
+   14014: 40 00 01 c1  	call 0x14718
+   14018: 90 10 00 19  	mov	%i1, %o0
+   1401c: 80 a2 00 11  	cmp	%o0, %l1
+   14020: 02 80 00 06  	be	0x14038
+   14024: 01 00 00 00  	nop
+   14028: 10 80 00 0c  	ba 0x14058
+   1402c: ba 10 00 10  	mov	%l0, %i5
+   14030: 10 80 00 0a  	ba 0x14058
+   14034: ba 10 3f ff  	mov	-0x1, %i5
+   14038: b2 02 00 19  	add %o0, %i1, %i1
+   1403c: f2 27 20 28  	st %i1, [%i4+0x28]
+   14040: 33 00 40 c1  	sethi 0x40c1, %i1
+   14044: f8 06 60 30  	ld [%i1+0x30], %i4
+   14048: 80 a7 20 00  	cmp	%i4, 0x0
+   1404c: 12 80 00 03  	bne	0x14058
+   14050: 01 00 00 00  	nop
+   14054: fa 26 60 30  	st %i5, [%i1+0x30]
+   14058: 80 a7 40 1b  	cmp	%i5, %i3
+   1405c: 02 80 00 0a  	be	0x14084
+   14060: 01 00 00 00  	nop
+   14064: 80 a7 7f ff  	cmp	%i5, -0x1
+   14068: 02 bf ff d3  	be	0x13fb4
+   1406c: 01 00 00 00  	nop
+   14070: 90 07 60 04  	add %i5, 0x4, %o0
+   14074: 7f ff ff 92  	call 0x13ebc
+   14078: f0 27 40 00  	st %i0, [%i5]
+   1407c: 10 bf ff ce  	ba 0x13fb4
+   14080: 01 00 00 00  	nop
+   14084: f2 06 80 00  	ld [%i2], %i1
+   14088: b0 06 40 18  	add %i1, %i0, %i0
+   1408c: f0 26 80 00  	st %i0, [%i2]
+   14090: 81 c7 e0 08  	ret
+   14094: 91 e8 20 01  	restore %g0, 0x1, %o0
+   14098: 9d e3 bf a0  	save %sp, -0x60, %sp
+   1409c: 80 a6 3f ec  	cmp	%i0, -0x14
+   140a0: 0a 80 00 08  	bcs	0x140c0
+   140a4: 01 00 00 00  	nop
+   140a8: b0 10 00 00  	mov	%g0, %i0
+   140ac: 33 00 40 c0  	sethi 0x40c0, %i1
+   140b0: b4 10 20 0c  	mov	0xc, %i2
+   140b4: f4 26 60 a0  	st %i2, [%i1+0xa0]
+   140b8: 81 c7 e0 08  	ret
+   140bc: 81 e8 00 00  	restore
+   140c0: b0 06 20 07  	add %i0, 0x7, %i0
+   140c4: ba 0e 3f f8  	and %i0, -0x8, %i5
+   140c8: b2 07 60 08  	add %i5, 0x8, %i1
+   140cc: 31 00 40 c1  	sethi 0x40c1, %i0
+   140d0: b4 06 20 25  	add %i0, 0x25, %i2
+   140d4: 7f ff fc 29  	call 0x13178
+   140d8: 90 10 00 1a  	mov	%i2, %o0
+   140dc: 31 00 40 c1  	sethi 0x40c1, %i0
+   140e0: f6 06 20 2c  	ld [%i0+0x2c], %i3
+   140e4: 80 a6 e0 00  	cmp	%i3, 0x0
+   140e8: 02 80 00 4f  	be	0x14224
+   140ec: 01 00 00 00  	nop
+   140f0: a2 06 20 2c  	add %i0, 0x2c, %l1
+   140f4: 21 00 40 c1  	sethi 0x40c1, %l0
+   140f8: a4 10 20 08  	mov	0x8, %l2
+   140fc: a6 10 3f ff  	mov	-0x1, %l3
+   14100: 10 80 00 06  	ba 0x14118
+   14104: 29 00 40 c1  	sethi 0x40c1, %l4
+   14108: f6 06 00 00  	ld [%i0], %i3
+   1410c: 80 a6 e0 00  	cmp	%i3, 0x0
+   14110: 02 80 00 45  	be	0x14224
+   14114: a2 10 00 18  	mov	%i0, %l1
+   14118: b0 10 00 1b  	mov	%i3, %i0
+   1411c: f8 06 ff fc  	ld [%i3+-0x4], %i4
+   14120: 80 a7 00 19  	cmp	%i4, %i1
+   14124: 1a 80 00 5d  	bcc	0x14298
+   14128: 01 00 00 00  	nop
+   1412c: f6 06 00 00  	ld [%i0], %i3
+   14130: 80 a6 e0 00  	cmp	%i3, 0x0
+   14134: 12 bf ff f6  	bne	0x1410c
+   14138: 01 00 00 00  	nop
+   1413c: f6 04 20 28  	ld [%l0+0x28], %i3
+   14140: 84 06 3f fc  	add %i0, -0x4, %g2
+   14144: aa 00 80 1c  	add %g2, %i4, %l5
+   14148: 80 a5 40 1b  	cmp	%l5, %i3
+   1414c: 12 bf ff ef  	bne	0x14108
+   14150: 01 00 00 00  	nop
+   14154: b8 26 40 1c  	sub %i1, %i4, %i4
+   14158: 80 a7 20 08  	cmp	%i4, 0x8
+   1415c: 0a 80 00 06  	bcs	0x14174
+   14160: b6 10 00 12  	mov	%l2, %i3
+   14164: 80 a7 20 00  	cmp	%i4, 0x0
+   14168: b6 10 00 1c  	mov	%i4, %i3
+   1416c: 06 80 00 16  	bl	0x141c4
+   14170: ac 10 00 13  	mov	%l3, %l6
+   14174: 40 00 01 69  	call 0x14718
+   14178: 90 10 00 1b  	mov	%i3, %o0
+   1417c: 80 a2 3f ff  	cmp	%o0, -0x1
+   14180: 02 80 00 0f  	be	0x141bc
+   14184: 01 00 00 00  	nop
+   14188: ae 02 00 1b  	add %o0, %i3, %l7
+   1418c: b8 02 20 0b  	add %o0, 0xb, %i4
+   14190: b8 0f 3f f8  	and %i4, -0x8, %i4
+   14194: ac 07 3f fc  	add %i4, -0x4, %l6
+   14198: 80 a5 80 08  	cmp	%l6, %o0
+   1419c: 02 80 00 11  	be	0x141e0
+   141a0: ee 24 20 28  	st %l7, [%l0+0x28]
+   141a4: b8 25 80 08  	sub %l6, %o0, %i4
+   141a8: 40 00 01 5c  	call 0x14718
+   141ac: 90 10 00 1c  	mov	%i4, %o0
+   141b0: 80 a2 00 17  	cmp	%o0, %l7
+   141b4: 02 80 00 09  	be	0x141d8
+   141b8: 01 00 00 00  	nop
+   141bc: b8 10 00 1b  	mov	%i3, %i4
+   141c0: ac 10 00 13  	mov	%l3, %l6
+   141c4: 80 a5 80 15  	cmp	%l6, %l5
+   141c8: 12 80 00 0f  	bne	0x14204
+   141cc: 01 00 00 00  	nop
+   141d0: 10 80 00 47  	ba 0x142ec
+   141d4: 01 00 00 00  	nop
+   141d8: b8 02 00 1c  	add %o0, %i4, %i4
+   141dc: f8 24 20 28  	st %i4, [%l0+0x28]
+   141e0: f8 05 20 30  	ld [%l4+0x30], %i4
+   141e4: 80 a7 20 00  	cmp	%i4, 0x0
+   141e8: 12 80 00 03  	bne	0x141f4
+   141ec: 01 00 00 00  	nop
+   141f0: ec 25 20 30  	st %l6, [%l4+0x30]
+   141f4: b8 10 00 1b  	mov	%i3, %i4
+   141f8: 80 a5 80 15  	cmp	%l6, %l5
+   141fc: 02 80 00 3c  	be	0x142ec
+   14200: 01 00 00 00  	nop
+   14204: 80 a5 bf ff  	cmp	%l6, -0x1
+   14208: 02 bf ff c0  	be	0x14108
+   1420c: 01 00 00 00  	nop
+   14210: 90 05 a0 04  	add %l6, 0x4, %o0
+   14214: 7f ff ff 2a  	call 0x13ebc
+   14218: f8 25 80 00  	st %i4, [%l6]
+   1421c: 10 bf ff bb  	ba 0x14108
+   14220: 01 00 00 00  	nop
+   14224: 80 a6 60 00  	cmp	%i1, 0x0
+   14228: 06 80 00 15  	bl	0x1427c
+   1422c: 01 00 00 00  	nop
+   14230: 40 00 01 3a  	call 0x14718
+   14234: 90 10 00 19  	mov	%i1, %o0
+   14238: 80 a2 3f ff  	cmp	%o0, -0x1
+   1423c: 02 80 00 10  	be	0x1427c
+   14240: 01 00 00 00  	nop
+   14244: a2 02 00 19  	add %o0, %i1, %l1
+   14248: 21 00 40 c1  	sethi 0x40c1, %l0
+   1424c: b0 02 20 0b  	add %o0, 0xb, %i0
+   14250: b0 0e 3f f8  	and %i0, -0x8, %i0
+   14254: b8 06 3f fc  	add %i0, -0x4, %i4
+   14258: 80 a7 00 08  	cmp	%i4, %o0
+   1425c: 02 80 00 1c  	be	0x142cc
+   14260: e2 24 20 28  	st %l1, [%l0+0x28]
+   14264: b6 27 00 08  	sub %i4, %o0, %i3
+   14268: 40 00 01 2c  	call 0x14718
+   1426c: 90 10 00 1b  	mov	%i3, %o0
+   14270: 80 a2 00 11  	cmp	%o0, %l1
+   14274: 02 80 00 14  	be	0x142c4
+   14278: 01 00 00 00  	nop
+   1427c: 31 00 40 c0  	sethi 0x40c0, %i0
+   14280: b2 10 20 0c  	mov	0xc, %i1
+   14284: f2 26 20 a0  	st %i1, [%i0+0xa0]
+   14288: 7f ff fb c0  	call 0x13188
+   1428c: 90 10 00 1a  	mov	%i2, %o0
+   14290: 81 c7 e0 08  	ret
+   14294: 91 e8 00 00  	restore %g0, %g0, %o0
+   14298: b6 27 00 19  	sub %i4, %i1, %i3
+   1429c: 80 a6 e0 08  	cmp	%i3, 0x8
+   142a0: 0a 80 00 16  	bcs	0x142f8
+   142a4: 01 00 00 00  	nop
+   142a8: b8 06 00 19  	add %i0, %i1, %i4
+   142ac: f6 27 3f fc  	st %i3, [%i4+-0x4]
+   142b0: f6 06 00 00  	ld [%i0], %i3
+   142b4: f6 26 00 19  	st %i3, [%i0+%i1]
+   142b8: f8 24 40 00  	st %i4, [%l1]
+   142bc: 10 80 00 11  	ba 0x14300
+   142c0: f2 26 3f fc  	st %i1, [%i0+-0x4]
+   142c4: b6 02 00 1b  	add %o0, %i3, %i3
+   142c8: f6 24 20 28  	st %i3, [%l0+0x28]
+   142cc: 37 00 40 c1  	sethi 0x40c1, %i3
+   142d0: c4 06 e0 30  	ld [%i3+0x30], %g2
+   142d4: 80 a0 a0 00  	cmp	%g2, 0x0
+   142d8: 12 80 00 03  	bne	0x142e4
+   142dc: 01 00 00 00  	nop
+   142e0: f8 26 e0 30  	st %i4, [%i3+0x30]
+   142e4: 10 80 00 07  	ba 0x14300
+   142e8: f2 27 00 00  	st %i1, [%i4]
+   142ec: f2 06 3f fc  	ld [%i0+-0x4], %i1
+   142f0: b2 06 40 1c  	add %i1, %i4, %i1
+   142f4: f2 26 3f fc  	st %i1, [%i0+-0x4]
+   142f8: f2 06 00 00  	ld [%i0], %i1
+   142fc: f2 24 40 00  	st %i1, [%l1]
+   14300: 7f ff fb a2  	call 0x13188
+   14304: 90 10 00 1a  	mov	%i2, %o0
+   14308: 94 17 60 04  	or %i5, 0x4, %o2
+   1430c: 90 10 00 18  	mov	%i0, %o0
+   14310: 40 00 00 ca  	call 0x14638
+   14314: 92 10 00 00  	mov	%g0, %o1
+   14318: 81 c7 e0 08  	ret
+   1431c: 81 e8 00 00  	restore
+   14320: 9d e3 bf a0  	save %sp, -0x60, %sp
+   14324: 80 a6 20 00  	cmp	%i0, 0x0
+   14328: 02 80 00 0e  	be	0x14360
+   1432c: 01 00 00 00  	nop
+   14330: 80 a6 60 00  	cmp	%i1, 0x0
+   14334: 02 80 00 0f  	be	0x14370
+   14338: 01 00 00 00  	nop
+   1433c: 80 a6 7f ec  	cmp	%i1, -0x14
+   14340: 0a 80 00 10  	bcs	0x14380
+   14344: 01 00 00 00  	nop
+   14348: b0 10 00 00  	mov	%g0, %i0
+   1434c: 33 00 40 c0  	sethi 0x40c0, %i1
+   14350: b4 10 20 0c  	mov	0xc, %i2
+   14354: f4 26 60 a0  	st %i2, [%i1+0xa0]
+   14358: 81 c7 e0 08  	ret
+   1435c: 81 e8 00 00  	restore
+   14360: 7f ff ff 4e  	call 0x14098
+   14364: 90 10 00 19  	mov	%i1, %o0
+   14368: 81 c7 e0 08  	ret
+   1436c: 91 e8 00 08  	restore %g0, %o0, %o0
+   14370: 7f ff fe d3  	call 0x13ebc
+   14374: 90 10 00 18  	mov	%i0, %o0
+   14378: 81 c7 e0 08  	ret
+   1437c: 91 e8 00 00  	restore %g0, %g0, %o0
+   14380: fa 06 3f fc  	ld [%i0+-0x4], %i5
+   14384: b4 06 60 07  	add %i1, 0x7, %i2
+   14388: b4 0e bf f8  	and %i2, -0x8, %i2
+   1438c: b4 06 a0 08  	add %i2, 0x8, %i2
+   14390: 80 a6 80 1d  	cmp	%i2, %i5
+   14394: 08 80 00 2c  	bleu	0x14444
+   14398: 01 00 00 00  	nop
+   1439c: a0 06 3f fc  	add %i0, -0x4, %l0
+   143a0: b8 04 00 1d  	add %l0, %i5, %i4
+   143a4: 37 00 40 c1  	sethi 0x40c1, %i3
+   143a8: b6 06 e0 25  	add %i3, 0x25, %i3
+   143ac: 7f ff fb 73  	call 0x13178
+   143b0: 90 10 00 1b  	mov	%i3, %o0
+   143b4: 90 10 00 18  	mov	%i0, %o0
+   143b8: 7f ff fe f6  	call 0x13f90
+   143bc: 92 10 00 1a  	mov	%i2, %o1
+   143c0: 80 a2 20 00  	cmp	%o0, 0x0
+   143c4: 02 80 00 08  	be	0x143e4
+   143c8: 01 00 00 00  	nop
+   143cc: 94 26 80 1d  	sub %i2, %i5, %o2
+   143d0: 90 10 00 1c  	mov	%i4, %o0
+   143d4: 40 00 00 99  	call 0x14638
+   143d8: 92 10 00 00  	mov	%g0, %o1
+   143dc: 10 80 00 18  	ba 0x1443c
+   143e0: ba 10 00 1a  	mov	%i2, %i5
+   143e4: 05 00 40 c1  	sethi 0x40c1, %g2
+   143e8: 84 00 a0 2c  	add %g2, 0x2c, %g2
+   143ec: d0 00 80 00  	ld [%g2], %o0
+   143f0: 80 a2 20 00  	cmp	%o0, 0x0
+   143f4: 02 80 00 12  	be	0x1443c
+   143f8: 01 00 00 00  	nop
+   143fc: 80 a2 00 1c  	cmp	%o0, %i4
+   14400: 02 80 00 07  	be	0x1441c
+   14404: 01 00 00 00  	nop
+   14408: 80 a6 00 08  	cmp	%i0, %o0
+   1440c: 1a bf ff f8  	bcc	0x143ec
+   14410: 84 10 00 08  	mov	%o0, %g2
+   14414: 10 80 00 0a  	ba 0x1443c
+   14418: 01 00 00 00  	nop
+   1441c: c6 02 00 00  	ld [%o0], %g3
+   14420: f8 02 3f fc  	ld [%o0+-0x4], %i4
+   14424: c6 20 80 00  	st %g3, [%g2]
+   14428: 92 10 00 00  	mov	%g0, %o1
+   1442c: 40 00 00 83  	call 0x14638
+   14430: 94 10 00 1c  	mov	%i4, %o2
+   14434: ba 07 00 1d  	add %i4, %i5, %i5
+   14438: fa 24 00 00  	st %i5, [%l0]
+   1443c: 7f ff fb 53  	call 0x13188
+   14440: 90 10 00 1b  	mov	%i3, %o0
+   14444: 80 a7 40 1a  	cmp	%i5, %i2
+   14448: 1a 80 00 10  	bcc	0x14488
+   1444c: 01 00 00 00  	nop
+   14450: 7f ff ff 12  	call 0x14098
+   14454: 90 10 00 19  	mov	%i1, %o0
+   14458: 80 a2 20 00  	cmp	%o0, 0x0
+   1445c: 02 bf ff c7  	be	0x14378
+   14460: 01 00 00 00  	nop
+   14464: 94 07 7f fc  	add %i5, -0x4, %o2
+   14468: b2 10 00 08  	mov	%o0, %i1
+   1446c: 40 00 00 11  	call 0x144b0
+   14470: 92 10 00 18  	mov	%i0, %o1
+   14474: 7f ff fe 92  	call 0x13ebc
+   14478: 90 10 00 18  	mov	%i0, %o0
+   1447c: b0 10 00 19  	mov	%i1, %i0
+   14480: 81 c7 e0 08  	ret
+   14484: 81 e8 00 00  	restore
+   14488: b2 27 40 1a  	sub %i5, %i2, %i1
+   1448c: 80 a6 60 08  	cmp	%i1, 0x8
+   14490: 0a bf ff fc  	bcs	0x14480
+   14494: 01 00 00 00  	nop
+   14498: f4 26 3f fc  	st %i2, [%i0+-0x4]
+   1449c: 90 06 00 1a  	add %i0, %i2, %o0
+   144a0: 7f ff fe 87  	call 0x13ebc
+   144a4: f2 22 3f fc  	st %i1, [%o0+-0x4]
+   144a8: 81 c7 e0 08  	ret
+   144ac: 81 e8 00 00  	restore
+   144b0: 9d e3 bf a0  	save %sp, -0x60, %sp
+   144b4: 80 a6 a0 10  	cmp	%i2, 0x10
+   144b8: 1a 80 00 04  	bcc	0x144c8
+   144bc: 01 00 00 00  	nop
+   144c0: 10 80 00 52  	ba 0x14608
+   144c4: b6 10 00 18  	mov	%i0, %i3
+   144c8: b6 10 00 00  	mov	%g0, %i3
+   144cc: ba 0e 20 03  	and %i0, 0x3, %i5
+   144d0: b8 10 20 08  	mov	0x8, %i4
+   144d4: 84 27 00 1d  	sub %i4, %i5, %g2
+   144d8: 86 10 00 19  	mov	%i1, %g3
+   144dc: c8 0e 40 1b  	ldub [%i1+%i3], %g4
+   144e0: c8 2e 00 1b  	stb %g4, [%i0+%i3]
+   144e4: b6 06 e0 01  	add %i3, 0x1, %i3
+   144e8: 80 a0 80 1b  	cmp	%g2, %i3
+   144ec: 12 bf ff fc  	bne	0x144dc
+   144f0: 86 00 e0 01  	add %g3, 0x1, %g3
+   144f4: b4 06 80 1d  	add %i2, %i5, %i2
+   144f8: 84 06 40 1b  	add %i1, %i3, %g2
+   144fc: 88 88 a0 03  	andcc %g2, 0x3, %g4
+   14500: 02 80 00 1f  	be	0x1457c
+   14504: b4 06 bf f8  	add %i2, -0x8, %i2
+   14508: ba 10 00 00  	mov	%g0, %i5
+   1450c: 84 10 bf fc  	or %g2, -0x4, %g2
+   14510: 86 08 e0 03  	and %g3, 0x3, %g3
+   14514: b2 26 40 03  	sub %i1, %g3, %i1
+   14518: e0 06 40 1b  	ld [%i1+%i3], %l0
+   1451c: 87 29 20 03  	sll %g4, 0x3, %g3
+   14520: b8 27 00 04  	sub %i4, %g4, %i4
+   14524: 88 18 e0 1f  	xor %g3, 0x1f, %g4
+   14528: a2 06 c0 1d  	add %i3, %i5, %l1
+   1452c: a2 06 40 11  	add %i1, %l1, %l1
+   14530: e2 04 60 04  	ld [%l1+0x4], %l1
+   14534: a1 2c 00 03  	sll %l0, %g3, %l0
+   14538: a4 06 00 1d  	add %i0, %i5, %l2
+   1453c: a7 34 60 01  	srl %l1, 0x1, %l3
+   14540: a7 34 c0 04  	srl %l3, %g4, %l3
+   14544: a0 14 00 13  	or %l0, %l3, %l0
+   14548: e0 24 80 1b  	st %l0, [%l2+%i3]
+   1454c: b4 06 bf fc  	add %i2, -0x4, %i2
+   14550: 80 a6 80 1c  	cmp	%i2, %i4
+   14554: ba 07 60 04  	add %i5, 0x4, %i5
+   14558: 1a bf ff f4  	bcc	0x14528
+   1455c: a0 10 00 11  	mov	%l1, %l0
+   14560: b2 06 40 02  	add %i1, %g2, %i1
+   14564: b2 06 40 1b  	add %i1, %i3, %i1
+   14568: b2 06 40 1d  	add %i1, %i5, %i1
+   1456c: b2 06 60 04  	add %i1, 0x4, %i1
+   14570: b6 06 00 1b  	add %i0, %i3, %i3
+   14574: 10 80 00 28  	ba 0x14614
+   14578: b6 06 c0 1d  	add %i3, %i5, %i3
+   1457c: 80 a6 a0 10  	cmp	%i2, 0x10
+   14580: 0a 80 00 19  	bcs	0x145e4
+   14584: 01 00 00 00  	nop
+   14588: b8 10 00 00  	mov	%g0, %i4
+   1458c: ba 06 00 1b  	add %i0, %i3, %i5
+   14590: b2 06 40 1b  	add %i1, %i3, %i1
+   14594: f6 06 40 1c  	ld [%i1+%i4], %i3
+   14598: f6 27 40 1c  	st %i3, [%i5+%i4]
+   1459c: b6 06 40 1c  	add %i1, %i4, %i3
+   145a0: c4 06 e0 04  	ld [%i3+0x4], %g2
+   145a4: c6 06 e0 08  	ld [%i3+0x8], %g3
+   145a8: f6 06 e0 0c  	ld [%i3+0xc], %i3
+   145ac: 88 07 40 1c  	add %i5, %i4, %g4
+   145b0: c4 21 20 04  	st %g2, [%g4+0x4]
+   145b4: c6 21 20 08  	st %g3, [%g4+0x8]
+   145b8: f6 21 20 0c  	st %i3, [%g4+0xc]
+   145bc: b4 06 bf f0  	add %i2, -0x10, %i2
+   145c0: 80 a6 a0 0f  	cmp	%i2, 0xf
+   145c4: 18 bf ff f4  	bgu	0x14594
+   145c8: b8 07 20 10  	add %i4, 0x10, %i4
+   145cc: b6 07 40 1c  	add %i5, %i4, %i3
+   145d0: 80 a6 a0 04  	cmp	%i2, 0x4
+   145d4: 1a 80 00 06  	bcc	0x145ec
+   145d8: b2 06 40 1c  	add %i1, %i4, %i1
+   145dc: 10 80 00 0b  	ba 0x14608
+   145e0: 01 00 00 00  	nop
+   145e4: b6 06 00 1b  	add %i0, %i3, %i3
+   145e8: b2 10 00 02  	mov	%g2, %i1
+   145ec: f8 06 40 00  	ld [%i1], %i4
+   145f0: b2 06 60 04  	add %i1, 0x4, %i1
+   145f4: f8 26 c0 00  	st %i4, [%i3]
+   145f8: b4 06 bf fc  	add %i2, -0x4, %i2
+   145fc: 80 a6 a0 03  	cmp	%i2, 0x3
+   14600: 18 bf ff fb  	bgu	0x145ec
+   14604: b6 06 e0 04  	add %i3, 0x4, %i3
+   14608: 80 a6 a0 00  	cmp	%i2, 0x0
+   1460c: 02 80 00 09  	be	0x14630
+   14610: 01 00 00 00  	nop
+   14614: f8 0e 40 00  	ldub [%i1], %i4
+   14618: b4 86 bf ff  	addcc %i2, -0x1, %i2
+   1461c: b2 06 60 01  	add %i1, 0x1, %i1
+   14620: ba 06 e0 01  	add %i3, 0x1, %i5
+   14624: f8 2e c0 00  	stb %i4, [%i3]
+   14628: 12 bf ff fb  	bne	0x14614
+   1462c: b6 10 00 1d  	mov	%i5, %i3
+   14630: 81 c7 e0 08  	ret
+   14634: 81 e8 00 00  	restore
+   14638: 80 8a 20 03  	andcc %o0, 0x3, %g0
+   1463c: 02 80 00 13  	be	0x14688
+   14640: 01 00 00 00  	nop
+   14644: 98 02 20 01  	add %o0, 0x1, %o4
+   14648: 9a 10 00 08  	mov	%o0, %o5
+   1464c: 80 a2 a0 00  	cmp	%o2, 0x0
+   14650: 02 80 00 30  	be	0x14710
+   14654: 01 00 00 00  	nop
+   14658: 94 02 bf ff  	add %o2, -0x1, %o2
+   1465c: 96 03 60 01  	add %o5, 0x1, %o3
+   14660: d2 2b 40 00  	stb %o1, [%o5]
+   14664: 80 8b 20 03  	andcc %o4, 0x3, %g0
+   14668: 98 03 20 01  	add %o4, 0x1, %o4
+   1466c: 12 bf ff f8  	bne	0x1464c
+   14670: 9a 10 00 0b  	mov	%o3, %o5
+   14674: 80 a2 a0 04  	cmp	%o2, 0x4
+   14678: 1a 80 00 08  	bcc	0x14698
+   1467c: 01 00 00 00  	nop
+   14680: 10 80 00 1c  	ba 0x146f0
+   14684: 01 00 00 00  	nop
+   14688: 96 10 00 08  	mov	%o0, %o3
+   1468c: 80 a2 a0 04  	cmp	%o2, 0x4
+   14690: 0a 80 00 18  	bcs	0x146f0
+   14694: 01 00 00 00  	nop
+   14698: 98 0a 60 ff  	and %o1, 0xff, %o4
+   1469c: 1b 00 40 40  	sethi 0x4040, %o5
+   146a0: 9a 13 61 01  	or %o5, 0x101, %o5
+   146a4: 80 a2 a0 10  	cmp	%o2, 0x10
+   146a8: 0a 80 00 0d  	bcs	0x146dc
+   146ac: 98 5b 00 0d  	smul %o4, %o5, %o4
+   146b0: d8 22 c0 00  	st %o4, [%o3]
+   146b4: d8 22 e0 04  	st %o4, [%o3+0x4]
+   146b8: d8 22 e0 08  	st %o4, [%o3+0x8]
+   146bc: d8 22 e0 0c  	st %o4, [%o3+0xc]
+   146c0: 94 02 bf f0  	add %o2, -0x10, %o2
+   146c4: 80 a2 a0 0f  	cmp	%o2, 0xf
+   146c8: 18 bf ff fa  	bgu	0x146b0
+   146cc: 96 02 e0 10  	add %o3, 0x10, %o3
+   146d0: 80 a2 a0 04  	cmp	%o2, 0x4
+   146d4: 0a 80 00 07  	bcs	0x146f0
+   146d8: 01 00 00 00  	nop
+   146dc: d8 22 c0 00  	st %o4, [%o3]
+   146e0: 94 02 bf fc  	add %o2, -0x4, %o2
+   146e4: 80 a2 a0 03  	cmp	%o2, 0x3
+   146e8: 18 bf ff fd  	bgu	0x146dc
+   146ec: 96 02 e0 04  	add %o3, 0x4, %o3
+   146f0: 80 a2 a0 00  	cmp	%o2, 0x0
+   146f4: 02 80 00 07  	be	0x14710
+   146f8: 01 00 00 00  	nop
+   146fc: 94 82 bf ff  	addcc %o2, -0x1, %o2
+   14700: 98 02 e0 01  	add %o3, 0x1, %o4
+   14704: d2 2a c0 00  	stb %o1, [%o3]
+   14708: 12 bf ff fd  	bne	0x146fc
+   1470c: 96 10 00 0c  	mov	%o4, %o3
+   14710: 81 c3 e0 08  	retl
+   14714: 01 00 00 00  	nop
+   14718: 15 00 00 c0  	sethi 0xc0, %o2
+   1471c: 80 a2 3f ff  	cmp	%o0, -0x1
+   14720: 04 80 00 0e  	ble	0x14758
+   14724: d2 02 a0 98  	ld [%o2+0x98], %o1
+   14728: 17 00 40 c0  	sethi 0x40c0, %o3
+   1472c: 96 02 e0 a0  	add %o3, 0xa0, %o3
+   14730: 96 22 c0 09  	sub %o3, %o1, %o3
+   14734: 80 a2 c0 08  	cmp	%o3, %o0
+   14738: 1a 80 00 0f  	bcc	0x14774
+   1473c: 01 00 00 00  	nop
+   14740: 11 00 40 c0  	sethi 0x40c0, %o0
+   14744: 92 10 20 0c  	mov	0xc, %o1
+   14748: d2 22 20 a0  	st %o1, [%o0+0xa0]
+   1474c: 92 10 3f ff  	mov	-0x1, %o1
+   14750: 81 c3 e0 08  	retl
+   14754: 90 10 00 09  	mov	%o1, %o0
+   14758: 17 00 00 c0  	sethi 0xc0, %o3
+   1475c: 96 02 e0 a0  	add %o3, 0xa0, %o3
+   14760: 96 22 40 0b  	sub %o1, %o3, %o3
+   14764: 98 20 00 08  	sub %g0, %o0, %o4
+   14768: 80 a2 c0 0c  	cmp	%o3, %o4
+   1476c: 0a bf ff f5  	bcs	0x14740
+   14770: 01 00 00 00  	nop
+   14774: 90 02 40 08  	add %o1, %o0, %o0
+   14778: d0 22 a0 98  	st %o0, [%o2+0x98]
+   1477c: 81 c3 e0 08  	retl
+   14780: 90 10 00 09  	mov	%o1, %o0
+   14784: 80 8a a0 20  	andcc %o2, 0x20, %g0
+   14788: 12 80 00 0d  	bne	0x147bc
+   1478c: 01 00 00 00  	nop
+   14790: 80 a2 a0 00  	cmp	%o2, 0x0
+   14794: 02 80 00 08  	be	0x147b4
+   14798: 01 00 00 00  	nop
+   1479c: 96 10 20 20  	mov	0x20, %o3
+   147a0: 96 22 c0 0a  	sub %o3, %o2, %o3
+   147a4: 97 32 40 0b  	srl %o1, %o3, %o3
+   147a8: 93 2a 40 0a  	sll %o1, %o2, %o1
+   147ac: 91 2a 00 0a  	sll %o0, %o2, %o0
+   147b0: 90 12 00 0b  	or %o0, %o3, %o0
+   147b4: 81 c3 e0 08  	retl
+   147b8: 01 00 00 00  	nop
+   147bc: 90 02 bf e0  	add %o2, -0x20, %o0
+   147c0: 91 2a 40 08  	sll %o1, %o0, %o0
+   147c4: 81 c3 e0 08  	retl
+   147c8: 92 10 00 00  	mov	%g0, %o1
+   147cc: 80 8a a0 20  	andcc %o2, 0x20, %g0
+   147d0: 12 80 00 0d  	bne	0x14804
+   147d4: 01 00 00 00  	nop
+   147d8: 80 a2 a0 00  	cmp	%o2, 0x0
+   147dc: 02 80 00 08  	be	0x147fc
+   147e0: 01 00 00 00  	nop
+   147e4: 96 10 20 20  	mov	0x20, %o3
+   147e8: 96 22 c0 0a  	sub %o3, %o2, %o3
+   147ec: 97 2a 00 0b  	sll %o0, %o3, %o3
+   147f0: 91 32 00 0a  	srl %o0, %o2, %o0
+   147f4: 93 32 40 0a  	srl %o1, %o2, %o1
+   147f8: 92 12 c0 09  	or %o3, %o1, %o1
+   147fc: 81 c3 e0 08  	retl
+   14800: 01 00 00 00  	nop
+   14804: 92 02 bf e0  	add %o2, -0x20, %o1
+   14808: 93 32 00 09  	srl %o0, %o1, %o1
+   1480c: 81 c3 e0 08  	retl
+   14810: 90 10 00 00  	mov	%g0, %o0
+   14814: 9d e3 bf a0  	save %sp, -0x60, %sp
+   14818: 80 96 c0 1a  	orcc %i3, %i2, %g0
+   1481c: b8 10 20 40  	mov	0x40, %i4
+   14820: a4 10 00 18  	mov	%i0, %l2
+   14824: 02 80 00 0b  	be	0x14850
+   14828: ba 10 00 1c  	mov	%i4, %i5
+   1482c: 40 00 00 55  	call 0x14980
+   14830: 90 10 00 1b  	mov	%i3, %o0
+   14834: b0 10 00 08  	mov	%o0, %i0
+   14838: 40 00 00 52  	call 0x14980
+   1483c: 90 10 00 1a  	mov	%i2, %o0
+   14840: 80 a6 a0 00  	cmp	%i2, 0x0
+   14844: 12 80 00 03  	bne	0x14850
+   14848: ba 10 00 08  	mov	%o0, %i5
+   1484c: ba 06 20 20  	add %i0, 0x20, %i5
+   14850: 80 96 40 12  	orcc %i1, %l2, %g0
+   14854: 02 80 00 0b  	be	0x14880
+   14858: 01 00 00 00  	nop
+   1485c: 40 00 00 49  	call 0x14980
+   14860: 90 10 00 19  	mov	%i1, %o0
+   14864: b0 10 00 08  	mov	%o0, %i0
+   14868: 40 00 00 46  	call 0x14980
+   1486c: 90 10 00 12  	mov	%l2, %o0
+   14870: 80 a4 a0 00  	cmp	%l2, 0x0
+   14874: 12 80 00 03  	bne	0x14880
+   14878: b8 10 00 08  	mov	%o0, %i4
+   1487c: b8 06 20 20  	add %i0, 0x20, %i4
+   14880: a6 27 40 1c  	sub %i5, %i4, %l3
+   14884: 80 a4 e0 3f  	cmp	%l3, 0x3f
+   14888: b0 10 00 00  	mov	%g0, %i0
+   1488c: 18 80 00 3b  	bgu	0x14978
+   14890: 84 10 00 00  	mov	%g0, %g2
+   14894: 80 a4 e0 3f  	cmp	%l3, 0x3f
+   14898: 12 80 00 05  	bne	0x148ac
+   1489c: 01 00 00 00  	nop
+   148a0: b0 10 00 12  	mov	%l2, %i0
+   148a4: 10 80 00 35  	ba 0x14978
+   148a8: 84 10 00 19  	mov	%i1, %g2
+   148ac: 94 04 e0 01  	add %l3, 0x1, %o2
+   148b0: 90 10 00 12  	mov	%l2, %o0
+   148b4: 7f ff ff c6  	call 0x147cc
+   148b8: 92 10 00 19  	mov	%i1, %o1
+   148bc: a2 10 00 08  	mov	%o0, %l1
+   148c0: a0 10 00 09  	mov	%o1, %l0
+   148c4: 94 1c e0 3f  	xor %l3, 0x3f, %o2
+   148c8: 90 10 00 12  	mov	%l2, %o0
+   148cc: 7f ff ff ae  	call 0x14784
+   148d0: 92 10 00 19  	mov	%i1, %o1
+   148d4: 84 10 00 00  	mov	%g0, %g2
+   148d8: b2 10 00 00  	mov	%g0, %i1
+   148dc: b0 1f 7f ff  	xor %i5, -0x1, %i0
+   148e0: b0 06 00 1c  	add %i0, %i4, %i0
+   148e4: 10 80 00 0c  	ba 0x14914
+   148e8: b8 10 20 01  	mov	0x1, %i4
+   148ec: 89 2a 20 01  	sll %o0, 0x1, %g4
+   148f0: a5 32 60 1f  	srl %o1, 0x1f, %l2
+   148f4: 88 11 00 12  	or %g4, %l2, %g4
+   148f8: a5 2a 60 01  	sll %o1, 0x1, %l2
+   148fc: 92 14 80 19  	or %l2, %i1, %o1
+   14900: 90 11 00 02  	or %g4, %g2, %o0
+   14904: 80 a0 e0 01  	cmp	%g3, 0x1
+   14908: b3 37 60 1f  	srl %i5, 0x1f, %i1
+   1490c: 02 80 00 16  	be	0x14964
+   14910: 84 10 00 00  	mov	%g0, %g2
+   14914: bb 2c 60 01  	sll %l1, 0x1, %i5
+   14918: 87 34 20 1f  	srl %l0, 0x1f, %g3
+   1491c: 86 17 40 03  	or %i5, %g3, %g3
+   14920: bb 32 20 1f  	srl %o0, 0x1f, %i5
+   14924: 89 2c 20 01  	sll %l0, 0x1, %g4
+   14928: 88 11 00 1d  	or %g4, %i5, %g4
+   1492c: ba 19 3f ff  	xor %g4, -0x1, %i5
+   14930: a0 18 ff ff  	xor %g3, -0x1, %l0
+   14934: ba 86 c0 1d  	addcc %i3, %i5, %i5
+   14938: ba c6 80 10  	addxcc %i2, %l0, %i5
+   1493c: a1 3f 60 1f  	sra %i5, 0x1f, %l0
+   14940: a2 0c 00 1b  	and %l0, %i3, %l1
+   14944: a4 0c 00 1a  	and %l0, %i2, %l2
+   14948: a0 a1 00 11  	subcc %g4, %l1, %l0
+   1494c: a2 e0 c0 12  	subxcc %g3, %l2, %l1
+   14950: b0 86 20 01  	addcc %i0, 0x1, %i0
+   14954: 02 bf ff e6  	be	0x148ec
+   14958: 86 10 00 1c  	mov	%i4, %g3
+   1495c: 10 bf ff e4  	ba 0x148ec
+   14960: 86 10 00 00  	mov	%g0, %g3
+   14964: b1 2a 20 01  	sll %o0, 0x1, %i0
+   14968: b5 32 60 1f  	srl %o1, 0x1f, %i2
+   1496c: b0 16 00 1a  	or %i0, %i2, %i0
+   14970: b5 2a 60 01  	sll %o1, 0x1, %i2
+   14974: 84 16 40 1a  	or %i1, %i2, %g2
+   14978: 81 c7 e0 08  	ret
+   1497c: 93 e8 00 02  	restore %g0, %g2, %o1
+   14980: 13 00 00 40  	sethi 0x40, %o1
+   14984: 80 a2 00 09  	cmp	%o0, %o1
+   14988: 0a 80 00 04  	bcs	0x14998
+   1498c: 01 00 00 00  	nop
+   14990: 10 80 00 03  	ba 0x1499c
+   14994: 92 10 00 00  	mov	%g0, %o1
+   14998: 92 10 20 10  	mov	0x10, %o1
+   1499c: 94 1a 60 10  	xor %o1, 0x10, %o2
+   149a0: 91 32 00 0a  	srl %o0, %o2, %o0
+   149a4: 15 00 00 3f  	sethi 0x3f, %o2
+   149a8: 94 12 a3 00  	or %o2, 0x300, %o2
+   149ac: 80 8a 00 0a  	andcc %o0, %o2, %g0
+   149b0: 02 80 00 04  	be	0x149c0
+   149b4: 01 00 00 00  	nop
+   149b8: 10 80 00 03  	ba 0x149c4
+   149bc: 96 10 00 00  	mov	%g0, %o3
+   149c0: 96 10 20 08  	mov	0x8, %o3
+   149c4: 94 1a e0 08  	xor %o3, 0x8, %o2
+   149c8: 95 32 00 0a  	srl %o0, %o2, %o2
+   149cc: 80 8a a0 f0  	andcc %o2, 0xf0, %g0
+   149d0: 02 80 00 04  	be	0x149e0
+   149d4: 90 12 c0 09  	or %o3, %o1, %o0
+   149d8: 10 80 00 03  	ba 0x149e4
+   149dc: 96 10 00 00  	mov	%g0, %o3
+   149e0: 96 10 20 04  	mov	0x4, %o3
+   149e4: 92 1a e0 04  	xor %o3, 0x4, %o1
+   149e8: 93 32 80 09  	srl %o2, %o1, %o1
+   149ec: 80 8a 60 0c  	andcc %o1, 0xc, %g0
+   149f0: 94 10 20 02  	mov	0x2, %o2
+   149f4: 90 12 00 0b  	or %o0, %o3, %o0
+   149f8: 02 80 00 03  	be	0x14a04
+   149fc: 96 10 00 0a  	mov	%o2, %o3
+   14a00: 96 10 00 00  	mov	%g0, %o3
+   14a04: 98 1a e0 02  	xor %o3, 0x2, %o4
+   14a08: 93 32 40 0c  	srl %o1, %o4, %o1
+   14a0c: 90 12 00 0b  	or %o0, %o3, %o0
+   14a10: 94 22 80 09  	sub %o2, %o1, %o2
+   14a14: 93 32 60 01  	srl %o1, 0x1, %o1
+   14a18: 92 12 7f fe  	or %o1, -0x2, %o1
+   14a1c: 92 02 60 01  	add %o1, 0x1, %o1
+   14a20: 92 0a 40 0a  	and %o1, %o2, %o1
+   14a24: 81 c3 e0 08  	retl
+   14a28: 90 02 00 09  	add %o0, %o1, %o0

@@ -30,7 +30,11 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { qemuOracle, type FixtureTarget, type LockstepStep } from '../fixture-builder.ts'
+import { CORPUS_FLAGS, corpusPrograms } from '../corpus.ts'
 import { generateRandomProgram } from '../sparc/random.ts'
+
+/** Built from tools/isa/Dockerfile.sparc-libc. */
+const SPARC_LIBC_IMAGE = 'isa-bench/sparc-picolibc:1.8.10'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const TOOLS = resolve(HERE, '..')
@@ -153,6 +157,44 @@ export const sparcTarget: FixtureTarget = {
   randomGenerator: 'tools/isa/sparc/random.ts',
   generateRandom: (seed: number) => generateRandomProgram(seed),
   parseCpuLog: parseSparcCpuLog,
-  // No libc tier yet: musl has no SPARC port, so whole programs here
-  // need picolibc or a freestanding subset, which is separate work.
+  // Whole programs against picolibc, since musl has no SPARC port. The
+  // image, and why this library rather than another, is described in
+  // tools/isa/Dockerfile.sparc-libc; the part that is this project's own
+  // -- a Linux `_start`, a static heap and five system calls -- is in
+  // tools/isa/sparc/platform/.
+  libc: {
+    triple: 'sparc-unknown-linux-gnu',
+    image: SPARC_LIBC_IMAGE,
+    sysroot: '/sysroot/sparc',
+    builtins: '/sysroot/sparc/lib/libclang_rt.builtins-sparc.a',
+    programsDir: join(TOOLS, 'libc'),
+    libs: [],
+    extra: corpusPrograms().map((program) => ({
+      name: program.name,
+      source: program.source,
+      flags: CORPUS_FLAGS,
+    })),
+    // Compiled by clang like every other target, linked by GNU ld because
+    // lld cannot. The -Wl flags a program carries go to the linker; the
+    // rest go to the compiler.
+    build: (flags) => {
+      const compile = flags.filter((flag) => !flag.startsWith('-Wl,'))
+      const link = flags.filter((flag) => flag.startsWith('-Wl,'))
+        .flatMap((flag) => flag.slice(4).split(','))
+      const lib = '/sysroot/sparc/lib'
+      // ISA_NO_LONG_DOUBLE_VARARGS: see tools/isa/libc/mathfmt.c. clang
+      // passes a long double through `...` wrongly on this target, so the
+      // one program that prints one prints it through double here.
+      return `clang $SPARC_CFLAGS -O2 -DISA_NO_LONG_DOUBLE_VARARGS ${compile.join(' ')} ` +
+        '-nostdlibinc -isystem /sysroot/sparc/include ' +
+        '-c -o /work/libc-prog.o /work/prog.c && ' +
+        `sparc64-linux-gnu-ld -m elf32_sparc -static -e _start ${link.join(' ')} ` +
+        `-o /work/out.elf ${lib}/crt1.o /work/libc-prog.o ${lib}/platform.o ` +
+        `--start-group ${lib}/libc.a ${lib}/libclang_rt.builtins-sparc.a --end-group && ` +
+        // The object is left for nobody: this image runs as root and the
+        // freestanding stage's does not, and a root-owned file in the
+        // shared work directory is one it then cannot overwrite.
+        'rm -f /work/libc-prog.o'
+    },
+  },
 }

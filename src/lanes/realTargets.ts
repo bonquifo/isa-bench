@@ -25,6 +25,8 @@ import { powerBackend } from '../isa/power/backend.ts'
 import * as powerShipped from '../isa/power/shipped.ts'
 import { rv64Backend } from '../isa/riscv/backend.ts'
 import * as rv64Shipped from '../isa/riscv/shipped.ts'
+import { sparcBackend } from '../isa/sparc/backend.ts'
+import * as sparcShipped from '../isa/sparc/shipped.ts'
 import { wasmBackend } from '../isa/wasm/backend.ts'
 import * as wasmShipped from '../isa/wasm/shipped.ts'
 import { x86Backend } from '../isa/x86/backend.ts'
@@ -141,6 +143,24 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     returnChannel: 'stderr',
     intBits: 32,
     shipped: powerShipped,
+  },
+  {
+    id: IsaId.SPARC,
+    backend: sparcBackend,
+    label: 'SPARC V8',
+    instructions: 'SPARC V8',
+    oracle: 'qemu-sparc',
+    // The window pointer, the invalid mask, `y` and the second program
+    // counter are all in the comparison: each is state a wrong
+    // implementation could get wrong while producing the right answer.
+    verified: 'register by register, before every instruction',
+    // Not musl, which has no SPARC port: picolibc, with a Linux platform
+    // layer of this project's. Named here because it changes what the
+    // instructions inside printf are.
+    libc: 'picolibc',
+    returnChannel: 'stderr',
+    intBits: 32,
+    shipped: sparcShipped,
   },
   {
     id: IsaId.MOS,

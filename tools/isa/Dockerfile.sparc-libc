@@ -1,0 +1,140 @@
+# A C library for 32-bit SPARC Linux, from pinned, checksummed sources.
+#
+# Every other Linux target here links musl, and musl has no SPARC port.
+# The alternatives were measured rather than assumed:
+#
+#   glibc        requires V9 even for 32-bit code, so it would emit
+#                instructions a V8 machine does not have.
+#   uClibc-ng    supports V8, but Buildroot can no longer build it for this
+#                target: a GCC change broke it (GCC bug 98784) and the GCC
+#                versions that worked have been removed. Buildroot 2024.02
+#                marks 32-bit SPARC as having no internal toolchain.
+#   picolibc     supports SPARC, and builds with the same clang every other
+#                target here is compiled with.
+#
+# So this is picolibc. It is a library for machines without an operating
+# system, which means it leaves input, output and exit to the platform --
+# and tools/isa/sparc/platform/ is that platform: a Linux-user `_start`,
+# a static heap, and five system calls. Everything else a program calls
+# is picolibc's own code.
+#
+# compiler-rt's builtins come from the same LLVM release the compiler does.
+# V8 has no 64-bit multiply or divide, so `long long` arithmetic, and the
+# printf that formats it, is a call into them.
+#
+# Build tools stay in the builder stages; the published image carries the
+# compiler, the GNU linker (lld has no 32-bit SPARC support) and the
+# sysroot.
+ARG LLVM=isa-sim/codegen:23.1.0
+FROM ${LLVM} AS llvm
+
+# ---------------------------------------------------------------------------
+# clang and the SPARC linker, together.
+# ---------------------------------------------------------------------------
+FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251 AS toolchain
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      binutils-sparc64-linux-gnu=2.40-2 \
+      ca-certificates curl xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=llvm /opt/llvm/bin/clang-23 /opt/llvm/bin/clang-23
+COPY --from=llvm /opt/llvm/bin/llvm-ar /opt/llvm/bin/llvm-ar
+COPY --from=llvm /opt/llvm/lib/clang/23/include /opt/llvm/lib/clang/23/include
+RUN ln -s clang-23 /opt/llvm/bin/clang \
+ && ln -s llvm-ar /opt/llvm/bin/llvm-ranlib \
+ && ln -s /usr/bin/sparc64-linux-gnu-ld /usr/local/bin/sparc-ld
+ENV PATH=/opt/llvm/bin:$PATH
+# Fails the build rather than the fixtures if the emulation is missing.
+RUN sparc64-linux-gnu-ld -V | grep -q elf32_sparc
+
+# The flags every SPARC object here is compiled with.
+ENV SPARC_CFLAGS="--target=sparc-unknown-linux-gnu -mcpu=v8 -fno-pic -fno-pie"
+
+# ---------------------------------------------------------------------------
+# compiler-rt builtins.
+# ---------------------------------------------------------------------------
+FROM toolchain AS builtins
+ARG LLVM_VERSION=23.1.0
+# Measured when the tarball was first fetched. The musl sysroot image built
+# from the same release never recorded one; this does.
+ARG LLVM_SHA256=ab1f0e3ec52448c33e8782eaf0422504b87c7b016b22514653ee0d8fcee479ff
+RUN curl -sSL -o /tmp/llvm.tar.xz \
+      "https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz" \
+ && echo "${LLVM_SHA256}  /tmp/llvm.tar.xz" | sha256sum -c - \
+ && mkdir -p /src \
+ && tar -xJf /tmp/llvm.tar.xz -C /src --strip-components=1 \
+      --wildcards "llvm-project-${LLVM_VERSION}.src/compiler-rt/lib/builtins/*" \
+ && rm /tmp/llvm.tar.xz
+# Only the generic C builtins: compiler-rt has no SPARC-specific sources.
+# Files that do not apply to this target fail to compile and are skipped,
+# with each skip printed -- a builtin that is genuinely needed and missing
+# shows up at link time as an undefined symbol naming it.
+RUN set -eu; mkdir -p /work /builtins; built=0; skipped=0; \
+    for source in /src/compiler-rt/lib/builtins/*.c; do \
+      object="/work/$(basename "$source").o"; \
+      if clang $SPARC_CFLAGS -O2 -fno-builtin -ffreestanding \
+           -I/src/compiler-rt/lib/builtins -c -o "$object" "$source" 2>/dev/null; then \
+        built=$((built + 1)); \
+      else \
+        skipped=$((skipped + 1)); echo "  skipped $(basename "$source")"; \
+      fi; \
+    done; \
+    llvm-ar rcs /builtins/libclang_rt.builtins-sparc.a /work/*.o; \
+    echo "sparc: $built objects, $skipped skipped"
+
+# ---------------------------------------------------------------------------
+# picolibc.
+# ---------------------------------------------------------------------------
+FROM toolchain AS picolibc
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends meson ninja-build python3 \
+ && rm -rf /var/lib/apt/lists/*
+ARG PICOLIBC_VERSION=1.8.10
+ARG PICOLIBC_SHA256=0ce5ee3bde81256633644d7b3bd25f5a6ccfd8b0590fd4ee543df2c3ede6e27e
+RUN curl -sSL -o /tmp/picolibc.tar.xz \
+      "https://github.com/picolibc/picolibc/releases/download/${PICOLIBC_VERSION}/picolibc-${PICOLIBC_VERSION}.tar.xz" \
+ && echo "${PICOLIBC_SHA256}  /tmp/picolibc.tar.xz" | sha256sum -c - \
+ && mkdir -p /src \
+ && tar -xJf /tmp/picolibc.tar.xz -C /src --strip-components=1 \
+ && rm /tmp/picolibc.tar.xz
+COPY sparc/platform/cross-sparc-linux.txt /src/cross-sparc-linux.txt
+# The options that make it a Linux library rather than a bare-metal one:
+# the console goes through read() and write(), there is no semihosting and
+# no startup code of picolibc's own, and errno is an ordinary global
+# because nothing here sets up thread-local storage.
+#
+# `io-long-double` stays at its default, off. It would make `%Lf` work, and
+# on this target nothing can: clang's own lowering of a long double passed
+# through `...` is wrong on 32-bit SPARC, so the value never reaches printf
+# intact. Turning it on would only pull quad-precision routines into every
+# program that prints. See tools/isa/libc/mathfmt.c for how that one line
+# is handled.
+RUN meson setup /build /src \
+      --cross-file /src/cross-sparc-linux.txt \
+      --prefix=/sysroot/sparc \
+      -Dincludedir=include -Dlibdir=lib \
+      -Doptimization=2 -Ddebug=false \
+      -Dmultilib=false \
+      -Dpicocrt=false \
+      -Dsemihost=false \
+      -Dposix-console=true \
+      -Dthread-local-storage=false \
+      -Dspecsdir=none \
+      -Dtests=false \
+ && ninja -C /build \
+ && ninja -C /build install
+
+# The platform: the entry point, the heap and the system calls.
+COPY sparc/platform/crt1.S sparc/platform/platform.c /platform/
+RUN clang $SPARC_CFLAGS -O2 -c -o /sysroot/sparc/lib/crt1.o /platform/crt1.S \
+ && clang $SPARC_CFLAGS -O2 -nostdlibinc -isystem /sysroot/sparc/include \
+      -c -o /sysroot/sparc/lib/platform.o /platform/platform.c
+
+# ---------------------------------------------------------------------------
+# What is published: the compiler, the linker and the sysroot.
+# ---------------------------------------------------------------------------
+FROM toolchain
+COPY --from=picolibc /sysroot /sysroot
+COPY --from=builtins /builtins/libclang_rt.builtins-sparc.a /sysroot/sparc/lib/
+LABEL org.opencontainers.image.title="ISA Bench SPARC compiler with picolibc"
+WORKDIR /work

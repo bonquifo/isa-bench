@@ -23,6 +23,17 @@ int main(void) {
   float f = 1.0f / 3.0f;
   printf("float=%.9g double=%.17g\n", (double)f, 1.0 / 3.0);
   long double l = 1.0L / 3.0L;
+#ifdef ISA_NO_LONG_DOUBLE_VARARGS
+  /* Defined only for 32-bit SPARC, where clang's lowering of a long double
+     passed through `...` disagrees with itself: `va_arg` in a trivial
+     variadic function returns bytes of the stack rather than the value.
+     The reference runs the same wrong code, so `%Lf` prints something that
+     depends on where each process's stack sits and cannot be compared. The
+     value is printed through double instead, and every other target's
+     output is unchanged because the macro is not defined for them. */
+  printf("longdouble=%.17g\n", (double)l);
+#else
   printf("longdouble=%.20Lf\n", l);
+#endif
   return 0;
 }

@@ -1,0 +1,22 @@
+# Meson cross file for building picolibc with clang for 32-bit SPARC Linux.
+#
+# -nostdlib is on the compiler itself because meson's own checks link test
+# programs without any flags of ours, and there is no libc for them to
+# link against yet -- that is what is being built.
+#
+# The linker is GNU ld: lld has no 32-bit SPARC support.
+[binaries]
+c = ['clang', '--target=sparc-unknown-linux-gnu', '-mcpu=v8', '-fno-pic', '-fno-pie', '-nostdlib']
+ar = 'llvm-ar'
+
+[built-in options]
+c_link_args = ['-fuse-ld=/usr/bin/sparc64-linux-gnu-ld', '-static']
+
+[host_machine]
+system = 'linux'
+cpu_family = 'sparc'
+cpu = 'sparc'
+endian = 'big'
+
+[properties]
+skip_sanity_check = true

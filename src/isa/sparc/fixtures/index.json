@@ -98,6 +98,97 @@
       "seed": 233
     }
   ],
-  "libcImage": null,
-  "libcFixtures": []
+  "libcImage": "isa-bench/sparc-picolibc:1.8.10",
+  "libcFixtures": [
+    {
+      "name": "libc-alloc",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "libc-mathfmt",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "libc-stdio",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "libc-structs",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "corpus-fib",
+      "exitCode": 0,
+      "stderr": "55"
+    },
+    {
+      "name": "corpus-hello",
+      "exitCode": 0,
+      "stderr": "0"
+    },
+    {
+      "name": "corpus-sum",
+      "exitCode": 0,
+      "stderr": "820"
+    },
+    {
+      "name": "corpus-ptr",
+      "exitCode": 0,
+      "stderr": "30"
+    },
+    {
+      "name": "corpus-struct",
+      "exitCode": 0,
+      "stderr": "16"
+    },
+    {
+      "name": "corpus-mandelbrot",
+      "exitCode": 0,
+      "stderr": "-322095334"
+    },
+    {
+      "name": "corpus-wolf",
+      "exitCode": 0,
+      "stderr": "1968457438"
+    },
+    {
+      "name": "corpus-life",
+      "exitCode": 0,
+      "stderr": "212766499"
+    },
+    {
+      "name": "corpus-cube",
+      "exitCode": 0,
+      "stderr": "1274204170"
+    },
+    {
+      "name": "corpus-fire",
+      "exitCode": 0,
+      "stderr": "-1938390215"
+    },
+    {
+      "name": "corpus-nbody",
+      "exitCode": 0,
+      "stderr": "-975672083"
+    },
+    {
+      "name": "corpus-queens",
+      "exitCode": 0,
+      "stderr": "92"
+    },
+    {
+      "name": "corpus-fft",
+      "exitCode": 0,
+      "stderr": "476065557"
+    },
+    {
+      "name": "corpus-pi",
+      "exitCode": 0,
+      "stderr": "314168"
+    }
+  ]
 }

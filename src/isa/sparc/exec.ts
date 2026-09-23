@@ -103,7 +103,13 @@ export const SPARC_SYSCALL_NUMBERS: Readonly<Record<number, number>> = {
   73: Sys.MUNMAP,
   74: Sys.MPROTECT,
   75: Sys.MADVISE,
-  188: Sys.WRITEV,
+  // 121 and 188 were once `writev` and nothing: 188 is `exit_group`,
+  // which is how a libc leaves, and treating it as a vector write would
+  // have kept a finished program running. Checked against unistd_32.h
+  // from linux-libc-dev-sparc64-cross, since nothing on this target had
+  // made either call until it had a libc.
+  121: Sys.WRITEV,
+  188: Sys.EXIT_GROUP,
 }
 
 export interface SparcOptions {

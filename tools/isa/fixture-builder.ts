@@ -173,6 +173,16 @@ export interface LibcTier {
    * the source tree and needs signed overflow defined.
    */
   extra?: { name: string; source: string; flags: string[] }[]
+  /**
+   * The shell command that turns /work/prog.c into /work/out.elf, for a
+   * target whose libc is not laid out the way musl's is. Given the
+   * program's own extra flags. Absent means the musl recipe: one clang
+   * invocation with lld.
+   *
+   * SPARC is the one user: its libc is picolibc with a platform layer of
+   * this project's, and it has to link with GNU ld because lld cannot.
+   */
+  build?(flags: readonly string[]): string
 }
 
 /**
@@ -318,10 +328,12 @@ function buildLibcOne(
   const s = tier.sysroot
   run(tier.image, work, [
     'sh', '-c',
-    `clang -target ${tier.triple} -O2 ${flags.join(' ')} -static -nostdlib ` +
-    `-fuse-ld=lld -isystem ${s}/include ` +
-    `-o /work/out.elf ${s}/lib/crt1.o ${s}/lib/crti.o /work/prog.c ` +
-    `-L${s}/lib -lc ${tier.libs.join(' ')} ${tier.builtins} ${s}/lib/crtn.o`,
+    tier.build
+      ? tier.build(flags)
+      : `clang -target ${tier.triple} -O2 ${flags.join(' ')} -static -nostdlib ` +
+        `-fuse-ld=lld -isystem ${s}/include ` +
+        `-o /work/out.elf ${s}/lib/crt1.o ${s}/lib/crti.o /work/prog.c ` +
+        `-L${s}/lib -lc ${tier.libs.join(' ')} ${tier.builtins} ${s}/lib/crtn.o`,
   ])
   oracleSh(
     target.oracle,

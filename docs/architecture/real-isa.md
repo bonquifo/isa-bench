@@ -16,10 +16,11 @@ but all fourteen corpus programs match wasmtime byte for byte, and every
 operation is compared against a second engine on every edge value of its
 operand types.
 
-The other two each make a narrower claim, and say so: the 6502 because
-it has no reference it can be stepped alongside, and SPARC because it
-has the architectural tiers and not yet the whole-program one -- musl
-has no port for it at all.
+The 6502 makes a narrower claim, and says so: it has no reference it can
+be stepped alongside. SPARC makes the same claim as the first four with
+one qualification it states wherever its results appear -- musl has no
+SPARC port, so its library is picolibc with a platform layer of this
+project's, and the instructions inside printf are picolibc's.
 
 The second one is the evidence that the split in section 1 was worth making:
 AArch64 needed a decoder, a semantics file and a register map, and reused the
@@ -1157,14 +1158,62 @@ this backend's line coverage from 79% to 91% — and every line of that is
 covered by comparison against qemu rather than by a unit test asserting
 what the code already does.
 
-#### What it does not have yet
+#### Whole programs, on a libc that had to be chosen
 
-**No libc tier, and so no corpus programs and no entry in the app's
-lane.** musl has no SPARC port at all. Whole programs on this target
-need picolibc or a freestanding subset, which is separate work; until
-then the claim is the architectural one — decode, lockstep and final
-state over sixteen freestanding programs — and the target is registered
-as a real backend without being offered as something to run.
+All eighteen libc and corpus programs now match qemu-sparc on output and
+exit status, the fourteen corpus programs compute the app's own recorded
+answers, and SPARC is in the app's lane. What that took was mostly the
+library, because every other Linux target here links musl and musl has
+no SPARC port. The options were measured rather than assumed:
+
+- **glibc** now requires V9 even for 32-bit code, so it would emit
+  instructions a V8 machine does not have.
+- **uClibc-ng** supports V8, but Buildroot can no longer build it for
+  this target: a GCC change broke it (GCC bug 98784), the GCC versions
+  that worked have been removed, and Buildroot 2024.02 marks 32-bit SPARC
+  as having no internal toolchain.
+- **picolibc** supports SPARC and builds with the same clang every other
+  target is compiled with.
+
+So it is picolibc, built by
+[Dockerfile.sparc-libc](../../tools/isa/Dockerfile.sparc-libc) from
+pinned, checksummed sources. picolibc is a library for machines without
+an operating system, so it leaves input, output and exit to the
+platform, and [tools/isa/sparc/platform/](../../tools/isa/sparc/platform/)
+is that platform: a Linux-user `_start` (picolibc's own writes privileged
+registers), a static heap for its `sbrk`, and five system calls. Its
+console is built with `posix-console`, so `printf` reaches the kernel
+through `write` rather than anything of ours.
+
+**This is a real difference from the other targets and is stated as
+one.** The instructions inside `printf`, `malloc` and the string
+functions on SPARC are picolibc's, not musl's, so a comparison that
+counts them is counting a different implementation of the same
+functions. The lane names the library for every target for exactly this
+reason.
+
+Three things were found on the way.
+
+- **The system-call table had `exit_group` and `writev` crossed.** 188
+  is `exit_group` on 32-bit SPARC and `writev` is 121; the table had 188
+  as `writev`. A program leaving through `exit_group` would have been
+  treated as a vector write and kept running. Nothing had made either
+  call before this target had a libc; the table is now checked against
+  `unistd_32.h` from `linux-libc-dev-sparc64-cross`.
+- **clang passes a `long double` through `...` wrongly on this target.**
+  `va_arg(ap, long double)` in a trivial variadic function returns bytes
+  of the stack instead of the value. The arithmetic is fine — one third
+  is `3ffd5555…` bit for bit and three of them sum to exactly one — but
+  `%Lf` cannot work, in any library, and qemu runs the same wrong code.
+  The shared `mathfmt` program prints that one value through `double` on
+  SPARC, behind a macro only this target defines, so every other
+  target's source and output are unchanged. glibc's quad-precision
+  routines were tried and removed: they would have made `%Lf` link, not
+  work, at the cost of pulling LGPL code into every program that prints.
+- **The decode tier, now covering the libc binaries, agreed with LLVM on
+  every instruction in them on the first run.** That is weaker evidence
+  than it sounds until this target's alias table has had the audit
+  POWER's did — POWER's passed too, with five mis-decodes behind it.
 
 ### MIPS32, as built
 

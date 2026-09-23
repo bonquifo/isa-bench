@@ -46,9 +46,11 @@ ENV PATH=/opt/llvm/bin:$PATH
 # ---------------------------------------------------------------------------
 FROM toolchain AS builtins
 ARG LLVM_VERSION=23.1.0
-# Recorded when the tarball was first fetched; a later fetch that does not
-# match is a different tarball, whatever the version number claims.
-ARG LLVM_SHA256=UNSET
+# A later fetch that does not match is a different tarball, whatever the
+# version number claims. This was left UNSET when the image was first
+# built, which printed the hash and checked nothing; it was measured when
+# the SPARC libc image fetched the same release, and is enforced now.
+ARG LLVM_SHA256=ab1f0e3ec52448c33e8782eaf0422504b87c7b016b22514653ee0d8fcee479ff
 RUN curl -sSL -o /tmp/llvm.tar.xz \
       "https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz" \
  && if [ "${LLVM_SHA256}" != "UNSET" ]; then \
