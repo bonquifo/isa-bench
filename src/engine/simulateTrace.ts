@@ -13,6 +13,15 @@
  * between a pseudo-backend run and a real-ISA run is a comparison of the
  * programs and not of two different cache models.
  *
+ * **One microarchitecture for every instruction set.** The lowering path
+ * adds per-ISA timing adjustments -- a load delay for MIPS, a branch bubble
+ * for SPARC, a decode penalty for long x86 encodings -- because its invented
+ * instruction streams have no other way to carry those traits. A real
+ * stream carries them itself: a delay slot is an instruction that retires,
+ * and a long encoding costs fetch bandwidth. So none of those adjustments
+ * applies here, and every target is timed on exactly the pipeline the
+ * profile describes. Energy likewise uses no per-ISA factor.
+ *
  * Scope: one core, one thread. The multi-worker and coherence modelling in
  * `simulate()` is tied to the SPMD workloads the pseudo-backends generate,
  * and the real-ISA path has no SPMD story yet. `simulate()` is untouched and
@@ -20,10 +29,11 @@
  */
 import { DramScheduler, SetCache } from './cache.ts'
 import { energyOf } from './energy.ts'
-import { isaTiming, normalizeHw } from './hardware.ts'
+import { normalizeHw } from './hardware.ts'
 import { BranchPredictor } from './predictor.ts'
 import {
   InstClass,
+  type ExecutionCounts,
   type HardwareProfile,
   type InstClass as InstClassT,
   type IsaId,
@@ -38,6 +48,16 @@ import {
   type Interpreter,
   type StaticInst,
 } from '../isa/common/trace.ts'
+
+/**
+ * Version of this model's rules, recorded with every real-ISA result so a
+ * saved one says which rules produced it.
+ *
+ * 2: delay slots, conditional returns, host calls and window traps are
+ * timed as what they are, and the lowering's per-ISA adjustments no longer
+ * apply. Results made before carry no version.
+ */
+export const TRACE_TIMING_MODEL_VERSION = '2'
 
 export interface TraceTimingOptions {
   /** Retired instructions pulled from the interpreter at a time. */
@@ -91,8 +111,8 @@ export function simulateTrace(
   options: TraceTimingOptions = {},
 ): Metrics {
   const hw = normalizeHw(rawHw)
-  const timing = isaTiming(isa)
   const image = interpreter.image
+  const delaySlotBytes = image.delaySlotBytes ?? 0
   const icache = new SetCache(hw.l1i)
   const dcache = new SetCache(hw.l1d)
   const l2 = hw.l2.sizeBytes > 0 ? new SetCache(hw.l2) : null
@@ -126,10 +146,12 @@ export function simulateTrace(
   let branches = 0
   let mispredicts = 0
   let conditionalBranches = 0
+  let takenConditionalBranches = 0
   let directJumps = 0
   let calls = 0
   let returns = 0
   let indirectCalls = 0
+  let indirectJumps = 0
   let rasMisses = 0
   let fetchedBytes = 0
   let decodedBytes = 0
@@ -137,9 +159,22 @@ export function simulateTrace(
   let dcLineAccesses = 0
   let dramRequests = 0
   let dramQueueCycles = 0
+  let loads = 0
+  let stores = 0
+  let memoryInstructions = 0
+  let platformTraps = 0
+  let codeFootprintBytes = 0
   const seenCode = new Set<number>()
   const disasm: string[] = []
   const disasmLimit = options.disasmLimit ?? 80
+
+  /**
+   * On a machine with delay slots, a return's own `nextPc` is its slot; the
+   * return's real destination is the slot's `nextPc`, one entry later. The
+   * prediction waits here until then. (The cast is because `popReturn`
+   * sets it, and flow analysis does not follow a closure.)
+   */
+  let pendingReturn = null as { predicted: bigint | undefined } | null
 
   /**
    * Walks one line request down the hierarchy and returns the cycle the data
@@ -173,6 +208,14 @@ export function simulateTrace(
     return available
   }
 
+  /** Requests every data line of a byte range; returns when all are in. */
+  const requestRange = (address: number, bytes: number, at: number): { ready: number; lines: number } => {
+    let latest = at
+    const lines = dcache.lineAddresses(address, bytes)
+    for (const line of lines) latest = Math.max(latest, requestLine(line, false, at))
+    return { ready: latest, lines: lines.length }
+  }
+
   const advanceTo = (target: number, cause: 'dependency' | 'fetch' | 'resource' | 'memory' | 'serialization'): void => {
     if (target <= cycle) return
     const skipped = target - cycle
@@ -194,6 +237,19 @@ export function simulateTrace(
     advanceTo(cycle + 1, cause)
   }
 
+  /** A redirect the front end could not have followed: refill the pipeline. */
+  const redirect = (penalty: number): void => {
+    fetchReady = Math.max(fetchReady, cycle + 1 + penalty)
+  }
+
+  /** Compares a predicted return address with where control really went. */
+  const settleReturn = (predicted: bigint | undefined, actual: bigint): void => {
+    if (predicted === undefined || predicted !== actual) {
+      rasMisses += 1
+      redirect(hw.indirectCallPenalty)
+    }
+  }
+
   const chunk = createRetireChunk(options.chunkSize ?? DEFAULT_CHUNK)
   let state: RunState = RunState.MORE
   /** Completion cycle of the last instruction, so the run length is honest. */
@@ -205,13 +261,21 @@ export function simulateTrace(
       const pc = chunk.pc[i]!
       const inst = image.at(pc)
 
+      // A delayed return's destination is this instruction's successor.
+      if (pendingReturn !== null) {
+        settleReturn(pendingReturn.predicted, chunk.nextPc[i]!)
+        pendingReturn = null
+      }
+
       if (!seenCode.has(Number(pc))) {
         seenCode.add(Number(pc))
+        codeFootprintBytes += inst.bytes
         if (disasm.length < disasmLimit) {
           disasm.push(`${pc.toString(16).padStart(8, '0')}  ${inst.mnemonic}`)
         }
       }
 
+      const trapped = chunk.trapped[i] === 1
       // Dependencies: in-order issue waits for every register it touches.
       let dependency = 0
       for (const r of inst.reads) dependency = Math.max(dependency, ready[r]!)
@@ -220,7 +284,10 @@ export function simulateTrace(
       if (dependency > cycle) advanceTo(dependency, 'dependency')
       if (fetchReady > cycle) advanceTo(fetchReady, 'fetch')
       if (usesMemory && memoryReady > cycle) advanceTo(memoryReady, 'memory')
-      if (inst.serializing && lastCompletion > cycle) advanceTo(lastCompletion, 'serialization')
+      // A trap, like a serializing instruction, waits for everything older.
+      if ((inst.serializing || trapped) && lastCompletion > cycle) {
+        advanceTo(lastCompletion, 'serialization')
+      }
 
       // Instruction fetch. A line that is not resident delays the whole
       // front end, which is why this happens before the width checks.
@@ -252,84 +319,121 @@ export function simulateTrace(
       origins[inst.origin] += 1
       instructions += 1
       uops += inst.uops
+      if (inst.readsMem) loads += 1
+      if (inst.writesMem) stores += 1
+      if (usesMemory) memoryInstructions += 1
 
-      if (inst.bytes >= hw.complexDecodeBytes && timing.decodeOverhead > 0) {
-        fetchReady = Math.max(fetchReady, cycle + 1 + timing.decodeOverhead)
-      }
-
-      // Data access.
+      // Data access, at the width this execution reported: a push of two
+      // return-address bytes is two bytes, whatever the opcode's usual one.
       let dataReady = cycle
-      if (usesMemory && inst.accessWidth > 0) {
+      const width = chunk.accessWidth[i]!
+      if (usesMemory && width > 0) {
         const address = Number(chunk.effAddr[i]!)
-        for (const line of dcache.lineAddresses(address, inst.accessWidth)) {
+        for (const line of dcache.lineAddresses(address, width)) {
           dataReady = Math.max(dataReady, requestLine(line, false, cycle))
         }
       }
+      // Memory the platform moved for this instruction: a whole repeated
+      // string operation, or a window trap's save area. The ports move one
+      // line each per cycle, so a long range occupies them accordingly.
+      let bulkLines = 0
+      const readBytes = chunk.bulkReadBytes[i]!
+      if (readBytes > 0) {
+        const range = requestRange(Number(chunk.bulkReadAddr[i]!), readBytes, cycle)
+        dataReady = Math.max(dataReady, range.ready)
+        bulkLines += range.lines
+      }
+      const writeBytes = chunk.bulkWriteBytes[i]!
+      if (writeBytes > 0) {
+        const range = requestRange(Number(chunk.bulkWriteAddr[i]!), writeBytes, cycle)
+        dataReady = Math.max(dataReady, range.ready)
+        bulkLines += range.lines
+      }
+      if (bulkLines > 0) {
+        dataReady = Math.max(dataReady, cycle + Math.ceil(bulkLines / Math.max(1, hw.memPorts)))
+      }
 
-      let latency = latencyOf(inst, hw)
-      if (timing.loadDelay > 0 && inst.readsMem) latency += timing.loadDelay
-      if (!hw.forwarding) latency += Math.max(0, hw.pipelineStages - 3)
+      const latency = latencyOf(inst, hw) + (hw.forwarding ? 0 : Math.max(0, hw.pipelineStages - 3))
       const completion = Math.max(cycle + latency, dataReady + latency)
       for (const r of inst.writes) ready[r] = completion
-      if (usesMemory) memoryReady = completion
+      if (usesMemory || bulkLines > 0) memoryReady = completion
       lastCompletion = Math.max(lastCompletion, completion)
+
+      // A trap goes to a handler and comes back: two redirects the front
+      // end cannot predict. The handler's own instructions are not
+      // counted, because the reference does not execute them either.
+      if (trapped) {
+        platformTraps += 1
+        redirect(2 * (1 + hw.mispredictPenalty))
+      }
 
       // Control flow. Everything here is read off the trace: whether the
       // branch was taken and where an indirect jump went are facts, not
       // predictions the model has to make.
       const taken = chunk.taken[i] === 1
       const nextPc = chunk.nextPc[i]!
+      const returnAddress = pc + BigInt(inst.bytes + delaySlotBytes)
+      const pushReturn = (): void => {
+        returnStack.push(returnStack.length < hw.rasDepth ? returnAddress : -1n)
+      }
+      const popReturn = (): void => {
+        const predicted = returnStack.pop()
+        if (delaySlotBytes > 0) pendingReturn = { predicted }
+        else settleReturn(predicted, nextPc)
+      }
       switch (inst.control) {
         case ControlKind.COND: {
           branches += 1
           conditionalBranches += 1
+          if (taken) takenConditionalBranches += 1
           const target = Number(inst.staticTarget)
           const predicted = predictor.predict(Number(pc), target)
           predictor.update(Number(pc), taken)
           if (predicted !== taken) {
             mispredicts += 1
-            fetchReady = Math.max(fetchReady, cycle + 1 + hw.mispredictPenalty + timing.branchDelay)
-          } else if (timing.branchDelay > 0) {
-            fetchReady = Math.max(fetchReady, cycle + 1 + timing.branchDelay)
+            redirect(hw.mispredictPenalty)
+          }
+          break
+        }
+        case ControlKind.COND_RET: {
+          // Direction first, as for any conditional branch; its target is
+          // not known in advance, so a static predictor guesses untaken.
+          branches += 1
+          conditionalBranches += 1
+          const predicted = predictor.predict(Number(pc), Number(pc) + 1)
+          predictor.update(Number(pc), taken)
+          if (predicted !== taken) {
+            mispredicts += 1
+            redirect(hw.mispredictPenalty)
+          }
+          if (taken) {
+            takenConditionalBranches += 1
+            returns += 1
+            popReturn()
           }
           break
         }
         case ControlKind.JUMP:
           directJumps += 1
-          if (timing.branchDelay > 0) {
-            fetchReady = Math.max(fetchReady, cycle + 1 + timing.branchDelay)
-          }
           break
         case ControlKind.CALL: {
+          calls += 1
           // A direct call has a known target; an indirect one costs a
           // redirect because the front end cannot follow it speculatively.
-          const direct = inst.staticTarget !== -1n
-          if (direct) calls += 1
-          else {
+          if (inst.staticTarget === -1n) {
             indirectCalls += 1
-            fetchReady = Math.max(fetchReady, cycle + 1 + hw.indirectCallPenalty)
+            redirect(hw.indirectCallPenalty)
           }
-          if (returnStack.length < hw.rasDepth) returnStack.push(pc + BigInt(inst.bytes))
-          else returnStack.push(-1n)
-          if (timing.branchDelay > 0) {
-            fetchReady = Math.max(fetchReady, cycle + 1 + timing.branchDelay)
-          }
+          pushReturn()
           break
         }
-        case ControlKind.RET: {
+        case ControlKind.RET:
           returns += 1
-          const predictedReturn = returnStack.pop()
-          if (predictedReturn === undefined || predictedReturn !== nextPc) {
-            rasMisses += 1
-            fetchReady = Math.max(fetchReady, cycle + 1 + hw.indirectCallPenalty + timing.branchDelay)
-          } else if (timing.branchDelay > 0) {
-            fetchReady = Math.max(fetchReady, cycle + 1 + timing.branchDelay)
-          }
+          popReturn()
           break
-        }
         case ControlKind.INDIRECT:
-          indirectCalls += 1
-          fetchReady = Math.max(fetchReady, cycle + 1 + hw.indirectCallPenalty + timing.branchDelay)
+          indirectJumps += 1
+          redirect(hw.indirectCallPenalty)
           break
         default:
           break
@@ -345,6 +449,7 @@ export function simulateTrace(
 
   const energy = energyOf({
     isa,
+    decodeEnergyScale: 1,
     mix,
     operationOrigins: origins,
     decodedBytes,
@@ -365,6 +470,20 @@ export function simulateTrace(
     clockMhz: hw.clockMhz,
     staticPowerMw: hw.staticPowerMw,
   })
+
+  const executed: ExecutionCounts = {
+    instructionBytes: fetchedBytes,
+    loads,
+    stores,
+    memoryInstructions,
+    conditionalBranches,
+    takenConditionalBranches,
+    calls,
+    returns,
+    indirectJumps,
+    codeFootprintBytes,
+    platformTraps,
+  }
 
   return {
     isa,
@@ -427,7 +546,7 @@ export function simulateTrace(
     serializationStallCycles,
     conditionalBranches,
     directJumps,
-    calls,
+    calls: calls - indirectCalls,
     returns,
     indirectCalls,
     rasMisses,
@@ -444,5 +563,6 @@ export function simulateTrace(
     idleCoreCycles: cycles * (hw.cores - 1),
     averageActiveCores: 1,
     averageStalledCores: 0,
+    executed,
   }
 }

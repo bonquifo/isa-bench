@@ -37,6 +37,14 @@ export const ControlKind = {
   JUMP: 'jump',
   CALL: 'call',
   RET: 'ret',
+  /**
+   * A return that happens only when a condition holds -- POWER's
+   * `beqlr` and friends. It is predicted like a conditional branch, and
+   * pops the return-address stack only when `taken` says it returned.
+   * Calling it a plain return would pop the stack on every fall-through
+   * and leave every later return mispredicted.
+   */
+  COND_RET: 'condRet',
   INDIRECT: 'indirect',
   TRAP: 'trap',
 } as const
@@ -114,6 +122,16 @@ export interface ProgramImage {
   speculativeAt(addr: bigint): StaticInst | null
   /** Total bytes of loaded executable image, for the code-size metric. */
   readonly codeBytes: number
+  /**
+   * Bytes of delay slot after every control transfer: 4 on MIPS and
+   * SPARC, absent (zero) everywhere else.
+   *
+   * Two things follow from it. A call's return address is past its slot,
+   * not just past the call. And a transfer's `nextPc` in the trace is its
+   * slot, so where control really went is the slot's `nextPc` -- a model
+   * checking a predicted return has to look one entry further on.
+   */
+  readonly delaySlotBytes?: number
 }
 
 /**
@@ -129,8 +147,31 @@ export interface RetireChunk {
   /** Effective address of the memory access, meaningless when width is 0. */
   readonly effAddr: BigInt64Array
   readonly accessWidth: Uint8Array
-  /** 1 when a conditional branch was taken. */
+  /**
+   * 1 when a conditional branch or conditional return was taken. An
+   * interpreter may also set it on unconditional transfers; nothing reads
+   * it there.
+   */
   readonly taken: Uint8Array
+  /**
+   * Memory the platform touched on this instruction's behalf, beyond its
+   * one access above: a SPARC window spill or fill, or the whole run of a
+   * repeated x86 string instruction. One contiguous range read and one
+   * written, zero bytes when there is none.
+   *
+   * Only interpreters that produce these write them, and those reset them
+   * for every entry; every other interpreter leaves them zero.
+   */
+  readonly bulkReadAddr: BigInt64Array
+  readonly bulkReadBytes: Uint32Array
+  readonly bulkWriteAddr: BigInt64Array
+  readonly bulkWriteBytes: Uint32Array
+  /**
+   * 1 when handling this instruction needed a trap the reference handles
+   * invisibly -- SPARC's window overflow and underflow. Its memory traffic
+   * is in the bulk ranges; this says a trap was taken at all.
+   */
+  readonly trapped: Uint8Array
 }
 
 export function createRetireChunk(capacity: number): RetireChunk {
@@ -141,6 +182,11 @@ export function createRetireChunk(capacity: number): RetireChunk {
     effAddr: new BigInt64Array(capacity),
     accessWidth: new Uint8Array(capacity),
     taken: new Uint8Array(capacity),
+    bulkReadAddr: new BigInt64Array(capacity),
+    bulkReadBytes: new Uint32Array(capacity),
+    bulkWriteAddr: new BigInt64Array(capacity),
+    bulkWriteBytes: new Uint32Array(capacity),
+    trapped: new Uint8Array(capacity),
   }
 }
 

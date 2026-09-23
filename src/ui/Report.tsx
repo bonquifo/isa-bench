@@ -3,7 +3,18 @@ import { ISA_META, type IsaId } from '../engine/types.ts'
 import { GUEST_C_VERSION } from '../engine/c/compile_c.ts'
 import type { CompareResult } from '../engine/compare.ts'
 import { download, fmtInt, fmtMult, fmtNum, signedPct } from './format.ts'
-import { MIX_COLORS, REPORT_METRICS, analyze, mixShare, type MetricDef } from './analysis.ts'
+import {
+  MIX_COLORS,
+  analyze,
+  comparableRows,
+  displayPrimary,
+  excludedRows,
+  metricsFor,
+  mixShare,
+  primaryMeasure,
+  primaryValue,
+  type MetricDef,
+} from './analysis.ts'
 import { resultToCsv, resultToJson } from './exports.ts'
 import { reportContractLabels, reportParameterLabels } from './reportMetadata.ts'
 import { EvidenceBadgeView } from './Evidence.tsx'
@@ -44,15 +55,20 @@ function CurrentReport({
   const [traceIsa, setTraceIsa] = useState<IsaId>(result.rows[0]?.isa ?? 'riscv')
   const [saveName, setSaveName] = useState(result.workloadName)
   const insights = useMemo(() => analyze(result), [result])
+  const comparable = useMemo(() => comparableRows(result), [result])
+  const excluded = useMemo(() => excludedRows(result), [result])
   const ranked = useMemo(
-    () => [...result.rows].sort((a, b) => a.cycles - b.cycles),
-    [result],
+    () => [...comparable].sort((a, b) => primaryValue(result, a) - primaryValue(result, b)),
+    [comparable, result],
   )
+  const metrics = useMemo(() => metricsFor(result), [result])
+  const real = isRealResult(result)
+  const byTime = primaryMeasure(result) === 'time'
   const lead = ranked[0]
   const baselineRow =
     baseline === 'leader'
       ? lead
-      : (result.rows.find((r) => r.isa === baseline) ?? lead)
+      : (comparable.find((r) => r.isa === baseline) ?? lead)
 
   return (
     <div className="report-enter space-y-4">
@@ -64,7 +80,8 @@ function CurrentReport({
               {[
                 `JOB/${result.workloadId.toUpperCase()}`,
                 ...reportParameterLabels(result),
-                ...(lead ? [`${lead.cores}C/${lead.threads}T`, `${lead.activeThreads} ACTIVE WORKERS`] : []),
+                ...(lead && !real ? [`${lead.cores}C/${lead.threads}T`, `${lead.activeThreads} ACTIVE WORKERS`] : []),
+                ...(real ? ['ONE THREAD'] : []),
               ].join(' · ')}
             </div>
             <div className="mt-1 font-mono text-[9px] leading-4 text-white/35">
@@ -87,7 +104,7 @@ function CurrentReport({
               <span className="led led-ok" />
               REFERENCE MATCH {fmtNum(result.gold, result.fp)}
             </div>
-            {isRealResult(result) ? <RealExecutionNote result={result} /> : null}
+            {real ? <RealExecutionNote result={result} /> : null}
             <div className="flex flex-wrap justify-end gap-2">
               {onSave && result.contract && (
                 <div className="flex gap-2">
@@ -112,55 +129,90 @@ function CurrentReport({
         </div>
       </section>
 
-      <section className="hud-panel p-4 reveal" style={delay(90)}>
-        <div className="hud-kicker mb-3">Model-cycle rank · vs {targetShort(result, baselineRow.isa)}</div>
-        <div className="space-y-2">
-          {ranked.map((row, i) => {
-            const rel = row.cycles / Math.max(1, lead.cycles)
-            const vsBase = ((row.cycles - baselineRow.cycles) / Math.max(1, baselineRow.cycles)) * 100
-            const width = (lead.cycles / Math.max(row.cycles, lead.cycles)) * 100
-            return (
-              <div
-                key={row.isa}
-                className="reveal grid grid-cols-[minmax(7.5rem,9rem)_1fr_auto] items-center gap-3"
-                style={delay(140 + i * 70)}
-              >
-                <div className="font-display text-sm" style={{ color: ISA_META[row.isa].color }}>
-                  <span className="mr-2 font-mono text-[10px] text-white/35">0{i + 1}</span>
-                  {targetShort(result, row.isa)}
-                  <div className="mt-0.5 font-mono text-[9px] leading-tight text-white/35">
-                    {result.hardwareMode !== 'same' ? `${row.hardwareName} · illustrative · ` : ''}
-                    {row.cores}C/{row.threads}T · {row.activeThreads} active
+      {lead && baselineRow ? (
+        <section className="hud-panel p-4 reveal" style={delay(90)}>
+          <div className="hud-kicker">
+            {byTime ? 'Modelled-time rank · illustrative presets' : 'Model-cycle rank'} · vs {targetShort(result, baselineRow.isa)}
+          </div>
+          <p className="mb-3 mt-1 text-xs text-white/45">
+            {byTime
+              ? 'Each target ran on its own preset, so the clocks differ and only modelled time compares across them.'
+              : real
+                ? 'Every target on the same modelled in-order core. The instructions are real; the cycles are the model\'s.'
+                : 'Every target on the same modelled in-order core, timing the engine\'s lowering for each.'}
+          </p>
+          <div className="space-y-2">
+            {ranked.map((row, i) => {
+              const leadValue = primaryValue(result, lead)
+              const value = primaryValue(result, row)
+              const baseValue = primaryValue(result, baselineRow)
+              const rel = leadValue === 0 ? 1 : value / leadValue
+              const vsBase = baseValue === 0 ? 0 : ((value - baseValue) / baseValue) * 100
+              const width = value === 0 ? 100 : (leadValue / Math.max(value, leadValue)) * 100
+              return (
+                <div
+                  key={row.isa}
+                  className="reveal grid grid-cols-[minmax(7.5rem,9rem)_1fr_auto] items-center gap-3"
+                  style={delay(140 + i * 70)}
+                >
+                  <div className="font-display text-sm" style={{ color: ISA_META[row.isa].color }}>
+                    <span className="mr-2 font-mono text-[10px] text-white/35">0{i + 1}</span>
+                    {targetShort(result, row.isa)}
+                    <div className="mt-0.5 font-mono text-[9px] leading-tight text-white/35">
+                      {[
+                        ...(result.hardwareMode !== 'same' ? [`${row.hardwareName} · illustrative`] : []),
+                        ...(real ? [] : [`${row.cores}C/${row.threads}T · ${row.activeThreads} active`]),
+                        ...(real && row.isa === 'wasm' ? ['bytecode timed as if run directly'] : []),
+                      ].join(' · ')}
+                    </div>
+                  </div>
+                  <div className="race-track">
+                    <div
+                      className="race-fill"
+                      style={{
+                        ...delay(180 + i * 70),
+                        width: `${width}%`,
+                        background: `linear-gradient(90deg, ${ISA_META[row.isa].color}33, ${ISA_META[row.isa].color})`,
+                        boxShadow: `0 0 12px ${ISA_META[row.isa].color}66`,
+                      }}
+                    />
+                  </div>
+                  <div className="min-w-[168px] text-right font-mono text-xs">
+                    <span className="text-white">{displayPrimary(result, row)}</span>
+                    <span className="ml-2 text-white/40">{fmtMult(rel)}</span>
+                    <span className={`ml-2 ${vsBase > 0.05 ? 'text-magenta' : 'text-lime-300'}`}>
+                      {i === 0 && baseline === 'leader' ? 'LOWEST' : signedPct(vsBase)}
+                    </span>
                   </div>
                 </div>
-                <div className="race-track">
-                  <div
-                    className="race-fill"
-                    style={{
-                      ...delay(180 + i * 70),
-                      width: `${width}%`,
-                      background: `linear-gradient(90deg, ${ISA_META[row.isa].color}33, ${ISA_META[row.isa].color})`,
-                      boxShadow: `0 0 12px ${ISA_META[row.isa].color}66`,
-                    }}
-                  />
+              )
+            })}
+            {excluded.map(({ row, reason }) => (
+              <div key={row.isa} className="grid grid-cols-[minmax(7.5rem,9rem)_1fr] items-center gap-3">
+                <div className="font-display text-sm opacity-60" style={{ color: ISA_META[row.isa].color }}>
+                  <span className="mr-2 font-mono text-[10px] text-white/35">—</span>
+                  {targetShort(result, row.isa)}
                 </div>
-                <div className="min-w-[168px] text-right font-mono text-xs">
-                  <span className="text-white">{fmtInt(row.cycles)}</span>
-                  <span className="ml-2 text-white/40">{fmtMult(rel)}</span>
-                  <span className={`ml-2 ${vsBase > 0.05 ? 'text-magenta' : 'text-lime-300'}`}>
-                    {i === 0 && baseline === 'leader' ? 'LOWEST' : signedPct(vsBase)}
-                  </span>
-                </div>
+                <div className="font-mono text-[10px] text-amber-200/80">NOT RANKED · {reason}</div>
               </div>
-            )
-          })}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="hud-panel p-4">
+          <div className="hud-kicker">Nothing to rank</div>
+          {excluded.map(({ row, reason }) => (
+            <p key={row.isa} className="mt-2 text-sm text-amber-200/80">
+              {targetShort(result, row.isa)}: {reason}
+            </p>
+          ))}
+        </section>
+      )}
 
       <section className="grid gap-3 md:grid-cols-2">
         {insights.map((ins, i) => (
           <article
-            key={ins.tag}
+            key={`${ins.tag}-${i}`}
             className={`brief brief-${ins.tone} reveal`}
             style={delay(260 + i * 80)}
           >
@@ -174,8 +226,8 @@ function CurrentReport({
       <nav className="reveal flex flex-wrap gap-2" style={delay(420)}>
         {(
           [
-            ['matrix', 'METRIC MATRIX'],
-            ['mix', 'OPCODE MIX'],
+            ['matrix', 'METRICS'],
+            ['mix', 'INSTRUCTION MIX'],
             ['trace', 'TRACE'],
             ['protocol', 'PROTOCOL'],
           ] as const
@@ -192,10 +244,10 @@ function CurrentReport({
         ))}
       </nav>
 
-      {pane === 'matrix' && (
+      {pane === 'matrix' && baselineRow && (
         <section className="hud-panel pane-enter p-4">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="hud-kicker">Normalized to baseline · lower bar is better unless marked</div>
+            <div className="hud-kicker">Relative to the baseline · the best value is highlighted where a direction is better</div>
             <label className="flex items-center gap-2 font-mono text-[11px] text-white/50">
               BASE
               <select
@@ -203,8 +255,8 @@ function CurrentReport({
                 onChange={(e) => setBaseline(e.target.value as 'leader' | IsaId)}
                 className="hud-input py-1"
               >
-                <option value="leader">Lowest model cycles</option>
-                {result.rows.map((r) => (
+                <option value="leader">{byTime ? 'Least modelled time' : 'Fewest model cycles'}</option>
+                {comparable.map((r) => (
                   <option key={r.isa} value={r.isa}>
                     {targetShort(result, r.isa)}
                   </option>
@@ -212,28 +264,52 @@ function CurrentReport({
               </select>
             </label>
           </div>
-          <div className="space-y-5">
-            {REPORT_METRICS.map((metric) => (
-              <MetricRow
-                key={metric.id}
-                metric={metric}
-                result={result}
-                baselineRow={baselineRow}
-              />
-            ))}
-          </div>
+          {(['counted', 'modelled'] as const).map((basis) => {
+            const group = metrics.filter((metric) => metric.basis === basis)
+            if (group.length === 0) return null
+            return (
+              <div key={basis} className="mb-6">
+                <h3 className="hud-title text-sm">{basis === 'counted' ? 'Counted from execution' : 'Modelled'}</h3>
+                <p className="mb-3 mt-1 text-xs text-white/45">
+                  {basis === 'counted'
+                    ? 'Exact counts of what the verified interpreters executed. They include library code, and the libraries differ between targets.'
+                    : 'From the deterministic in-order timing model, the same model for every target. Nothing here is measured on hardware.'}
+                </p>
+                <div className="space-y-5">
+                  {group.map((metric) => (
+                    <MetricRow
+                      key={metric.id}
+                      metric={metric}
+                      result={result}
+                      comparable={comparable}
+                      baselineRow={baselineRow}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </section>
       )}
 
       {pane === 'mix' && (
         <section className="hud-panel pane-enter space-y-5 p-4">
+          <p className="text-xs text-white/45">
+            {real
+              ? 'Retired instructions by class. An instruction that both computes and touches memory, as x86 allows, is counted under its operation.'
+              : 'Completed modeled operations after drain, by class.'}
+          </p>
           {result.rows.map((row) => {
             const parts = mixShare(row)
             return (
               <div key={row.isa}>
                 <div className="mb-1 flex items-center justify-between font-mono text-[11px]">
                   <span style={{ color: ISA_META[row.isa].color }}>{targetFull(result, row.isa)}</span>
-                  <span className="text-white/40">{fmtInt(row.completedOperations)} completed modeled ops after drain</span>
+                  <span className="text-white/40">
+                    {real
+                      ? `${fmtInt(row.instructions)} instructions retired`
+                      : `${fmtInt(row.completedOperations)} completed modeled ops after drain`}
+                  </span>
                 </div>
                 <div className="mix-track">
                   {parts.map((p) => (
@@ -285,8 +361,8 @@ function CurrentReport({
             ))}
           </div>
           <p className="border-b border-cyan-400/20 px-4 py-2 text-xs text-white/45">
-            {isRealResult(result)
-              ? 'The first instructions this binary executed, as the verified decoder renders them. Real instructions, compiled by clang; the timing beside them is the model.'
+            {real
+              ? 'The first distinct instructions this binary executed, in the order first reached, as the verified decoder renders them.'
               : 'Modeled lowering stream for this pseudo-backend; not executable disassembly or a generated binary.'}
           </p>
           <pre className="crt max-h-[560px] overflow-auto p-4 font-mono text-xs leading-6 text-cyan-100/80">
@@ -295,7 +371,7 @@ function CurrentReport({
         </section>
       )}
 
-      {pane === 'protocol' && (isRealResult(result) ? <RealProtocol result={result} /> : <Protocol />)}
+      {pane === 'protocol' && (real ? <RealProtocol result={result} /> : <Protocol />)}
     </div>
   )
 }
@@ -344,34 +420,35 @@ function LegacyReport({ result }: { result: LegacyCompareResult }) {
 function MetricRow({
   metric,
   result,
+  comparable,
   baselineRow,
 }: {
   metric: MetricDef
   result: CompareResult
+  comparable: CompareResult['rows']
   baselineRow: CompareResult['rows'][number]
 }) {
+  const ranks = metric.better !== 'none'
   const baseVal = metric.value(baselineRow)
-  const ranked = [...result.rows].sort((a, b) => {
-    const av = metric.value(a)
-    const bv = metric.value(b)
-    return metric.better === 'low' ? av - bv : bv - av
-  })
-  const best = ranked[0]
-  const worstVal = metric.value(ranked[ranked.length - 1])
-  const bestVal = metric.value(best)
-  const span = Math.max(Math.abs(worstVal - bestVal), Math.abs(bestVal), 1e-9)
+  const values = comparable.map((row) => metric.value(row))
+  const bestVal = metric.better === 'high' ? Math.max(...values) : Math.min(...values)
+  const worstVal = metric.better === 'high' ? Math.min(...values) : Math.max(...values)
+  const top = Math.max(...values, 0)
+  const span = Math.abs(worstVal - bestVal)
 
   return (
     <div>
-      <div className="mb-1 flex items-baseline justify-between">
+      <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
         <div className="hud-kicker">
           {metric.label}
-          {metric.better === 'high' ? ' · RANKED HIGHEST UNDER THIS MODEL' : ' · RANKED LOWEST UNDER THIS MODEL'}
+          {metric.better === 'low' ? ' · LOWER IS BETTER' : metric.better === 'high' ? ' · HIGHER IS BETTER' : ' · NOT RANKED'}
         </div>
         <div className="font-mono text-[10px] text-white/35">{metric.unit}</div>
       </div>
+      <p className="mb-1.5 text-[11px] leading-snug text-white/40">{metric.meaning}</p>
       <div className="space-y-1.5">
         {result.rows.map((row) => {
+          const inRanking = row.matchedGold
           const v = metric.value(row)
           const rel = baseVal === 0 ? (v === 0 ? 1 : Infinity) : v / baseVal
           // A zero baseline has no defined relative change; reporting 0% would
@@ -379,9 +456,14 @@ function MetricRow({
           const delta = baseVal === 0
             ? (v === 0 ? 0 : Infinity)
             : ((v - baseVal) / Math.abs(baseVal)) * 100
-          const goodness = metric.better === 'low' ? (worstVal - v) / span : (v - (worstVal === bestVal ? 0 : worstVal)) / span
-          const fill = Math.max(8, Math.min(100, goodness * 100))
-          const isBest = row.isa === best.isa
+          // A ranked metric's bar is longest at the best value; an unranked
+          // one's is proportional, so a longer bar is simply a larger number.
+          const fill = ranks
+            ? (span === 0 ? 100 : Math.max(8, Math.min(100, (1 - Math.abs(v - bestVal) / span) * 100)))
+            : (top === 0 ? 0 : Math.max(4, Math.min(100, (v / top) * 100)))
+          const isBest = ranks && inRanking && v === bestVal
+          const better = metric.better === 'low' ? delta < -0.05 : delta > 0.05
+          const worse = metric.better === 'low' ? delta > 0.05 : delta < -0.05
           return (
             <div key={row.isa} className="grid grid-cols-[72px_1fr_auto] items-center gap-3">
               <div className="font-mono text-[11px]" style={{ color: ISA_META[row.isa].color }}>
@@ -392,7 +474,7 @@ function MetricRow({
                   className="race-fill"
                   style={{
                     ...delay(80),
-                    width: `${fill}%`,
+                    width: `${inRanking ? fill : 0}%`,
                     background: ISA_META[row.isa].color,
                     opacity: isBest ? 1 : 0.72,
                     boxShadow: isBest ? `0 0 10px ${ISA_META[row.isa].color}` : undefined,
@@ -401,10 +483,16 @@ function MetricRow({
               </div>
               <div className="min-w-[168px] text-right font-mono text-[11px]">
                 <span className={isBest ? 'text-white' : 'text-white/70'}>{metric.display(row)}</span>
-                <span className="ml-2 text-white/35">{Number.isFinite(rel) ? fmtMult(rel) : '∞'}</span>
-                <span className={`ml-2 ${delta > 0.05 ? 'text-magenta' : delta < -0.05 ? 'text-lime-300' : 'text-white/30'}`}>
-                  {row.isa === baselineRow.isa ? 'BASE' : signedPct(delta)}
-                </span>
+                {inRanking ? (
+                  <>
+                    <span className="ml-2 text-white/35">{Number.isFinite(rel) ? fmtMult(rel) : '∞'}</span>
+                    <span className={`ml-2 ${!ranks ? 'text-white/30' : better ? 'text-lime-300' : worse ? 'text-magenta' : 'text-white/30'}`}>
+                      {row.isa === baselineRow.isa ? 'BASE' : signedPct(delta)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="ml-2 text-amber-200/70">NOT RANKED</span>
+                )}
               </div>
             </div>
           )
@@ -439,17 +527,16 @@ function RealProtocol({ result }: { result: CompareResult }) {
     <section className="hud-panel pane-enter space-y-4 p-5 text-sm leading-relaxed text-white/65">
       <p>
         Each target ran this program compiled by clang for that instruction set and linked against a
-        real C library, executed by an interpreter that is verified against a reference. The
-        instructions and the program&apos;s own output are real. Everything else here -- model cycles,
-        cache behaviour, energy -- comes from the same deterministic model as every other result.
-        This is a deterministic educational software model, with no physical hardware measurements
-        or performance prediction.
+        real C library, executed by an interpreter that is verified against a reference. This is a
+        deterministic educational software model, with no physical hardware measurements or
+        performance prediction.
       </p>
       <p>
         Every row answers to the IR interpreter reference: its return value and its output must
         equal the reference&apos;s, or the run is rejected. The one exception is stated rather than
         excused -- a target whose C int is too narrow to hold the answer computes a different value,
-        and must still return one its int can hold.
+        must still return one its int can hold, and is left out of every ranking because it did
+        different work.
       </p>
       <ul className="space-y-2 font-mono text-xs">
         {execution.targets.map((target) => (
@@ -463,13 +550,48 @@ function RealProtocol({ result }: { result: CompareResult }) {
           <li key={item.isa} className="text-white/45">{item.reason}.</li>
         ))}
       </ul>
+      <h3 className="hud-title text-sm">Counted</h3>
       <p>
-        The timing model consumes the instructions that actually retired: their classes, the
-        registers they read and wrote, which way each branch went and which address each access
-        touched. It models one core and one thread, in order, with the same caches, branch predictor
-        and energy accounting as the lowering. The libraries differ between targets -- most link
-        musl, SPARC links picolibc, WebAssembly links wasi-libc and the 6502 llvm-mos&apos;s own -- so
-        instructions inside library calls are that library&apos;s.
+        Instructions retired, the bytes they occupied, the instructions that read or wrote data
+        memory, conditional branches and how many were taken, and the distinct code executed are
+        exact counts of what the interpreter ran. Data-memory instructions include implicit stack
+        traffic -- an x86 call pushes its return address, a 6502 <span className="font-mono">jsr</span>{' '}
+        pushes two bytes -- because the instruction set makes that traffic, not the program. Every
+        count includes library code, and the libraries differ: most targets link musl, SPARC links
+        picolibc, WebAssembly links wasi-libc and the 6502 llvm-mos&apos;s own, so a difference inside
+        <span className="font-mono"> printf</span> is partly a difference of library.
+      </p>
+      <h3 className="hud-title text-sm">Modelled</h3>
+      <p>
+        Everything else comes from one in-order core with the same caches, branch predictor and
+        return-address stack for every target, fed the instructions that actually retired: their
+        classes, the registers they read and wrote, which way each branch went and which address
+        each access touched. No target gets a timing adjustment of its own. A delay slot is an
+        instruction that retires and is timed like one; a call on MIPS and SPARC returns past its
+        slot, and the return stack is checked against where control really went.
+      </p>
+      <p>
+        Two things the reference does out of sight are charged here. A SPARC register-window
+        spill or fill moves 64 bytes through the data cache and costs two pipeline refills, into
+        the trap and back; the handler&apos;s own instructions are not counted, because the
+        reference does not execute them either. A system call, and a WebAssembly call into its
+        host, drains the pipeline and is otherwise free on every target, since no target&apos;s kernel
+        is modelled.
+      </p>
+      <p>
+        WebAssembly&apos;s model cycles time its bytecode as if a machine executed it directly. No
+        machine does -- every engine compiles it first -- so its counted figures describe the
+        bytecode exactly, and its modelled ones describe a hypothetical machine.
+      </p>
+      <h3 className="hud-title text-sm">Not reported</h3>
+      <p>
+        Energy: the model&apos;s estimate is uncalibrated, its uncertainty is not quantified, and it
+        cannot support a comparison. It stays in the JSON export, without any per-target weight.
+        L2 and L3 miss rates: these programs&apos; working sets are small enough that nearly every
+        lower-level access is a first touch, so the rate is close to 100% on every target and says
+        nothing; lines fetched from memory are reported instead. Model cycles per instruction is
+        shown but not ranked, because instructions do different amounts of work on different
+        instruction sets.
       </p>
     </section>
   )
@@ -530,8 +652,10 @@ function Protocol() {
         and DRAM channels are modeled. Cache geometry and timings are parameters, not measurements.
       </p>
       <p>
-        Nominal model energy is an uncalibrated event model plus integrated per-core residency.
-        Its uncertainty is not quantified, so it does not predict joules on hardware. {GUEST_C_VERSION}
+        An uncalibrated nominal energy estimate is kept in the JSON export for compatibility and
+        is not reported: its uncertainty is not quantified and its per-target weights were never
+        measured, so it cannot support a comparison. Model cycles per operation is shown but not
+        ranked, because each target&apos;s operations do different amounts of work. {GUEST_C_VERSION}
         retains bounded 32-bit guest addresses, a bounded heap/stdout region, 4 KiB worker stacks,
         4096 call frames, 256 modeled hardware threads, deterministic library helpers, and no
         operating system, files, sockets, signals, dynamic linking, or ISO C conformance claim.

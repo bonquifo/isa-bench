@@ -309,7 +309,12 @@ function toStatic(inst: PpcInst, addr: bigint): PowerStaticInst {
     addRead(Res.GPR + inst.rd)
   }
 
-  const control = CONTROL_OF[inst.flow]!
+  // A return that tests a condition first -- `bclr 12, 2` is `beqlr` --
+  // falls through when the condition fails, so it is predicted as a
+  // branch and pops the return stack only when it returns.
+  const conditionalReturn = inst.op === PPC.BCLR && !inst.link &&
+    (inst.bo & 0x14) !== 0x14
+  const control = conditionalReturn ? ControlKind.COND_RET : CONTROL_OF[inst.flow]!
   const direct = control === ControlKind.COND || control === ControlKind.JUMP ||
     (control === ControlKind.CALL && inst.op === PPC.B)
 

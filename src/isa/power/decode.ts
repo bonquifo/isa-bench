@@ -665,13 +665,21 @@ export function decode(word: number, address: bigint): PpcInst {
       inst.bi = fld(word, 11, 15)
       inst.crField = inst.bi >> 2
       inst.link = fld(word, 31, 31) === 1
+      // BO with bits 0 and 2 set means "always": no condition tested and
+      // no counter decremented. A conditional return is common and is
+      // told apart by the image; a conditional call through the link
+      // register, or any conditional branch through the counter, is in no
+      // measured binary and is refused rather than timed as unconditional.
+      const always = (inst.bo & 0x14) === 0x14
       if (xo === 16) {
+        if (inst.link && !always) return refuse(address, word, 'conditional bclrl')
         inst.op = PPC.BCLR
         inst.flow = inst.link ? Flow.CALL : Flow.RET
         inst.rd = -1; inst.ra = -1; inst.rb = -1
         return inst
       }
       if (xo === 528) {
+        if (!always) return refuse(address, word, 'conditional bcctr')
         inst.op = PPC.BCCTR
         inst.flow = inst.link ? Flow.CALL : Flow.INDIRECT
         inst.rd = -1; inst.ra = -1; inst.rb = -1

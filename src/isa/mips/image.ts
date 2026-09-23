@@ -270,6 +270,8 @@ export class MipsImage implements ProgramImage {
   readonly entry: bigint
   readonly naming = MIPS_NAMING
   readonly codeBytes: number
+  /** Every jump and branch has one; a call returns past it. */
+  readonly delaySlotBytes = 4
   private readonly memory: GuestMemory
   private readonly cache = new Map<number, MipsStaticInst>()
   private readonly failed = new Set<number>()

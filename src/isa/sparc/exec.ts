@@ -77,6 +77,9 @@ const DEFAULT_BUDGET = 2_000_000_000
 
 /** Windows in the register file. Eight is what qemu's SPARC32 provides. */
 export const NWINDOWS = 8
+
+/** A window's sixteen registers, locals then ins, as a spill writes them. */
+const WINDOW_SAVE_BYTES = 64
 /** Physical window registers: sixteen per window. */
 export const WINDOW_REGS = NWINDOWS * 16
 
@@ -164,6 +167,14 @@ export class SparcInterpreter implements Interpreter {
   private access = 0n
   private accessWidth = 0
   private taken = 0
+  /**
+   * The window trap taken by this instruction, if any: the 64-byte save
+   * area it spilled to or filled from. The reference handles these traps
+   * invisibly, so without this the timing model would see a `save` that
+   * moved sixty-four bytes as one that moved none.
+   */
+  private trapSpillAddr = -1
+  private trapFillAddr = -1
   private readonly budget: number
 
   constructor(image: SparcImage, memory: GuestMemory, options: SparcOptions = {}) {
@@ -302,6 +313,8 @@ export class SparcInterpreter implements Interpreter {
       this.access = 0n
       this.accessWidth = 0
       this.taken = 0
+      this.trapSpillAddr = -1
+      this.trapFillAddr = -1
       // The architecture says where control goes next; an instruction
       // that is not a transfer simply lets it advance.
       let next = this.npc
@@ -313,6 +326,11 @@ export class SparcInterpreter implements Interpreter {
       into.effAddr[n] = this.access
       into.accessWidth[n] = this.accessWidth
       into.taken[n] = this.taken
+      into.trapped[n] = this.trapSpillAddr >= 0 || this.trapFillAddr >= 0 ? 1 : 0
+      into.bulkWriteAddr[n] = BigInt(Math.max(0, this.trapSpillAddr))
+      into.bulkWriteBytes[n] = this.trapSpillAddr >= 0 ? WINDOW_SAVE_BYTES : 0
+      into.bulkReadAddr[n] = BigInt(Math.max(0, this.trapFillAddr))
+      into.bulkReadBytes[n] = this.trapFillAddr >= 0 ? WINDOW_SAVE_BYTES : 0
       this.pc = next
       this.npc = this.nextNpc
       this.nextPcAfter = null
@@ -463,6 +481,7 @@ export class SparcInterpreter implements Interpreter {
     // A window's stack pointer is its %o6, which is register 6 of the
     // window below it.
     const sp = this.windows[this.slot(14, victim)]! >>> 0
+    this.trapSpillAddr = sp
     for (let i = 0; i < 8; i++) {
       this.memory.store(BigInt(sp + i * 4), 4, BigInt(this.windows[16 * victim + 8 + i]! >>> 0))
     }
@@ -476,6 +495,7 @@ export class SparcInterpreter implements Interpreter {
   private fill(): void {
     const target = (this.cwp + 1) % NWINDOWS
     const sp = this.windows[this.slot(14, target)]! >>> 0
+    this.trapFillAddr = sp
     for (let i = 0; i < 8; i++) {
       this.windows[16 * target + 8 + i] = Number(this.memory.load(BigInt(sp + i * 4), 4, false)) | 0
     }

@@ -128,9 +128,9 @@ rather than on a chosen set of registers. The app's fourteen corpus
 programs are checked against `wasmtime`, a second engine from a different
 vendor.
 
-What is real is the instruction stream and the program's own output.
-Everything else — cycles, cache behavior, energy — is the same
-deterministic model either way. **Nothing anywhere in this app is measured
+What is real is the instruction stream and the program's own output, and
+the report counts both exactly. Everything else — cycles, cache and branch
+behavior — is the same deterministic model either way. **Nothing anywhere in this app is measured
 on hardware.**
 
 The libraries differ, and the app names them. Most targets link musl;
@@ -181,17 +181,46 @@ run rather than reporting a number.
 
 ## Metrics
 
-- **model cycles** — deterministic timing-model cycles
-- **dynamic modeled ops** — completed modeled operations after termination
-- **aggregate modeled ops/cycle** — completed operations ÷ model cycles
-- **modeled elapsed time** — model cycles ÷ the profile's clock parameter; this
-  is not stopwatch time
-- **modeled stream bytes** — bytes assigned by the lowering model, not binary size
-- **nominal model energy (uncalibrated)** — an event and residency estimate in
-  model nJ, not measured energy
+Every figure in a report says whether it was **counted** or **modelled**,
+and a figure is ranked only where less (or more) of it is better for the
+same work.
 
-Cache miss, branch, spill, origin, and stall counters refer only to this model.
-Rankings are described as ranked lowest or highest *under this model*.
+**Counted** figures exist only for real-ISA runs. They are exact counts of
+what the verified interpreters executed, library code included:
+
+- **instructions retired**
+- **instruction bytes executed** — the encoded size of every instruction
+  retired, which is what instruction fetch has to read
+- **data-memory instructions** — instructions that read or wrote data
+  memory, including implicit stack traffic such as an x86 call's push
+- **conditional branches**, and the share taken
+- **code executed** — distinct instruction bytes executed at least once
+- **platform traps** — SPARC's register-window spills and fills, shown only
+  when a target took any
+
+**Modelled** figures come from the deterministic timing model, the same one
+for every target:
+
+- **model cycles** — cycles on the modelled in-order core. With one shared
+  profile they are the ranking; with an illustrative preset per target the
+  clocks differ, so cycles are shown but not ranked and the ranking is by
+  **modelled time** — model cycles ÷ each preset's clock, not stopwatch time
+- **model cycles per instruction** (per modeled operation on the lowering) —
+  shown, never ranked: instructions do different amounts of work on
+  different instruction sets, so a lower figure is not faster by itself
+- **branch mispredictions**, **I-cache misses**, **D-cache misses** and
+  **memory line requests**
+- on the lowering only: **dynamic modeled operations**, **spill slots**,
+  **modeled stream bytes** (bytes the lowering assigns, not a binary's
+  size) and **effective active workers**
+
+Not reported, on purpose: the reciprocal of cycles per instruction; L2 and
+L3 miss rates, which for these small working sets are first-touch misses
+near 100% on every target; and energy, whose estimate is uncalibrated and
+cannot support a comparison (it stays in the JSON export). A real-ISA
+target that computes a different answer — the 6502, whose `int` is
+sixteen bits, when the answer needs more — is shown but left out of every
+ranking, because it did different work.
 
 ## Model limits
 

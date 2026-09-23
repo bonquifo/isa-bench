@@ -134,6 +134,19 @@ const metrics = z.strictObject({
   idleCoreCycles: nonnegative,
   averageActiveCores: nonnegative,
   averageStalledCores: nonnegative,
+  executed: z.strictObject({
+    instructionBytes: nonnegative,
+    loads: nonnegative,
+    stores: nonnegative,
+    memoryInstructions: nonnegative,
+    conditionalBranches: nonnegative,
+    takenConditionalBranches: nonnegative,
+    calls: nonnegative,
+    returns: nonnegative,
+    indirectJumps: nonnegative,
+    codeFootprintBytes: nonnegative,
+    platformTraps: nonnegative,
+  }).optional(),
 })
 const contract = z.strictObject({
   schemaVersion: z.string(),
@@ -187,6 +200,7 @@ const execution = z.strictObject({
     verdict: z.enum(['match', 'unreachable']),
   })).min(1),
   unavailable: z.array(z.strictObject({ isa, reason: z.string().min(1) })),
+  timingModelVersion: z.string().min(1).optional(),
 })
 
 export const CompareResultSchema: z.ZodType<CompareResult> = z.strictObject({

@@ -123,9 +123,10 @@ describe('the real-ISA lane', () => {
       { timeout: 20_000 },
     )
 
-    expect(screen.getByText('Counted, not modelled.')).toBeInTheDocument()
+    expect(screen.getByText(/Counted, not modelled\./)).toBeInTheDocument()
     expect(screen.getByText(/Deterministic software model/i)).toBeInTheDocument()
-    expect(screen.getByText('Instructions')).toBeInTheDocument()
+    expect(screen.getByText('Instructions retired')).toBeInTheDocument()
+    expect(screen.getByText('Data-memory instructions')).toBeInTheDocument()
     expect(screen.getByText('Model cycles')).toBeInTheDocument()
     // The disassembly is read from the real encoding, so it must be present.
     expect(screen.getByText('Decoded instructions')).toBeInTheDocument()

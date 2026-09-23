@@ -126,6 +126,9 @@ export class X86Interpreter implements Interpreter {
   private access = 0n
   private accessWidth = 0
   private taken = 0
+  /** The whole range a repeated string instruction read and wrote. */
+  private bulkRead = { addr: 0n, bytes: 0 }
+  private bulkWrite = { addr: 0n, bytes: 0 }
   private readonly budget: number
   private readonly linux: LinuxSyscalls | undefined
   exitCode = 0
@@ -199,6 +202,8 @@ export class X86Interpreter implements Interpreter {
       this.access = 0n
       this.accessWidth = 0
       this.taken = 0
+      this.bulkRead.bytes = 0
+      this.bulkWrite.bytes = 0
       this.next = rip + BigInt(si.inst.length)
       this.execute(si)
       into.pc[n] = rip
@@ -206,6 +211,10 @@ export class X86Interpreter implements Interpreter {
       into.effAddr[n] = this.access
       into.accessWidth[n] = this.accessWidth
       into.taken[n] = this.taken
+      into.bulkReadAddr[n] = this.bulkRead.addr
+      into.bulkReadBytes[n] = this.bulkRead.bytes
+      into.bulkWriteAddr[n] = this.bulkWrite.addr
+      into.bulkWriteBytes[n] = this.bulkWrite.bytes
       this.rip = this.next
       n += 1
       this.retired += 1
@@ -1073,8 +1082,14 @@ export class X86Interpreter implements Interpreter {
     if (inst.rep !== 0 && count === 0n) return
     let source = u64(this.r[RSI]!)
     let destination = u64(this.r[RDI]!)
-    this.access = destination
-    this.accessWidth = size
+    // One instruction that may move thousands of bytes. The whole of what
+    // it read and wrote is reported as a range rather than as its first
+    // element, or a timing model would see a `rep movsq` of a page as one
+    // eight-byte store. The ranges count upwards because nothing can set
+    // the direction flag: `std` is not an instruction the decoder accepts.
+    const total = Number(count) * size
+    if (inst.op === X86.MOVS) this.bulkRead = { addr: source, bytes: total }
+    this.bulkWrite = { addr: destination, bytes: total }
     while (count > 0n) {
       if (inst.op === X86.MOVS) {
         const value = this.memory.load(source, size as AccessWidth, false)

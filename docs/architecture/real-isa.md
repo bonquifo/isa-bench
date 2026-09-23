@@ -545,6 +545,12 @@ documented addition and one field that does not apply: WebAssembly's
 better outcome than freezing it late would have produced, and it is the
 only evidence available that freezing early was right rather than lucky.
 
+A second addition came later, and for a different reason: the timing
+model was found mistiming control flow and memory traffic on four targets,
+and the contract had nowhere to put the facts that fixed it. A wrong
+timing result is not a refinement, so the contract was reopened; section
+6 says what was added and why.
+
 Instruction counts below are measured on the existing C corpus at `-O2`,
 not estimated. RV64 needed 49 for that corpus, and 90 across four
 statically linked musl binaries, which is the whole of musl and not only
@@ -1137,7 +1143,7 @@ dynamic. The contract has nowhere to put that — the image is addressed
 by program counter, and a retired chunk spans many windows before the
 timing model walks it.
 
-The contract was frozen deliberately and has now survived five backends
+The contract was frozen deliberately and had then survived five backends
 with one documented addition, so it was not reopened for a refinement to
 a model whose output is already declared not to be measured. Instead,
 **window registers are identified window-relative, and the window
@@ -1564,6 +1570,73 @@ Saved results record which path made them. One saved before this existed
 carries no mode and replays on the lowering, with its fingerprint
 unchanged; a real result fingerprints differently from a lowered one of the
 same program, because it is a different measurement.
+
+### What the report counts, and what it models
+
+The report was built for the lowering, where every number is modelled, and
+at first it presented a real run in the same terms. An audit against the
+real data found both halves wanting: figures that could not support the
+comparisons they were drawn in, and a timing model that was mistiming four
+of the eight targets.
+
+**The timing bugs.** Each was invisible on RV64, which was the only target
+the timing model had been tested on, and each made one target look better or
+worse than its instructions deserved:
+
+| Target | What was wrong | Effect |
+| --- | --- | --- |
+| MIPS | The interpreter recorded a branch's outcome on its delay slot, not on the branch | Every branch looked untaken: 0% mispredicted on every program |
+| MIPS, SPARC | A call's return address was taken as the address after the call, not after its delay slot | Every MIPS return missed the return-address stack; SPARC's would have, once its returns were recognised |
+| SPARC | `ret`, `retl` and calls through a register are all `jmpl`, and all were timed as indirect jumps | No return was ever predicted; calls went unpaired |
+| SPARC | Register-window spills and fills happened inside `save` and `restore` with no memory traffic reported | 64 bytes per trap, and the trap itself, were free |
+| POWER | A conditional return (`beqlr`) that fell through still popped the return-address stack | Every later return was mispredicted |
+| WebAssembly | A call into the host (WASI) pushed a return address nothing returned to, and `call_indirect` pushed none | The return-address stack ran out of step |
+| 6502 | `jsr`, `rts`, `pha` and `pla` reported their stack accesses at address zero, with no width | The model cached the wrong line |
+| x86-64 | A repeated string instruction reported its first element, not the range it moved | A `rep movsq` of a page cost one store |
+
+The trace contract took a second addition to carry what was missing: the
+size of a delay slot, a control kind for conditional returns, and the
+memory the platform moves on an instruction's behalf, with whether a trap
+was taken. The timing model also stopped applying the lowering's per-ISA
+adjustments -- a load delay for MIPS, a branch bubble for SPARC, a decode
+penalty for long x86 encodings -- because a real stream carries those
+traits itself, and "the same modelled core for every target" has to be
+literally true. A test now runs the timing model over all eight targets
+and checks what a trace bug makes impossible: a predictor that never
+mispredicts, returns that never pair with calls, memory counted by class
+coming out larger than memory counted from the trace. Putting the MIPS bug
+back makes it fail. Real results record `timingModelVersion` 2; results
+made before carry none.
+
+**The metrics.** Every figure now says whether it was **counted** --
+exact, from the verified interpreter -- or **modelled**, and a figure is
+ranked only where less of it is better for the same work.
+
+- Counted, for real runs only: instructions retired; instruction bytes
+  executed; data-memory instructions, taken from each instruction's memory
+  flags rather than its class, because an x86 `call` and a 6502 `jsr`
+  touch memory without being loads or stores; conditional branches and
+  the share taken; distinct code bytes executed; and platform traps where
+  any target took one.
+- Modelled: model cycles, or modelled time when each target has its own
+  preset and therefore its own clock; cycles per instruction, shown and
+  never ranked, since a target with more, simpler instructions gets a lower
+  figure without being faster; mispredictions, cache misses and memory
+  line requests as absolute counts, which compare directly because every
+  target did the same work.
+- Gone: the reciprocal of cycles per instruction; L2 and L3 miss rates,
+  which on these working sets are first-touch misses near 100% everywhere;
+  energy, whose estimate is uncalibrated and was weighted per ISA by
+  numbers nobody measured -- it stays in the JSON export, without the
+  weights on real runs; and elapsed time under one shared profile, which
+  orders exactly as cycles do.
+- A target that computed a different answer -- the 6502, when the answer
+  needs more than a sixteen-bit `int` -- did different work. It is shown,
+  and left out of every ranking and every "fewest" claim.
+
+The CSV export follows the same rules: an execution-mode column, counted
+columns empty on the lowering, the lowering's own columns empty on a real
+run, and no energy.
 
 ### In the lane
 

@@ -22,13 +22,13 @@ const result = runComparison({
 afterEach(cleanup)
 
 const pane = (name: string) => screen.getByRole('button', { name })
-const PANES = ['METRIC MATRIX', 'OPCODE MIX', 'TRACE', 'PROTOCOL'] as const
+const PANES = ['METRICS', 'INSTRUCTION MIX', 'TRACE', 'PROTOCOL'] as const
 
 describe('report panes', () => {
-  it('opens on the metric matrix', () => {
+  it('opens on the metrics', () => {
     render(<Report result={result} />)
-    expect(pane('METRIC MATRIX')).toHaveAttribute('aria-pressed', 'true')
-    for (const other of PANES.filter((item) => item !== 'METRIC MATRIX')) {
+    expect(pane('METRICS')).toHaveAttribute('aria-pressed', 'true')
+    for (const other of PANES.filter((item) => item !== 'METRICS')) {
       expect(pane(other)).toHaveAttribute('aria-pressed', 'false')
     }
   })
@@ -36,7 +36,7 @@ describe('report panes', () => {
   it('switches to every other pane and shows exactly one at a time', async () => {
     const user = userEvent.setup()
     render(<Report result={result} />)
-    for (const name of [...PANES.slice(1), 'METRIC MATRIX'] as const) {
+    for (const name of [...PANES.slice(1), 'METRICS'] as const) {
       await user.click(pane(name))
       const selected = PANES.filter((item) => pane(item).getAttribute('aria-pressed') === 'true')
       expect(selected).toEqual([name])

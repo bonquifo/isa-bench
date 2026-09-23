@@ -108,6 +108,7 @@ describe('report exports', () => {
     // Header plus one line per requested target.
     expect(lines.length).toBe(result.rows.length + 1)
     expect(lines[0]).toContain('isa')
-    expect(lines[0]).toContain('nominal_model_energy_nj_uncalibrated')
+    expect(lines[0]).toContain('execution_mode')
+    expect(lines[0]).not.toContain('energy')
   })
 })

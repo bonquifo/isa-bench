@@ -69,8 +69,15 @@ describe('result exports', () => {
     const csv = resultToCsv(result)
     expect(csv).toContain('flattened-summary-only-json-is-canonical')
     expect(csv).toContain('dynamic_modeled_ops')
-    expect(csv).toContain('nominal_model_energy_nj_uncalibrated')
     expect(csv).toContain('profile_snapshot_fingerprint')
+    // A lowered result says so, and leaves the counted columns empty.
+    const [header, first] = csv.split('\r\n').map((line) => line.split(','))
+    const cell = (name: string) => first![header!.indexOf(name)]
+    expect(cell('execution_mode')).toBe('model-lowering')
+    expect(cell('instructions_retired')).toBe('')
+    expect(cell('dynamic_modeled_ops')).not.toBe('')
+    // Energy is not reported, so it is not a summary column.
+    expect(header!.some((name) => /energy/.test(name))).toBe(false)
   })
 
   it('escapes commas, quotes, CR, and LF with doubled quotes', () => {

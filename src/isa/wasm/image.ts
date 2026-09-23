@@ -578,9 +578,23 @@ function toStatic(
     addRead(Res.FRAME); addWrite(Res.FRAME)
   }
 
+  // A call to an imported function is a call into the host -- WASI is
+  // this platform's system interface -- and the host runs it to
+  // completion inside the one instruction. It is a system call, not a
+  // call: nothing in the module ever returns from it, so pushing a return
+  // address for it left the stack one deep for the rest of the run.
+  const hostCall = inst.flow === Flow.CALL && callee >= 0 &&
+    callee < module.importedFuncs.length
+  // `call_indirect` shares its flow with `br_table` -- both go somewhere
+  // only execution knows -- but it is a call, and whatever it calls
+  // returns to it. As an indirect jump it pushed nothing, and every return
+  // from a function reached through a table was a return-stack miss.
+  const indirectCall = inst.op === 0x11
   const control = branch?.isReturn ?? false
     ? ControlKind.RET
-    : CONTROL_OF[inst.flow] ?? ControlKind.SEQ
+    : hostCall ? ControlKind.TRAP
+      : indirectCall ? ControlKind.CALL
+        : CONTROL_OF[inst.flow] ?? ControlKind.SEQ
   const known = branch && !branch.isReturn && branch.target >= 0
 
   const readsMem = inst.width > 0 && !inst.store
@@ -596,13 +610,13 @@ function toStatic(
     reads,
     writes,
     control,
-    staticTarget: known ? BigInt(branch.target) : callTarget(module, inst, callee),
+    staticTarget: known ? BigInt(branch.target) : hostCall ? NO_ADDRESS : callTarget(module, inst, callee),
     readsMem,
     writesMem,
     accessWidth: readsMem || writesMem ? inst.width : 0,
     // `memory.grow` moves the ground every other access stands on, and
     // `unreachable` ends the run.
-    serializing: inst.op === 0x40 || inst.flow === Flow.TRAP,
+    serializing: inst.op === 0x40 || inst.flow === Flow.TRAP || hostCall,
     origin: OperationOrigin.SEMANTIC,
     inst,
     depth,

@@ -169,7 +169,6 @@ export class MipsInterpreter implements Interpreter {
           )
         }
         this.next = arriving
-        this.taken = 1
       }
       into.pc[n] = pc
       into.nextPc[n] = this.next
@@ -205,9 +204,17 @@ export class MipsInterpreter implements Interpreter {
     if (index !== 0) this.r[index] = value >>> 0
   }
 
-  /** Where control goes after the delay slot, once a branch is taken. */
+  /**
+   * Where control goes after the delay slot, once a branch is taken.
+   *
+   * `taken` is recorded on the branch, not on its slot: the branch is the
+   * instruction whose outcome a predictor has to guess. Marking the slot
+   * instead left every branch looking untaken, so a timing model saw a
+   * perfectly predicted MIPS.
+   */
   private branchTo(target: bigint): void {
     this.pending = target
+    this.taken = 1
   }
 
   private address(inst: MipsInst): bigint {

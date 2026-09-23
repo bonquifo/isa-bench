@@ -48,7 +48,7 @@ import {
   type RealTargetRecord,
   type ResolvedHardwareSnapshot,
 } from './compare.ts'
-import { simulateTrace } from './simulateTrace.ts'
+import { TRACE_TIMING_MODEL_VERSION, simulateTrace } from './simulateTrace.ts'
 import { ISA_META, type IsaId, type Metrics } from './types.ts'
 import type { IsaBackend } from '../isa/backend.ts'
 import { RETURN_SEPARATOR } from '../isa/shipped.ts'
@@ -230,5 +230,13 @@ export async function runRealComparisonAsync(
 
   const isas = ran.map((snapshot) => snapshot.isa)
   const result = makeResult({ ...input, isas }, isas, built, gold, rows, ran, 'real-isa')
-  return { ...result, execution: { mode: 'real-isa', targets, unavailable } }
+  return {
+    ...result,
+    execution: {
+      mode: 'real-isa',
+      targets,
+      unavailable,
+      timingModelVersion: TRACE_TIMING_MODEL_VERSION,
+    },
+  }
 }

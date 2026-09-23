@@ -135,7 +135,7 @@ export function RealIsaLane() {
           </li>
           <li>
             <strong>Modelled:</strong> every number below except the program&apos;s own output
-            and return value. Cycles, cache behaviour and energy come from the same
+            and return value. Cycles, cache and branch behaviour come from the same
             deterministic model the other lanes use. Nothing here is measured on hardware.
           </li>
           <li>
@@ -259,16 +259,27 @@ export function RealIsaLane() {
 
               <div className="hud-panel p-4">
                 <h3 className="hud-title">Executed · {run.targetLabel}</h3>
-                <p className="text-sm text-white/55">Counted, not modelled.</p>
+                <p className="text-sm text-white/55">
+                  Counted, not modelled. Library code is included.
+                </p>
                 <dl className="mt-2 grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
-                  <Figure label="Instructions" value={count(run.metrics.instructions)} />
-                  <Figure label="Code bytes" value={count(run.metrics.codeBytes)} />
-                  <Figure label="Bytes fetched" value={count(run.metrics.fetchedBytes)} />
-                  <Figure label="Conditional branches" value={count(run.metrics.conditionalBranches)} />
-                  <Figure label="Calls" value={count(run.metrics.calls)} />
-                  <Figure label="Returns" value={count(run.metrics.returns)} />
-                  <Figure label="Indirect calls" value={count(run.metrics.indirectCalls)} />
-                  <Figure label="Loads + stores" value={count(run.metrics.mix.ld + run.metrics.mix.st)} />
+                  <Figure label="Instructions retired" value={count(run.metrics.instructions)} />
+                  <Figure label="Instruction bytes executed" value={count(run.metrics.executed!.instructionBytes)} />
+                  <Figure label="Code executed (distinct bytes)" value={count(run.metrics.executed!.codeFootprintBytes)} />
+                  <Figure label="Executable code (whole binary)" value={count(run.metrics.codeBytes)} />
+                  <Figure
+                    label="Data-memory instructions"
+                    value={`${count(run.metrics.executed!.memoryInstructions)} · ${count(run.metrics.executed!.loads)} read · ${count(run.metrics.executed!.stores)} write`}
+                  />
+                  <Figure
+                    label="Conditional branches"
+                    value={`${count(run.metrics.executed!.conditionalBranches)} · ${count(run.metrics.executed!.takenConditionalBranches)} taken`}
+                  />
+                  <Figure label="Calls / returns" value={`${count(run.metrics.executed!.calls)} / ${count(run.metrics.executed!.returns)}`} />
+                  <Figure label="Indirect jumps" value={count(run.metrics.executed!.indirectJumps)} />
+                  {run.metrics.executed!.platformTraps > 0 ? (
+                    <Figure label="Platform traps" value={count(run.metrics.executed!.platformTraps)} />
+                  ) : null}
                 </dl>
               </div>
 
@@ -280,12 +291,12 @@ export function RealIsaLane() {
                 </p>
                 <dl className="mt-2 grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
                   <Figure label="Model cycles" value={count(run.metrics.cycles)} />
-                  <Figure label="Model cycles / op" value={run.metrics.cpi.toFixed(3)} />
+                  <Figure label="Model cycles / instruction" value={run.metrics.cpi.toFixed(3)} />
                   <Figure label="I-cache misses" value={count(run.metrics.icMisses)} />
                   <Figure label="D-cache misses" value={count(run.metrics.dcMisses)} />
-                  <Figure label="Mispredicts" value={count(run.metrics.mispredicts)} />
+                  <Figure label="Branch mispredictions" value={count(run.metrics.mispredicts)} />
                   <Figure label="Return-stack misses" value={count(run.metrics.rasMisses)} />
-                  <Figure label="DRAM requests" value={count(run.metrics.dramRequests)} />
+                  <Figure label="Memory line requests" value={count(run.metrics.dramRequests)} />
                   <Figure label="Stall cycles" value={count(run.metrics.stalls)} />
                 </dl>
               </div>
@@ -293,7 +304,7 @@ export function RealIsaLane() {
               <div className="hud-panel p-4">
                 <h3 className="hud-title">Decoded instructions</h3>
                 <p className="text-sm text-white/55">
-                  Read from the real encoding, in the order first executed. Two-byte entries
+                  Read from the real encoding, in the order first run.metrics.executed!. Two-byte entries
                   are compressed instructions.
                 </p>
                 <pre className="guest-out mt-2 max-h-80 overflow-auto text-xs">

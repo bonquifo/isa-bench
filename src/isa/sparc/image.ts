@@ -17,8 +17,8 @@
  * it -- the image is addressed by program counter, and a retired chunk
  * can span many windows before the timing model walks it.
  *
- * The contract was frozen deliberately and has survived four backends
- * with one documented addition, so it is not being reopened for a
+ * The contract was frozen deliberately and had survived four backends
+ * with one documented addition, so it was not reopened for a
  * refinement to a timing model. What is done instead is stated plainly:
  *
  * **Window registers are identified window-relative, and the window
@@ -168,6 +168,27 @@ const CONTROL_OF: Readonly<Record<number, ControlKind>> = {
   [Flow.TRAP]: ControlKind.TRAP,
 }
 
+/**
+ * How an instruction transfers control, which for `jmpl` depends on its
+ * operands rather than its opcode.
+ *
+ * `jmpl` is the one indirect transfer, and the architecture spells calls
+ * and returns with it: linking into %o7 is a call through a register, and
+ * jumping to %i7+8 or %o7+8 while discarding the link is `ret` or `retl`.
+ * Treating every one as an indirect jump charged each return a redirect
+ * and left calls unpaired, so a return-address stack never saw one.
+ */
+function controlOf(inst: SparcInst): ControlKind {
+  if (inst.op === SPARC.JMPL) {
+    if (inst.rd === 15) return ControlKind.CALL
+    if (inst.rd === 0 && inst.immediate && inst.imm === 8 &&
+        (inst.rs1 === 15 || inst.rs1 === 31)) {
+      return ControlKind.RET
+    }
+  }
+  return CONTROL_OF[inst.flow]!
+}
+
 const CONDITION_NAME: readonly string[] = [
   'n', 'e', 'le', 'l', 'leu', 'cs', 'neg', 'vs',
   'a', 'ne', 'g', 'ge', 'gu', 'cc', 'pos', 'vc',
@@ -294,8 +315,8 @@ function toStatic(inst: SparcInst, addr: bigint): SparcStaticInst {
 
   const readsMem = LOAD_OPS.has(inst.op)
   const writesMem = STORE_OPS.has(inst.op)
-  const control = CONTROL_OF[inst.flow]!
-  const direct = control === ControlKind.COND || control === ControlKind.CALL
+  const control = controlOf(inst)
+  const direct = control === ControlKind.COND || inst.op === SPARC.CALL
 
   return {
     addr,
@@ -337,6 +358,8 @@ export class SparcImage implements ProgramImage {
   readonly entry: bigint
   readonly naming = SPARC_NAMING
   readonly codeBytes: number
+  /** Every control transfer has one: `call` links past it, `ret` adds 8. */
+  readonly delaySlotBytes = 4
   private readonly memory: GuestMemory
   private readonly cache = new Map<number, SparcStaticInst>()
   private readonly failed = new Set<number>()

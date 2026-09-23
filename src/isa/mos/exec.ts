@@ -237,13 +237,38 @@ export class MosInterpreter implements Interpreter {
   }
 
   private push(value: number): void {
+    this.noteStack(0x0100 | this.s)
     this.write(0x0100 | this.s, value)
     this.s = (this.s - 1) & 0xff
   }
 
   private pull(): number {
     this.s = (this.s + 1) & 0xff
+    this.noteStack(0x0100 | this.s)
     return this.read(0x0100 | this.s)
+  }
+
+  /**
+   * Widens this instruction's reported access to cover a stack byte.
+   *
+   * `jsr`, `rts`, `pha` and the rest move one to three bytes through the
+   * stack page, and those bytes are real memory traffic: this machine
+   * has no link register. Left unreported, a timing model saw them as
+   * accesses of no width at address zero.
+   */
+  private noteStack(address: number): void {
+    if (this.accessWidth === 0) {
+      this.access = BigInt(address)
+      this.accessWidth = 1
+      return
+    }
+    const low = Math.min(Number(this.access), address)
+    const high = Math.max(Number(this.access) + this.accessWidth - 1, address)
+    // A push or pull that wrapped around the stack page is not one range;
+    // the first byte stands for it.
+    if (high - low >= 3) return
+    this.access = BigInt(low)
+    this.accessWidth = high - low + 1
   }
 
   // ---------------------------------------------------------------------
@@ -471,7 +496,8 @@ export class MosInterpreter implements Interpreter {
           const high = (low & 0xff00) | ((low + 1) & 0x00ff)
           this.next = this.read(low) | (this.read(high) << 8)
           this.access = BigInt(low)
-          this.accessWidth = 1
+          // Both bytes of the pointer, unless the defect split them.
+          this.accessWidth = high === low + 1 ? 2 : 1
         } else {
           this.next = inst.target
         }

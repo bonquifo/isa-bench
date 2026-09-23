@@ -62,7 +62,7 @@ describe('in-order report evidence contract', () => {
     expect(baseline?.spillSlots).toBe(0)
     expect(other?.spillSlots).toBeGreaterThan(0)
     const html = renderToStaticMarkup(<Report result={result} />)
-    const spills = html.slice(html.indexOf('SPILLS'), html.indexOf('SPILLS') + 2000)
+    const spills = html.slice(html.indexOf('SPILL SLOTS'), html.indexOf('SPILL SLOTS') + 2000)
     expect(spills).toContain('∞')
     expect(spills).not.toContain('>0%<')
     expect(spills).toContain('>—<')

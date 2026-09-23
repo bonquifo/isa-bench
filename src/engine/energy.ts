@@ -52,6 +52,13 @@ export interface EnergyBreakdown {
 
 export function energyOf(args: {
   isa: IsaId
+  /**
+   * Overrides the ISA's nominal decode-energy weight. The lowering's
+   * weights stand in for decoders its invented streams do not have; the
+   * real-ISA path passes 1, so no target is weighted by a number nobody
+   * measured.
+   */
+  decodeEnergyScale?: number
   mix: Record<InstClass, number>
   operationOrigins?: Record<OperationOrigin, number>
   decodedBytes?: number
@@ -78,7 +85,7 @@ export function energyOf(args: {
   dcMisses?: number
   codeBytes?: number
 }): EnergyBreakdown {
-  const t = isaTiming(args.isa)
+  const decodeScale = args.decodeEnergyScale ?? isaTiming(args.isa).decodeEnergy
   const c = NOMINAL_ENERGY_COEFFICIENTS
   let operation = 0
   for (const cls of Object.keys(c.operationNj) as InstClass[]) {
@@ -90,7 +97,7 @@ export function energyOf(args: {
     }
   }
   const operationDecodeEnergyNj =
-    (operation + (args.decodedBytes ?? 0) * c.decodedByteNj) * t.decodeEnergy
+    (operation + (args.decodedBytes ?? 0) * c.decodedByteNj) * decodeScale
   const cacheEnergyNj =
     ((args.icLineAccesses ?? 0) + (args.dcLineAccesses ?? 0)) * c.l1LineAccessNj +
     ((args.l2Hits ?? 0) + (args.l2Misses ?? 0)) * c.l2LineAccessNj +

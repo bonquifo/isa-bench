@@ -74,6 +74,11 @@ export interface RealExecutionRecord {
   targets: RealTargetRecord[]
   /** Selected targets with no binary for this program, and why. */
   unavailable: { isa: IsaId; reason: string }[]
+  /**
+   * Which rules of the trace timing model produced the modelled figures.
+   * Absent on results made before it was recorded.
+   */
+  timingModelVersion?: string
 }
 
 export interface RealTargetRecord {

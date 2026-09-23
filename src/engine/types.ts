@@ -253,6 +253,40 @@ export interface Program {
   physRegsUsed: number
 }
 
+/**
+ * Facts about one real execution, counted from the retired instructions.
+ *
+ * Nothing here comes from the timing model: each is an exact count of what
+ * the verified interpreter executed, so two targets' figures differ only
+ * because their instruction sets, compilers and libraries do. Present on
+ * real-ISA rows only; the lowering has no real execution to count.
+ */
+export interface ExecutionCounts {
+  /** Encoded bytes of every instruction retired: what fetch had to read. */
+  instructionBytes: number
+  /** Instructions that read data memory, including implicit stack reads. */
+  loads: number
+  /** Instructions that wrote data memory, including implicit stack writes. */
+  stores: number
+  /** Instructions that read or wrote data memory; a read-modify-write counts once. */
+  memoryInstructions: number
+  conditionalBranches: number
+  /** Of those, how many were taken. */
+  takenConditionalBranches: number
+  /** Calls, direct and indirect. */
+  calls: number
+  returns: number
+  /** Jumps through a register that are neither calls nor returns. */
+  indirectJumps: number
+  /** Distinct instruction bytes executed at least once. */
+  codeFootprintBytes: number
+  /**
+   * Traps the platform took on the program's behalf and the reference
+   * handles invisibly: SPARC's register-window spills and fills.
+   */
+  platformTraps: number
+}
+
 export interface Metrics {
   isa: IsaId
   hardwareId: string
@@ -340,6 +374,8 @@ export interface Metrics {
   idleCoreCycles: number
   averageActiveCores: number
   averageStalledCores: number
+  /** Real-ISA rows only: exact counts of what executed. */
+  executed?: ExecutionCounts
 }
 
 export const MEM_SIZE = 2 << 20
