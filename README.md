@@ -63,8 +63,9 @@ Programs can come from three places:
 - **Built-in workloads** — `int_sum`, `dot_product`, `saxpy`, `memcpy`,
   `matmul`, `insertion_sort`, `binary_search`, `sieve`, `checksum`,
   `pointer_chase`, `fir`, `fp_sum`, each with an adjustable size `N` and seed
-- **Your own C** — written in the editor, compiled by the built-in Guest C
-  compiler
+- **Your own C** — written in the editor, and compiled in the app by clang
+  for all eight instruction sets (see below), as well as by the built-in
+  Guest C compiler for the model lowering
 - **Custom IR** — the project's own intermediate representation, if you want to
   control the instruction stream directly
 
@@ -73,23 +74,34 @@ Programs can come from three places:
 RISC-V, AArch64, x86-64, MIPS32, POWER, SPARC V8, WebAssembly and the MOS
 6502 — and each can be run two ways.
 
-**Real instruction sets.** For the fourteen canned C programs, every target
-runs the program compiled by clang for that architecture — **RV64GC**,
-**AArch64**, **x86-64**, **MIPS32**, **POWER**, **SPARC V8**,
-**WebAssembly** and the **MOS 6502** — linked against a real C library and
-executed by an interpreter verified against a reference. This is the
-default for those programs, because it is the comparison the app exists to
+**Real instruction sets.** For the fourteen canned C programs and for
+your own C, every target runs the program compiled by clang for that
+architecture — **RV64GC**, **AArch64**, **x86-64**, **MIPS32**, **POWER**,
+**SPARC V8**, **WebAssembly** and the **MOS 6502** — linked against a real
+C library and executed by an interpreter verified against a reference.
+This is the default for C, because it is the comparison the app exists to
 make: the instruction counts, encodings and register pressure are the
 architectures' own, not a caricature of them.
 
-**Model lowering.** Everything else — the built-in kernels, your own C and
-custom IR — runs on **pseudo-backends**: models of how each architecture's
-instruction set shapes a program, not real assemblers. Their output is a
-modeled lowering stream, not executable machine code or vendor
-disassembly. They are there because the app cannot compile at runtime:
-the real binaries were built ahead of time, and only for the canned
-programs. A canned program can be switched to the lowering too, to see the
-difference.
+The canned programs' binaries were compiled ahead of time and ship with
+the app. Yours is compiled when you run it, inside the app and offline:
+the app carries LLVM 23.1.0 — clang and lld — built to WebAssembly, and
+llvm-mos built the same way for the 6502, with the C libraries each target
+links. They are the same compilers, libraries and flags the shipped
+binaries were built with, which the test suite checks by rebuilding the
+shipped binaries in the app and requiring them byte for byte. A program a
+target cannot compile — the 6502 has 64 KiB and a 16-bit `int` — is
+listed in the report with the compiler's own message, and the other
+targets still run.
+
+**Model lowering.** Everything else — the built-in kernels and custom IR —
+runs on **pseudo-backends**: models of how each architecture's instruction
+set shapes a program, not real assemblers. Their output is a modeled
+lowering stream, not executable machine code or vendor disassembly. They
+are there because IR is not C, and no C compiler can build it. Any C
+program can be switched to the lowering too, to see the difference; Guest
+C's modelled-multicore built-ins (`__tid`, `__nthreads`, `__barrier`) run
+only there.
 
 A comparison table is always one or the other and says which. Real rows
 and lowered rows side by side would invite reading both as the same kind
@@ -245,6 +257,20 @@ npm run desktop:dev  # Electron shell against the dev server
 npm test             # full test suite
 npm run verify       # typecheck + lint + test + build
 ```
+
+The in-app compiler lives in `toolchain/`, which is not committed: it is
+two builds of LLVM to WebAssembly and takes hours to make. Fetch the
+published bundle, checked against the checksums in
+`tools/isa/toolchain.lock.json`:
+
+```bash
+node scripts/fetch-toolchain.mjs
+```
+
+or build it from source with Docker (`npx vite-node
+tools/isa/build-toolchain.ts`, after building the images its header lists).
+Without it the app still runs, and says your C will use the model lowering;
+packaging refuses to run without it.
 
 Source layout:
 

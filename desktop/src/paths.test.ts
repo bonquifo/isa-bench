@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { desktopFromMain } from './paths.ts'
+import { desktopFromMain, toolchainFileFor } from './paths.ts'
 
 describe('desktop layout', () => {
   it('finds the built UI bundle beside the packaged app', () => {
@@ -41,6 +41,28 @@ describe('desktop layout', () => {
       const built = readFileSync(compiled, 'utf8')
       expect(built).toContain("require(\"electron\")")
       expect(built).not.toMatch(/^\s*import\s/m)
+    }
+  })
+
+  it('finds the in-app compiler in the packaged resources', () => {
+    const root = mkdtempSync(join(tmpdir(), 'isa-desktop-toolchain-'))
+    mkdirSync(join(root, 'resources', 'toolchain'), { recursive: true })
+    writeFileSync(join(root, 'resources', 'toolchain', 'llvm.wasm'), '')
+    const main = pathToFileURL(join(root, 'app', 'desktop', 'dist', 'main.js')).href
+    expect(desktopFromMain(main, [], {}, join(root, 'resources')).layout.toolchainDir)
+      .toBe(join(root, 'resources', 'toolchain'))
+    // Without the compiler the layout says so, rather than pointing at nothing.
+    const bare = mkdtempSync(join(tmpdir(), 'isa-desktop-no-toolchain-'))
+    const bareMain = pathToFileURL(join(bare, 'desktop', 'dist', 'main.js')).href
+    expect(desktopFromMain(bareMain, [], {}, join(bare, 'resources')).layout.toolchainDir).toBeUndefined()
+  })
+
+  it('serves the toolchain files by exact name and nothing else', () => {
+    const dir = join(tmpdir(), 'toolchain')
+    expect(toolchainFileFor(dir, '/llvm.wasm')).toBe(join(dir, 'llvm.wasm'))
+    expect(toolchainFileFor(dir, '/sysroot.tar')).toBe(join(dir, 'sysroot.tar'))
+    for (const hostile of ['/../package.json', '/..%2Fpackage.json', '/llvm.wasm/../x', '/', '/other.wasm']) {
+      expect(toolchainFileFor(dir, hostile)).toBeNull()
     }
   })
 

@@ -11,11 +11,12 @@
  *
  * Three rules, each there to stop the result claiming more than it has.
  *
- * **Only the canned programs, and only as shipped.** The binaries were
- * compiled ahead of time from exactly the source in the catalogue, because
- * the app cannot compile at runtime. A replay whose source differs from
- * the catalogue's has no binary, and is refused rather than run against
- * one built from something else.
+ * **A binary is always built from the source being compared.** A canned
+ * program's binaries were compiled ahead of time from exactly the source in
+ * the catalogue; a replay whose source differs from it is refused rather
+ * than run against one built from something else. The user's own C has no
+ * binary until the provider compiles one, with the same compilers, which a
+ * target that cannot compile it records as the reason it is missing.
  *
  * **Every row answers to the same reference.** The IR interpreter still
  * runs, and each target's return value and output must equal it. A
@@ -71,17 +72,61 @@ export interface RealTargetBinding {
 
 export type RealTargetProvider = (isa: IsaId) => RealTargetBinding | undefined
 
+/** The program id a user's own C program is compiled and run under. */
+export const CUSTOM_PROGRAM_ID = 'custom'
+
+/**
+ * A target could not build the user's program. Thrown by a compiling
+ * provider's `binary`; the comparison records it as that target's reason
+ * for sitting out, and carries on with the others.
+ */
+export class TargetBuildFailure extends Error {
+  readonly isa: IsaId
+  readonly stage: 'compile' | 'link'
+
+  constructor(isa: IsaId, stage: 'compile' | 'link', message: string) {
+    super(message)
+    this.name = 'TargetBuildFailure'
+    this.isa = isa
+    this.stage = stage
+  }
+}
+
 /**
  * Whether a comparison input can run on real instruction sets at all: a
- * canned C program whose effective source is the catalogue's own.
+ * canned C program whose effective source is the catalogue's own, or a
+ * user's own C program, which the app compiles itself.
  */
 export function realExecutionAvailable(
   input: Pick<CompareInput, 'workloadId' | 'effectiveSourceOverride'>,
 ): boolean {
+  if (input.workloadId === 'custom-c') return true
   const canned = cExampleByWorkloadId(input.workloadId)
   if (!canned) return false
   return input.effectiveSourceOverride === undefined ||
     input.effectiveSourceOverride === canned.source
+}
+
+/**
+ * Why a user's C program cannot run on real instruction sets, or null.
+ *
+ * Guest C has three built-ins no C library has -- the worker id, the worker
+ * count and a barrier -- because the lowering models a multicore machine.
+ * A real target runs one thread, so a program that uses them has no real
+ * counterpart. And the driver reports the answer as an `int`, so a program
+ * whose `main` returns a double would be misreported.
+ */
+export function realExecutionRefusal(source: string): string | null {
+  const builtin = /\b(__tid|__nthreads|__barrier)\s*\(/.exec(source)
+  if (builtin) {
+    return `This program calls ${builtin[1]}(), a Guest C built-in for the modelled ` +
+      'multicore. Real targets run one thread, so it runs on the model lowering only.'
+  }
+  if (/\bdouble\s+main\s*\(/.test(source)) {
+    return 'This program\'s main returns a double. Real targets report an int, so it runs ' +
+      'on the model lowering only.'
+  }
+  return null
 }
 
 /** A generous ceiling: the heaviest corpus program retires under 3M. */
@@ -115,6 +160,12 @@ function observe(
   return { stdout: raw, returned: Number(decoder.decode(interpreter.stderr())) }
 }
 
+/** The first line of a diagnostic that says what went wrong. */
+function firstLine(message: string): string {
+  const lines = message.split('\n').map((line) => line.trim()).filter(Boolean)
+  return lines.find((line) => /error/i.test(line)) ?? lines[0] ?? 'no diagnostic'
+}
+
 async function yieldToUi(signal?: AbortSignal): Promise<void> {
   await new Promise((resolve) => globalThis.setTimeout(resolve, 0))
   if (signal?.aborted) throw signal.reason ?? new DOMException('Aborted', 'AbortError')
@@ -128,12 +179,18 @@ export async function runRealComparisonAsync(
 ): Promise<CompareResult> {
   const signal = options.signal
   const canned = cExampleByWorkloadId(input.workloadId)
-  if (!canned || !realExecutionAvailable(input)) {
+  const custom = input.workloadId === 'custom-c'
+  if (!realExecutionAvailable(input) || (!canned && !custom)) {
     throw new Error(
-      'Real-ISA execution is available only for the canned C programs, as shipped: ' +
-      'their binaries were compiled ahead of time from exactly that source.',
+      'Real-ISA execution is available for the canned C programs, as shipped, and for ' +
+      'your own C program, which the app compiles itself.',
     )
   }
+  if (custom) {
+    const refusal = realExecutionRefusal(input.customSource ?? '')
+    if (refusal) throw new Error(refusal)
+  }
+  const programId = canned ? canned.id : CUSTOM_PROGRAM_ID
 
   onProgress({ ratio: 0.08, phase: 'REFERENCE', detail: 'reference interpreter' })
   await yieldToUi(signal)
@@ -158,12 +215,22 @@ export async function runRealComparisonAsync(
     const label = binding?.label ?? ISA_META[isa].short
     onProgress({
       ratio: 0.12 + (0.8 * i) / Math.max(1, selected.length),
-      phase: 'EXECUTE',
-      detail: `${label} · real instructions + model`,
+      phase: custom ? 'COMPILE' : 'EXECUTE',
+      detail: custom ? `${label} · clang, then real instructions + model` : `${label} · real instructions + model`,
     })
     await yieldToUi(signal)
 
-    const bytes = binding ? await binding.binary(canned.id) : null
+    let bytes: Uint8Array | null = null
+    try {
+      bytes = binding ? await binding.binary(programId) : null
+    } catch (error) {
+      if (!(error instanceof TargetBuildFailure)) throw error
+      unavailable.push({
+        isa,
+        reason: `${label} could not ${error.stage} this program: ${firstLine(error.message)}`,
+      })
+      continue
+    }
     if (!binding || !bytes) {
       unavailable.push({
         isa,
@@ -222,7 +289,8 @@ export async function runRealComparisonAsync(
   }
 
   if (rows.length === 0) {
-    throw new Error('None of the selected targets has a binary for this program.')
+    const reasons = unavailable.map((item) => item.reason).join('\n')
+    throw new Error(`None of the selected targets could run this program.\n${reasons}`)
   }
 
   onProgress({ ratio: 1, phase: 'MATCH', detail: 'every real target checked against the reference' })

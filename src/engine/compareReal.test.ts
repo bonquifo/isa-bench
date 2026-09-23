@@ -4,9 +4,11 @@ import { runComparison, type CompareInput } from './compare.ts'
 import { parseCompareResult } from './compareSchema.ts'
 import {
   realExecutionAvailable,
+  realExecutionRefusal,
   runRealComparisonAsync,
   type RealTargetProvider,
 } from './compareReal.ts'
+import { compilingProvider, type CompileFn } from '../compiler/provider.ts'
 import { DEFAULT_PROFILE_ID } from './hardware.ts'
 import { fixtureRealProvider } from './realProvider.node.ts'
 import { ALL_ISAS, IsaId } from './types.ts'
@@ -89,13 +91,21 @@ describe('what the real comparison refuses, and what it states', () => {
     const changed = input('fib', { effectiveSourceOverride: '/* edited */ int main(void) { return 1; }' })
     expect(realExecutionAvailable(changed)).toBe(false)
     await expect(runRealComparisonAsync(changed, fixtureRealProvider, quiet))
-      .rejects.toThrow(/only for the canned C programs, as shipped/)
+      .rejects.toThrow(/for the canned C programs, as shipped/)
   })
 
-  it('refuses a workload that is not a canned program', async () => {
+  it('refuses a workload that is neither a canned program nor C the user wrote', async () => {
+    // A built-in IR kernel has no C source for any compiler to build.
+    const kernel = input('fib', { workloadId: 'dot_product' })
+    expect(realExecutionAvailable(kernel)).toBe(false)
+    await expect(runRealComparisonAsync(kernel, fixtureRealProvider, quiet)).rejects.toThrow()
+  })
+
+  it('has no binary for custom C unless something compiles it', async () => {
+    // The shipped provider knows only the catalogue's programs.
     const custom = input('fib', { workloadId: 'custom-c', customSource: 'int main(void){return 0;}' })
-    expect(realExecutionAvailable(custom)).toBe(false)
-    await expect(runRealComparisonAsync(custom, fixtureRealProvider, quiet)).rejects.toThrow()
+    await expect(runRealComparisonAsync(custom, fixtureRealProvider, quiet))
+      .rejects.toThrow(/None of the selected targets could run this program/)
   })
 
   it('accepts the catalogue source replayed verbatim', () => {
@@ -142,5 +152,66 @@ describe('what the real comparison refuses, and what it states', () => {
     await expect(runRealComparisonAsync(
       input('fib', { isas: [IsaId.RISCV] }), lying, quiet))
       .rejects.toThrow(/but the IR reference result is 55/)
+  })
+})
+
+describe('the real comparison on a program the user wrote', () => {
+  const fib = C_EXAMPLES.find((example) => example.id === 'fib')!
+  const custom = (overrides: Partial<CompareInput> = {}): CompareInput => ({
+    workloadId: 'custom-c',
+    customSource: fib.source,
+    n: 1,
+    seed: 1,
+    isas: [IsaId.RISCV, IsaId.ARM],
+    hardwareMode: 'same',
+    profileId: DEFAULT_PROFILE_ID,
+    execution: 'real-isa',
+    ...overrides,
+  })
+  /** A compiler that hands back what the fixture builder built. */
+  const shipped: CompileFn = async (isa) => {
+    const bytes = await fixtureRealProvider(isa)!.binary('fib')
+    return bytes ? { ok: true, binary: bytes, warnings: '' } : { ok: false, stage: 'compile', message: 'none' }
+  }
+
+  it('is offered for custom C, which the app compiles itself', () => {
+    expect(realExecutionAvailable({ workloadId: 'custom-c' })).toBe(true)
+  })
+
+  it('runs what the compiler produced and checks it against the reference', async () => {
+    const result = await runRealComparisonAsync(
+      custom(), compilingProvider(fixtureRealProvider, fib.source, shipped), quiet)
+    expect(result.rows.map((row) => row.result)).toEqual([55, 55])
+    expect(result.execution?.unavailable).toEqual([])
+  })
+
+  it('records a target that could not compile the program, and runs the rest', async () => {
+    const failsOnArm: CompileFn = async (isa, source, channel) => isa === IsaId.ARM
+      ? { ok: false, stage: 'compile', message: "prog.c:3:5: error: use of undeclared identifier 'y'" }
+      : shipped(isa, source, channel)
+    const result = await runRealComparisonAsync(
+      custom(), compilingProvider(fixtureRealProvider, fib.source, failsOnArm), quiet)
+    expect(result.rows.map((row) => row.isa)).toEqual([IsaId.RISCV])
+    expect(result.execution?.unavailable).toEqual([{
+      isa: IsaId.ARM,
+      reason: "AArch64 could not compile this program: prog.c:3:5: error: use of undeclared identifier 'y'",
+    }])
+  })
+
+  it('says why when no target could build it', async () => {
+    const never: CompileFn = async () => ({ ok: false, stage: 'link', message: 'ld.lld: error: undefined symbol: nope' })
+    await expect(runRealComparisonAsync(
+      custom(), compilingProvider(fixtureRealProvider, fib.source, never), quiet))
+      .rejects.toThrow(/None of the selected targets could run this program\.\nRV64GC could not link this program: ld.lld: error: undefined symbol: nope/)
+  })
+
+  it('refuses a program that has no real counterpart, saying why', async () => {
+    expect(realExecutionRefusal('int main(void) { return __tid(); }')).toMatch(/__tid\(\).*one thread/)
+    expect(realExecutionRefusal('double main(void) { return 1.5; }')).toMatch(/returns a double/)
+    expect(realExecutionRefusal(fib.source)).toBeNull()
+    await expect(runRealComparisonAsync(
+      custom({ customSource: 'int main(void) { __barrier(); return 0; }' }),
+      compilingProvider(fixtureRealProvider, '', shipped), quiet))
+      .rejects.toThrow(/__barrier\(\)/)
   })
 })

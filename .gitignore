@@ -17,3 +17,6 @@ release
 .DS_Store
 *.suo
 *.sw?
+
+# The in-app compiler, rebuilt by tools/isa/build-toolchain.ts; tens of MB.
+/toolchain/

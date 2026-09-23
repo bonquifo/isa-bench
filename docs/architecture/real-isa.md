@@ -1531,8 +1531,8 @@ and a **lane** of its own for looking at one target at a time.
 
 ### In the comparison
 
-For the fourteen canned C programs, the comparison runs every target on its
-real binary by default. The workload panel offers the choice — *Real ISA*
+For C -- the fourteen canned programs and the user's own -- the comparison
+runs every target on its real binary by default. The workload panel offers the choice — *Real ISA*
 or *Model lowering* — and the real path is
 [compareReal.ts](../../src/engine/compareReal.ts): for each target it loads
 the binary clang compiled from that program, runs the verified interpreter,
@@ -1560,11 +1560,68 @@ must still return one its `int` can hold. Where a target has no binary for
 a program at all (`struct`, on the 6502), the others run and the report
 names the gap.
 
-The rest of the comparison's workloads stay on the lowering, and not by
-choice: the app cannot compile at runtime, so the built-in IR kernels, your
-own C and custom IR have no binaries. A canned program whose saved source
-differs from the catalogue's is refused on the real path for the same
-reason rather than run against a binary built from something else.
+The rest of the comparison's workloads -- the built-in IR kernels and
+custom IR -- stay on the lowering, because they are not C and no C compiler
+can build them. A saved canned program whose source differs from the
+catalogue's is refused on the real path rather than run against a binary
+built from something else; pasted into the editor as the user's own C, it
+is compiled like any other.
+
+### Your own C, compiled in the app
+
+The user's program has no binary shipped for it, so the app compiles one,
+offline, with the compilers the shipped binaries came from. It carries LLVM
+23.1.0's clang and lld built to WebAssembly
+([Dockerfile.clang-wasm](../../tools/isa/Dockerfile.clang-wasm)), llvm-mos
+built the same way for the 6502
+([Dockerfile.mos-wasm](../../tools/isa/Dockerfile.mos-wasm)), and each
+target's C library, start files and compiler-rt, copied out of the same
+images the fixture builders use
+([build-toolchain.ts](../../tools/isa/build-toolchain.ts)). The compile runs
+in a worker, against an in-memory filesystem, through a WASI shim
+([src/compiler](../../src/compiler)).
+
+WebAssembly has no processes, so the clang driver cannot start the linker
+itself. Each target is two runs instead: the compile with the fixture
+builder's flags, then the link the native driver would have run, spelled
+out argument by argument as `clang -###` printed it. The 6502 goes further
+and runs the front end directly (`-cc1`), because the llvm-mos driver takes
+its platform flags from configuration files beside its own executable.
+SPARC is linked by the project's own static linker
+([sparcLink.ts](../../src/compiler/sparcLink.ts)), since lld cannot link
+32-bit SPARC; on all fourteen corpus programs its output runs to the same
+output as the GNU-linked fixtures.
+
+**The test is byte identity.** The same compiler, libraries and arguments
+can only produce the same binary, so the suite rebuilds the shipped
+binaries in the app and requires them byte for byte, for the five musl
+targets and the 6502 on every corpus program
+([toolchain.deep.test.ts](../../src/compiler/toolchain.deep.test.ts)).
+SPARC's linker and WebAssembly's differ from the fixture builders' by
+construction, so those two are held to the reference's answers instead.
+Getting to identity found three things:
+
+- The WASI port of LLVM (YoWASP's patch) returned a stale `errno` from
+  every file close, so clang reported every object it wrote as an I/O
+  failure. Fixed in the patch.
+- A build from the release tarball does not know its own commit, and clang
+  and lld write it into every ELF's `.comment`: the only difference in the
+  musl binaries. The build now pins it.
+- The committed 6502 corpus images were not the ones the pinned SDK image
+  produces from the committed sources -- every one differed, while every
+  recorded output agreed. They were regenerated from the image, and the
+  in-app build reproduces the regenerated ones exactly.
+
+A program a target cannot compile is recorded with the compiler's own
+message, and the other targets run: the 6502 refuses `struct` in the app
+exactly as it did for the fixture builder.
+
+The toolchain is about 230 MB uncompressed and is not committed. Packaging
+refuses to run without it, and checks every file against
+[toolchain.lock.json](../../tools/isa/toolchain.lock.json);
+[fetch-toolchain.mjs](../../scripts/fetch-toolchain.mjs) downloads the
+published bundle and checks it against the same lock, which is how CI gets
+it. An app built without it says so, and runs the user's C on the lowering.
 
 Saved results record which path made them. One saved before this existed
 carries no mode and replays on the lowering, with its fingerprint
@@ -1650,9 +1707,8 @@ claims from the same list.
 
 ### What is shared by both
 
-- **The programs are fixed.** The app cannot compile at runtime — the minimal
-  clang image is 912 MB and needs Docker — so both run binaries built ahead
-  of time. Editing the C and re-running stays a lowering feature.
+- **The canned programs are fixed.** Both run binaries built ahead of
+  time; only the comparison compiles, and only a program that has none.
 - **The shipped bytes are the verified bytes.** Both load the same corpus
   files the differential suite compares against its references, not a
   rebuild of them. A test in each backend asserts that.
@@ -1722,6 +1778,17 @@ docker build -f Dockerfile.mos         -t isa-sim/mos:23.0.1 .
 | `sparc-picolibc` | picolibc 1.8.10, built with the same clang | SPARC's libc |
 | `wasi` | WASI SDK 33 and wasmtime 48.0.1 | WebAssembly, and its reference |
 | `mos` | the llvm-mos SDK 23.0.1 and `mos-sim` | the 6502 |
+| `clang-wasm` | clang, lld and llvm-ar 23.1.0, built to WebAssembly | the in-app compiler |
+| `mos-wasm` | llvm-mos's clang and lld, built to WebAssembly | the in-app compiler, for the 6502 |
+
+The two WebAssembly compilers take a long while to build and are needed
+only to rebuild the app's toolchain bundle:
+
+```
+docker build -f Dockerfile.clang-wasm  -t isa-bench/clang-wasm:23.1.0 .
+docker build -f Dockerfile.mos-wasm    -t isa-bench/mos-wasm:23.0.1 .
+cd ../.. && npx vite-node tools/isa/build-toolchain.ts
+```
 
 The initial stack pointer recorded in each lockstep fixture comes from
 qemu and varies between captures, because qemu-user randomises it; the

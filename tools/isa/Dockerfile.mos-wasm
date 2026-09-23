@@ -1,0 +1,85 @@
+# llvm-mos -- the 6502 compiler -- compiled to WebAssembly, so the app can
+# compile a user's C program for the 6502 itself.
+#
+#   docker build -f tools/isa/Dockerfile.mos-wasm -t isa-bench/mos-wasm:23.0.1 tools/isa
+#
+# The source is the exact llvm-mos commit the pinned SDK (isa-sim/mos:23.0.1,
+# `clang --version` reports it) was built from, fetched as GitHub's archive
+# of that commit and checked against a pinned SHA-256. It is built as the
+# llvm-mos project builds its releases -- the MOS target only, MinSizeRel,
+# per clang/cmake/caches/MOS.cmake -- plus the same WASI host patch as the
+# upstream LLVM build (Dockerfile.clang-wasm).
+#
+# The SDK's platform libraries are not rebuilt: build-toolchain.ts copies
+# them out of the pinned SDK image, so a program compiled in the app links
+# against exactly what the fixtures linked against.
+ARG BASE=debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+ARG WASI=isa-sim/wasi:33.0-48.0.1
+
+FROM ${WASI} AS wasi
+
+FROM ${BASE} AS source
+ARG MOS_COMMIT=c798c31416f72b395c658b5502d281a162387ab1
+ARG MOS_SHA256=338b3bb662a8eb4ad5a21bf4a68b35587c1f9f6bce6ba81f7c18f1c4880f2c6d
+ARG PATCH_SHA256=24c0d6deb7e0303f4e740a53ef7c15e106424bdb475662aa7c1d8e5a6e66cfb4
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl patch \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --fail --location --proto '=https' --tlsv1.2 \
+      "https://github.com/llvm-mos/llvm-mos/archive/${MOS_COMMIT}.tar.gz" -o /tmp/mos.tar.gz \
+ && echo "${MOS_SHA256}  /tmp/mos.tar.gz" | sha256sum --check --strict \
+ && mkdir /src && tar -xzf /tmp/mos.tar.gz -C /src --strip-components=1 \
+ && rm /tmp/mos.tar.gz
+COPY clang-wasm/wasi-host-mos.patch /tmp/wasi-host.patch
+RUN echo "${PATCH_SHA256}  /tmp/wasi-host.patch" | sha256sum --check --strict \
+ && cd /src && patch -p1 --no-backup-if-mismatch < /tmp/wasi-host.patch
+
+FROM ${BASE} AS toolchain
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends cmake ninja-build python3 g++ \
+ && rm -rf /var/lib/apt/lists/*
+
+FROM toolchain AS tblgen
+COPY --from=source /src /src
+RUN cmake -G Ninja -B /tblgen -S /src/llvm \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLVM_TARGETS_TO_BUILD= -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=MOS \
+      -DLLVM_ENABLE_PROJECTS=clang \
+      -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_DOCS=OFF \
+      -DCLANG_INCLUDE_TESTS=OFF -DCLANG_BUILD_TOOLS=OFF \
+ && cmake --build /tblgen --target llvm-tblgen clang-tblgen llvm-min-tblgen
+
+FROM toolchain AS build
+COPY --from=source /src /src
+COPY --from=tblgen /tblgen/bin /tblgen/bin
+COPY --from=wasi /opt/wasi-sdk /opt/wasi-sdk
+COPY clang-wasm/Toolchain-WASI.cmake /Toolchain-WASI.cmake
+RUN cmake -G Ninja -B /build -S /src/llvm \
+      -DCMAKE_TOOLCHAIN_FILE=/Toolchain-WASI.cmake \
+      -DLLVM_NATIVE_TOOL_DIR=/tblgen/bin \
+      -DCMAKE_BUILD_TYPE=MinSizeRel \
+      -DLLVM_ENABLE_ASSERTIONS=OFF \
+      -DLLVM_BUILD_SHARED_LIBS=OFF -DLLVM_ENABLE_PIC=OFF -DLLVM_BUILD_STATIC=ON \
+      -DLLVM_ENABLE_THREADS=OFF \
+      -DLLVM_ENABLE_ZLIB=OFF -DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBXML2=OFF \
+      -DLLVM_ENABLE_TERMINFO=OFF -DLLVM_ENABLE_LIBEDIT=OFF \
+      -DLLVM_BUILD_RUNTIME=OFF -DLLVM_BUILD_TOOLS=OFF -DLLVM_BUILD_UTILS=OFF \
+      -DLLVM_INCLUDE_UTILS=OFF -DLLVM_INCLUDE_RUNTIMES=OFF \
+      -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_BENCHMARKS=OFF \
+      -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_DOCS=OFF \
+      -DLLVM_TARGETS_TO_BUILD= -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=MOS \
+      -DLLVM_DEFAULT_TARGET_TRIPLE=mos-unknown-unknown \
+      -DLLVM_ENABLE_PROJECTS="clang;lld" \
+      -DLLVM_TOOL_LLVM_DRIVER_BUILD=ON \
+      -DCLANG_ENABLE_ARCMT=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+      -DCLANG_INCLUDE_TESTS=OFF -DCLANG_BUILD_TOOLS=OFF -DCLANG_INCLUDE_DOCS=OFF \
+      -DCLANG_BUILD_EXAMPLES=OFF \
+      -DCLANG_LINKS_TO_CREATE="clang" \
+      -DLLD_BUILD_TOOLS=OFF \
+ && cmake --build /build --target llvm-driver \
+ && mkdir -p /out \
+ && cp /build/bin/llvm /out/mos.wasm
+
+FROM scratch
+COPY --from=build /out /

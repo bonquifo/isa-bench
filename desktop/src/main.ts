@@ -1,9 +1,22 @@
-import { app, BrowserWindow, Menu, shell } from 'electron'
+import { app, BrowserWindow, Menu, net, protocol, shell } from 'electron'
 import { join } from 'node:path'
-import { desktopFromMain } from './paths.js'
+import { pathToFileURL } from 'node:url'
+import { desktopFromMain, toolchainFileFor } from './paths.js'
 
-const started = desktopFromMain(import.meta.url, process.argv, process.env)
+const started = desktopFromMain(import.meta.url, process.argv, process.env, process.resourcesPath)
 let window: BrowserWindow | undefined
+
+/**
+ * The in-app compiler is tens of megabytes of WebAssembly and libraries,
+ * too large to inline into the bundle the way the shipped binaries are,
+ * and a page loaded from file:// cannot fetch a sibling file. So it is
+ * served under its own scheme, read-only, from the app's resources.
+ */
+const TOOLCHAIN_SCHEME = 'isa-toolchain'
+protocol.registerSchemesAsPrivileged([{
+  scheme: TOOLCHAIN_SCHEME,
+  privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true },
+}])
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -19,7 +32,22 @@ app.on('window-all-closed', () => {
   app.quit()
 })
 
+function serveToolchain(): void {
+  const dir = started.layout.toolchainDir
+  protocol.handle(TOOLCHAIN_SCHEME, async (request) => {
+    const file = dir ? toolchainFileFor(dir, new URL(request.url).pathname) : null
+    if (!file) return new Response('not found', { status: 404 })
+    const response = await net.fetch(pathToFileURL(file).toString())
+    const headers = new Headers(response.headers)
+    // The page and its workers are file:// documents, a different origin.
+    headers.set('Access-Control-Allow-Origin', '*')
+    if (file.endsWith('.wasm')) headers.set('Content-Type', 'application/wasm')
+    return new Response(response.body, { status: response.status, headers })
+  })
+}
+
 async function start(): Promise<void> {
+  serveToolchain()
   if (process.platform === 'darwin') {
     Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'viewMenu' }]))
   } else {

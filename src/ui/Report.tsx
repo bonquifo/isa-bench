@@ -531,6 +531,16 @@ function RealProtocol({ result }: { result: CompareResult }) {
         deterministic educational software model, with no physical hardware measurements or
         performance prediction.
       </p>
+      {result.workloadId === 'custom-c' ? (
+        <p>
+          This program is yours, so it was compiled here, in the app: by LLVM 23.1.0 built to
+          WebAssembly, and for the 6502 by llvm-mos built the same way -- the same compilers, and
+          the same libraries, the built-in programs were compiled with -- at -O2 (-Os on the
+          6502, whose 64 KiB will not hold what -O2 inlines) with signed overflow defined to wrap,
+          as Guest C does. A target that could not compile it is listed below with the
+          compiler&apos;s own message.
+        </p>
+      ) : null}
       <p>
         Every row answers to the IR interpreter reference: its return value and its output must
         equal the reference&apos;s, or the run is rejected. The one exception is stated rather than

@@ -22,6 +22,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The in-app compiler, so its tests run here rather than skip. Built
+      # by tools/isa/build-toolchain.ts, published as a release, and held to
+      # the checksums tools/isa/toolchain.lock.json pins.
+      - run: node scripts/fetch-toolchain.mjs
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
@@ -57,6 +61,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: node scripts/fetch-toolchain.mjs
       - run: npm run ${{ matrix.script }}
         env:
           # Unsigned builds; signing needs certificates this workflow has none of.

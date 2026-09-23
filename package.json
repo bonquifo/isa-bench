@@ -20,12 +20,13 @@
     "desktop:compile": "tsc -b desktop/tsconfig.json --pretty false",
     "desktop:dev": "npm run desktop:compile && concurrently -k -n web,desktop \"vite\" \"electron . --dev\"",
     "desktop:build": "npm run build && npm run desktop:compile",
-    "desktop:pack": "npm run desktop:build && electron-builder --publish never",
-    "desktop:pack:win": "npm run desktop:build && electron-builder --win nsis portable --publish never",
-    "desktop:pack:linux": "npm run desktop:build && electron-builder --linux AppImage tar.gz --publish never",
-    "desktop:pack:mac": "npm run desktop:build && electron-builder --mac dmg zip --publish never"
+    "desktop:pack": "npm run desktop:build && node scripts/check-toolchain.mjs && electron-builder --publish never",
+    "desktop:pack:win": "npm run desktop:build && node scripts/check-toolchain.mjs && electron-builder --win nsis portable --publish never",
+    "desktop:pack:linux": "npm run desktop:build && node scripts/check-toolchain.mjs && electron-builder --linux AppImage tar.gz --publish never",
+    "desktop:pack:mac": "npm run desktop:build && node scripts/check-toolchain.mjs && electron-builder --mac dmg zip --publish never"
   },
   "devDependencies": {
+    "@bjorn3/browser_wasi_shim": "^0.4.2",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -96,6 +97,18 @@
       ],
       "icon": "desktop/icon.png",
       "category": "Development"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "toolchain",
+        "to": "toolchain",
+        "filter": [
+          "llvm.wasm",
+          "mos.wasm",
+          "sysroot.tar",
+          "manifest.json"
+        ]
+      }
+    ]
   }
 }

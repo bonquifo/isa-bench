@@ -1,0 +1,16 @@
+{
+  "files": {
+    "llvm.wasm": {
+      "bytes": 106993054,
+      "sha256": "1314a2dd2ee29b294a7c6d1fbd1e9eefbdb98b0c876eb3b0b68a8de6b1de73cd"
+    },
+    "mos.wasm": {
+      "bytes": 68484343,
+      "sha256": "2c38e72d289c127a64caf639943043ffd97ce81ac0194bef861ca9ec3d174afe"
+    },
+    "sysroot.tar": {
+      "bytes": 55152640,
+      "sha256": "775ab51b3dea7d0bb36eefe5ef1c55c27f12ac0453387674c0f45dac4a0be3d4"
+    }
+  }
+}

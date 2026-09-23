@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   ALL_ISAS,
   CPU_CATALOG,
@@ -28,7 +28,7 @@ import { currentCatalogProfile, replayProfileState } from './ui/replayProfile.ts
 import { deleteSave, loadSavesState, restoreInput, saveRun, type StoredRun } from './ui/saves.ts'
 import { runComparisonAsync } from './engine/index.ts'
 import type { CompareResult, ExecutionMode } from './engine/compare.ts'
-import { realExecutionAvailable } from './engine/compareReal.ts'
+import { realExecutionAvailable, realExecutionRefusal } from './engine/compareReal.ts'
 
 export default function App() {
   const [workloadId, setWorkloadId] = useState('dot_product')
@@ -49,6 +49,10 @@ export default function App() {
   const [smt, setSmt] = useState(1)
   const [customSource, setCustomSource] = useState(SAMPLE_IR)
   const [customC, setCustomC] = useState(SAMPLE_C)
+  // Whether this build of the app can compile a user's C program for the
+  // real targets. Asked once, and only when custom C is first chosen, so a
+  // session that never writes C never touches the compiler.
+  const [toolchainReady, setToolchainReady] = useState<boolean | null>(null)
   const [replayProfiles, setReplayProfiles] = useState<
     Partial<Record<IsaId, HardwareProfile>> | undefined
   >()
@@ -77,7 +81,18 @@ export default function App() {
 
   const workload = WORKLOADS.find((w) => w.id === workloadId)
   const cProgram = cExampleByWorkloadId(workloadId)
-  const realAvailable = realExecutionAvailable({ workloadId, effectiveSourceOverride })
+  useEffect(() => {
+    if (workloadId !== 'custom-c' || toolchainReady !== null) return
+    let current = true
+    void import('./compiler/load.ts')
+      .then(({ toolchainAvailable }) => toolchainAvailable())
+      .then((available) => { if (current) setToolchainReady(available) })
+      .catch(() => { if (current) setToolchainReady(false) })
+    return () => { current = false }
+  }, [workloadId, toolchainReady])
+  const customRefusal = workloadId === 'custom-c' ? realExecutionRefusal(customC) : null
+  const realAvailable = realExecutionAvailable({ workloadId, effectiveSourceOverride }) &&
+    (workloadId !== 'custom-c' || (toolchainReady === true && customRefusal === null))
   const effectiveExecution: ExecutionMode = realAvailable ? execution : 'model-lowering'
   const catalogProfile = HARDWARE_PROFILES.find((p) => p.id === profileId)
   const replayDisplayProfile = isas
@@ -254,7 +269,17 @@ export default function App() {
           import('./engine/compareReal.ts'),
           import('./lanes/realProvider.ts'),
         ])
-        next = await runRealComparisonAsync(input, shippedRealProvider, setProgress, {
+        let provider = shippedRealProvider
+        if (workloadId === 'custom-c') {
+          // A program the user wrote has no shipped binary: the in-app
+          // toolchain compiles it for each target, in a worker.
+          const [{ compilingProvider }, { workerCompile }] = await Promise.all([
+            import('./compiler/provider.ts'),
+            import('./compiler/workerCompile.ts'),
+          ])
+          provider = compilingProvider(shippedRealProvider, customC, workerCompile)
+        }
+        next = await runRealComparisonAsync(input, provider, setProgress, {
           signal: controller.signal,
         })
       } else {
@@ -351,7 +376,7 @@ export default function App() {
                     ? cProgram.blurb
                     : workload?.blurb}
             </p>
-            {cProgram && (
+            {(cProgram || workloadId === 'custom-c') && (
               <fieldset className="mt-3" disabled={!realAvailable}>
                 <legend className="hud-kicker">Instructions</legend>
                 <div className="mt-1 flex gap-2" role="radiogroup" aria-label="Instructions">
@@ -373,9 +398,15 @@ export default function App() {
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-white/45">
                   {!realAvailable
-                    ? 'This replay’s source differs from the catalogue’s, so there is no compiled binary for it; it runs on the model lowering.'
+                    ? workloadId !== 'custom-c'
+                      ? 'This replay’s source differs from the catalogue’s, so there is no compiled binary for it; it runs on the model lowering.'
+                      : customRefusal ?? (toolchainReady === null
+                        ? 'Looking for the in-app compiler…'
+                        : 'This build of the app has no compiler for your program, so it runs on the model lowering. The desktop app ships one.')
                     : effectiveExecution === 'real-isa'
-                      ? 'Each target runs this program compiled by clang for that instruction set, executed by an interpreter verified against a reference. Timing is still the model.'
+                      ? workloadId === 'custom-c'
+                        ? 'Your program is compiled in the app by clang 23 (llvm-mos for the 6502) for each instruction set, as the built-in programs were, and executed by interpreters verified against a reference. Timing is still the model.'
+                        : 'Each target runs this program compiled by clang for that instruction set, executed by an interpreter verified against a reference. Timing is still the model.'
                       : 'Each target runs the engine’s own lowering of the program: an instruction stream shaped like that architecture’s, not compiled code.'}
                 </p>
               </fieldset>
