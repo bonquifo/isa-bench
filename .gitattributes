@@ -5,3 +5,7 @@ src/isa/*/fixtures/** -text
 
 # The guest harnesses are assembled by clang; keep them byte-stable too.
 tools/isa/*/harness.S -text
+
+# The WASI patches are checked against a pinned SHA-256 inside the image
+# build; a CRLF checkout would fail that check, and patch(1) with it.
+tools/isa/clang-wasm/*.patch -text
