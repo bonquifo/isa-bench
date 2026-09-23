@@ -233,7 +233,20 @@ not have the others.
 
 | Tier | What it checks | Oracle |
 | --- | --- | --- |
-| Decode | every instruction in the corpus decodes, at the right length, to the right canonical operation | `llvm-objdump` on the same bytes |
+| Decode | every instruction in the corpus decodes, at the right length, to the right canonical operation, and where a field chooses the behaviour, to the exact name that field implies | `llvm-objdump` on the same bytes |
+| Lockstep | PC and all 32 integer registers **before every instruction** | `qemu-riscv64 -one-insn-per-tb -d cpu` |
+| Final state | 32 integer registers, 32 FP registers as raw bits, `fcsr`, and a 1 KiB memory window | the guest's own dump, byte for byte |
+| Randomised | the same two comparisons over generated programs | the same, per recorded seed |
+| Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
+| The app's corpus | the same, for the fourteen C programs the app ships | qemu **and** the answers the app already records |
+| Per-opcode | the whole machine before and after **one** instruction, from arbitrary state | cases recorded from 6502 hardware |
+
+Per target: 40 fixtures for RV64, 40 for AArch64, 37 for x86-64 and 35 for
+MIPS32 — hand-written, randomised, written against musl, and the app's
+fourteen. Together, roughly 130,000 instructions compared register by
+register and seventy-two whole programs compared on output. The 6502 adds
+23,502 single-instruction cases and 16 whole programs, and no lockstep;
+section 5 says why, and what that does and does not let it claim.
 
 The decode tier is shared, which it was not at first. RV64 had it alone
 while three other targets captured the same disassembly and used none of
@@ -250,24 +263,67 @@ asked before a line of semantics exists. For a target still being built,
 that is the difference between finding a wrong encoding table
 immediately and finding it through a wrong answer weeks later.
 
-Each backend supplies three things: how to decode bytes at an address,
-what it calls an operation, and which of the disassembler's
-pseudo-instruction names may stand for which real one. The third is most
-of the work and is self-checking -- an alias listed wrongly fails the
-test rather than hiding anything.
-| Lockstep | PC and all 32 integer registers **before every instruction** | `qemu-riscv64 -one-insn-per-tb -d cpu` |
-| Final state | 32 integer registers, 32 FP registers as raw bits, `fcsr`, and a 1 KiB memory window | the guest's own dump, byte for byte |
-| Randomised | the same two comparisons over generated programs | the same, per recorded seed |
-| Whole program | what a libc-linked program prints, and its exit status | the same binary under qemu |
-| The app's corpus | the same, for the fourteen C programs the app ships | qemu **and** the answers the app already records |
-| Per-opcode | the whole machine before and after **one** instruction, from arbitrary state | cases recorded from 6502 hardware |
+Each backend supplies four things: how to decode bytes at an address,
+what it calls an operation, which of the disassembler's
+pseudo-instruction names may stand for which real one, and a
+**signature** -- the exact name the decoded fields imply. The alias
+table is for names that differ by operand (`mv` is an `addi` of zero),
+which the lockstep tier checks as it executes. The signature is for
+names that differ by a field the interpreter acts on -- a width, a
+condition, a precision, a rounding mode -- and where it has an answer
+the alias table is not consulted at all. Why both are needed is in the
+POWER section below; what the audit that added signatures to every
+target found is next.
 
-Per target: 40 fixtures for RV64, 40 for AArch64, 37 for x86-64 and 35 for
-MIPS32 — hand-written, randomised, written against musl, and the app's
-fourteen. Together, roughly 130,000 instructions compared register by
-register and seventy-two whole programs compared on output. The 6502 adds
-23,502 single-instruction cases and 16 whole programs, and no lockstep;
-section 5 says why, and what that does and does not let it claim.
+#### The decode audit
+
+Membership let a wrong field through on POWER five times (see *Why the
+decode tier let them through*), so every target's check was rebuilt
+around signatures and run over every captured disassembly, including the
+libc and corpus binaries. Each signature was then broken on purpose --
+conditions swapped, precisions swapped, widths swapped, the annul bit
+inverted -- to confirm the tier fails, so a signature that quietly
+returns nothing cannot pass for one that checks. The tier also fails
+outright if a signature exists and was never consulted.
+
+| Target | Instructions | Checked by signature | Mis-decodes in the fixtures |
+| --- | --- | --- | --- |
+| RV64 | 129,485 | 70,754 | 0 |
+| AArch64 | 109,487 | 58,200 | 0 |
+| x86-64 | 106,187 | 87,686 | 0 |
+| MIPS32 | 115,497 | 13,267 | 0 |
+| SPARC V8 | 95,875 | 57,715 | 0 |
+| POWER | 130,463 | 64,393 | 0 |
+
+No fixture instruction was mis-decoded. What the audit did find was in
+the encodings no fixture reaches, where a wrong table entry waits for
+the first program that uses it:
+
+- **AArch64 decoded vector `orr` and `bic` by immediate as `movi`.** They
+  share the modified-immediate encoding, but they merge into the
+  destination and `movi` replaces it. They are now refused.
+- **POWER's VSX table was wrong in five places.** Checked against the
+  words LLVM assembles, `xscmpudp` and `xscmpodp` were decoded as
+  negated multiply-adds, `xsaddsp` and `xssubsp` as compares, the negated
+  multiply-adds sat at encodings that are something else, and `xvsubsp`
+  and `xvdivsp` were decoded as add and multiply. The compares and
+  multiply-adds now sit at their measured encodings; the rest are
+  refused.
+- **POWER took every `tw` and `td` as an unconditional trap.** A
+  conditional trap that should not fire would have stopped the program.
+  Only the unconditional forms are accepted now.
+- **x86's tier could not read whole programs.** When a REX byte follows
+  `lock`, `llvm-objdump` prints the prefix on a line of its own, and the
+  parser took it for a one-byte instruction. The parser now joins the
+  two. `hlt`, which musl leaves after its exit call, is refused.
+- The x87 register forms that write `st(i)` are named the other way
+  round in AT&T syntax -- Intel's `fsubp` is `fsubrp` -- which the
+  signature has to reproduce. The arithmetic was already right; lockstep
+  against qemu had checked it.
+
+What is still membership is only what the interpreter cannot tell
+apart: aligned and unaligned 128-bit moves, `ucomis` and `comis`,
+`fcmp` and `fcmpe`, and single- and double-precision bitwise operations.
 
 ### The x86-64 reference is not an emulator
 
@@ -1211,9 +1267,10 @@ Three things were found on the way.
   routines were tried and removed: they would have made `%Lf` link, not
   work, at the cost of pulling LGPL code into every program that prints.
 - **The decode tier, now covering the libc binaries, agreed with LLVM on
-  every instruction in them on the first run.** That is weaker evidence
-  than it sounds until this target's alias table has had the audit
-  POWER's did — POWER's passed too, with five mis-decodes behind it.
+  every instruction in them**, and after the audit (*The decode audit*,
+  above) that includes every branch condition, annul bit, flag-setting
+  form and floating-point format, each checked by signature rather than
+  by membership.
 
 ### MIPS32, as built
 

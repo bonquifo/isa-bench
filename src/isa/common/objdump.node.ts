@@ -56,8 +56,24 @@ export function parseObjdump(text: string): DisassembledLine[] {
       : wordBytes(raw)
     if (bytes.length === 0) continue
     const text = match[3]!.trim()
+    const address = BigInt(`0x${match[1]!}`)
+    const previous = out[out.length - 1]
+    if (previous !== undefined && SPLIT_PREFIXES.has(previous.text) &&
+        previous.address + BigInt(previous.bytes.length) === address) {
+      // The instruction a prefix printed on its own line belongs to.
+      const joined = new Uint8Array(previous.bytes.length + bytes.length)
+      joined.set(previous.bytes)
+      joined.set(bytes, previous.bytes.length)
+      out[out.length - 1] = {
+        address: previous.address,
+        bytes: joined,
+        mnemonic: text.split(/\s+/)[0]!,
+        text: `${previous.text} ${text}`,
+      }
+      continue
+    }
     out.push({
-      address: BigInt(`0x${match[1]!}`),
+      address,
       bytes,
       mnemonic: text.split(/\s+/)[0]!,
       text,
@@ -65,6 +81,16 @@ export function parseObjdump(text: string): DisassembledLine[] {
   }
   return out
 }
+
+/**
+ * x86 prefixes `llvm-objdump` sometimes prints as a line of their own.
+ *
+ * It does so when another prefix comes between them and the opcode --
+ * `lock` before a REX byte, as in `f0 44 0f b1 07` -- and the two lines
+ * are one instruction. Left apart, the first is a one-byte "instruction"
+ * that no decoder can agree with, because it is not one.
+ */
+const SPLIT_PREFIXES = new Set(['lock', 'rep', 'repe', 'repne', 'data16'])
 
 /** A hex word, least significant byte first, which is how memory holds it. */
 function wordBytes(hex: string): Uint8Array {

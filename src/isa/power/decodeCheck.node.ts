@@ -12,11 +12,12 @@
  * `clrlwi`, `extldi`, `rotlwi` and a dozen more -- is four rotate
  * instructions underneath.
  *
- * Membership rather than equality is doing real work here. `li` is an
- * `addi` from r0, but so is `la`; `mr` and `nop` are both `or`. The
- * check is that the decoder produced *one of* the instructions the
- * disassembler's name can stand for, which is the strongest statement
- * that does not require reimplementing the disassembler.
+ * Membership is right for those: `li` is an `addi` from r0, and so is
+ * `la`; `mr` and `nop` are both `or`, and which one is printed is a
+ * matter of operands the lockstep tier checks. It is wrong wherever the
+ * name reflects a *field* the interpreter acts on -- a width, a
+ * precision, a branch condition -- and those are checked by signature
+ * instead, further down.
  */
 import { File, PPC, PPC_NAME, decode, type PpcInst } from './decode.ts'
 import type { DecodeCheck } from '../conformance.node.ts'
@@ -68,31 +69,16 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   // Comparisons are checked by signature below: their width is a field,
   // and `cmpw` and `cmpd` are different questions.
 
-  // Every branch is one of three instructions.
-  b: [PPC.B], ba: [PPC.B], bl: [PPC.B], bla: [PPC.B],
-  blr: [PPC.BCLR], blrl: [PPC.BCLR], bctr: [PPC.BCCTR], bctrl: [PPC.BCCTR],
-  bt: [PPC.BC], bf: [PPC.BC], bdnz: [PPC.BC], bdz: [PPC.BC],
-  bdnzt: [PPC.BC], bdnzf: [PPC.BC], bdzt: [PPC.BC], bdzf: [PPC.BC],
-  bc: [PPC.BC], bcl: [PPC.BC], bclr: [PPC.BCLR], bcctr: [PPC.BCCTR],
-  btlr: [PPC.BCLR], bflr: [PPC.BCLR], btctr: [PPC.BCCTR], bfctr: [PPC.BCCTR],
-  bdnzlr: [PPC.BCLR], bdzlr: [PPC.BCLR],
+  // Branches, the special-register moves, `isel` and `trap` are checked
+  // by signature below: what a branch tests, which register is moved and
+  // which bit is selected on are fields, and each changes the result.
 
-  // Moving to and from the special registers, each spelled as its own
-  // instruction even though there is one encoding.
-  mflr: [PPC.MFSPR], mtlr: [PPC.MTSPR],
-  mfctr: [PPC.MFSPR], mtctr: [PPC.MTSPR],
-  mfxer: [PPC.MFSPR], mtxer: [PPC.MTSPR],
-  mfspr: [PPC.MFSPR], mtspr: [PPC.MTSPR],
-  mftb: [PPC.MFSPR], mfvrsave: [PPC.MFSPR], mtvrsave: [PPC.MTSPR],
+  // One field or all of them, which for a single-bit mask is the same.
   mtcr: [PPC.MTCRF], mtcrf: [PPC.MTCRF], mtocrf: [PPC.MTCRF],
 
   // The condition-register logic, where the same-operand case is named
   // after what it does rather than what it is.
   crset: [PPC.CREQV], crclr: [PPC.CRXOR], crmove: [PPC.CROR], crnot: [PPC.CRNOR],
-
-  // `isel` with a fixed condition, which is how a compiler spells a
-  // select without a branch.
-  iselgt: [PPC.ISEL], isellt: [PPC.ISEL], iseleq: [PPC.ISEL], isel: [PPC.ISEL],
 
   // Ordering and cache hints, several of which share an encoding.
   sync: [PPC.SYNC], lwsync: [PPC.SYNC], hwsync: [PPC.SYNC], msync: [PPC.SYNC],
@@ -100,7 +86,6 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   dcbz: [PPC.DCBZ], icbi: [PPC.ICBI],
   dcbt: [PPC.NOP_CACHE], dcbtst: [PPC.NOP_CACHE], dcbst: [PPC.NOP_CACHE],
   dcbf: [PPC.NOP_CACHE],
-  trap: [PPC.TRAP], tw: [PPC.TRAP], td: [PPC.TRAP], twi: [PPC.TRAP], tdi: [PPC.TRAP],
   'sc': [PPC.SC],
 
   // Loads and stores are checked by signature below. The width, the
@@ -138,91 +123,146 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   xxmrgld: [PPC.XXPERMDI], xxspltd: [PPC.XXPERMDI],
 }
 
-/**
- * The VSX arithmetic, generated rather than listed.
- *
- * Every one of these exists in a scalar and a vector form and in single
- * and double precision, which is four spellings of one operation, and
- * the multiply-adds exist in two more for which operand is accumulated
- * into. Writing them out by hand is how a typo gets into the table that
- * is supposed to be catching typos.
- */
 const GENERATED: Record<string, readonly number[]> = { ...ALIASES }
-for (const [stem, scalar, vector] of [
-  ['add', PPC.XSADD, PPC.XVADD], ['sub', PPC.XSSUB, PPC.XVADD],
-  ['mul', PPC.XSMUL, PPC.XVMUL], ['div', PPC.XSDIV, PPC.XVMUL],
-] as const) {
-  for (const precision of ['sp', 'dp']) {
-    GENERATED[`xs${stem}${precision}`] = [scalar]
-    GENERATED[`xv${stem}${precision}`] = [vector]
-  }
-}
-for (const [stem, op] of [
-  ['madda', PPC.XSMADD], ['maddm', PPC.XSMADD],
-  ['msuba', PPC.XSMSUB], ['msubm', PPC.XSMSUB],
-  ['nmadda', PPC.XSNMADD], ['nmaddm', PPC.XSNMADD],
-  ['nmsuba', PPC.XSNMSUB], ['nmsubm', PPC.XSNMSUB],
-] as const) {
-  for (const precision of ['sp', 'dp']) GENERATED[`xs${stem}${precision}`] = [op]
-}
-for (const precision of ['sp', 'dp']) {
-  GENERATED[`xssqrt${precision}`] = [PPC.XSSQRT]
-  GENERATED[`xsrdpi`] = [PPC.XSRDPI]
-  GENERATED[`xscmpodp`] = [PPC.XSCMP]
-  GENERATED[`xscmpudp`] = [PPC.XSCMP]
-  void precision
-}
-for (const name of ['xsnegdp', 'xsnegsp']) GENERATED[name] = [PPC.XSNEG]
-for (const name of ['xsabsdp', 'xsabssp']) GENERATED[name] = [PPC.XSABS]
-for (const name of ['xsnabsdp', 'xsnabssp']) GENERATED[name] = [PPC.XSNABS]
-for (const name of ['xscpsgndp', 'xscpsgnsp']) GENERATED[name] = [PPC.XSCPSGN]
-for (const name of ['xsmaxdp', 'xsmaxsp']) GENERATED[name] = [PPC.XSMAX]
-for (const name of ['xsmindp', 'xsminsp']) GENERATED[name] = [PPC.XSMIN]
-// The bitwise operations and the conversions are not listed here at all.
-// Each is one operation to the interpreter, which picks the behaviour from
-// a field, so they are *refined* to one name apiece in `decode` below
-// rather than admitted by membership -- membership would let a decoder
-// that confused `xxland` with `xxlor` pass.
 
-/**
- * A branch may be printed with a `+` or `-` on the end.
- *
- * That is the static prediction hint, which lives in the same `BO`
- * field as the condition and changes nothing about what the branch
- * does. The disassembler attaches it to the mnemonic rather than
- * printing it as an operand, so each branch has two more spellings.
- */
-for (const [name, ops] of Object.entries({ ...GENERATED })) {
-  if (/^bd?[a-z]*$/.test(name) && ops.some((op) =>
-    op === PPC.BC || op === PPC.BCLR || op === PPC.BCCTR)) {
-    GENERATED[`${name}+`] = ops
-    GENERATED[`${name}-`] = ops
-  }
+/** The bitwise operations, spaced by eight from 130. */
+const LOGIC_NAMES = [
+  'xxland', 'xxlandc', 'xxlor', 'xxlxor', 'xxlnor', 'xxlorc', 'xxlnand', 'xxleqv',
+]
+/** Measured spellings of the conversions, keyed on their nine-bit opcode. */
+const CONVERSION_NAMES: Readonly<Record<number, string>> = {
+  72: 'xscvdpuxws', 88: 'xscvdpsxws', 344: 'xscvdpsxds',
+  360: 'xscvuxddp', 376: 'xscvsxddp', 248: 'xvcvsxwdp',
 }
 
 /**
- * Operations the interpreter keeps as one and selects between by a field.
- *
- * Reported to the tier under a distinct identity per behaviour, so that
- * the check is of the field as well as the opcode. The identities are
- * offset far above the real ones so they cannot collide.
+ * Second spellings the disassembler uses for the same instruction.
+ * `mffprd` is `mfvsrd` named for the floating-point half it reads.
  */
-const REFINED_BASE = 10_000
+const SECOND_SPELLINGS: Readonly<Record<string, readonly string[]>> = {
+  mfvsrd: ['mffprd'], mfvsrwz: ['mffprwz'],
+  mtvsrd: ['mtfprd'], mtvsrwa: ['mtfprwa'], mtvsrwz: ['mtfprwz'],
+}
+
+/** The special registers the disassembler has a name for. */
+const SPR_NAMES: Readonly<Record<number, string>> = {
+  1: 'xer', 8: 'lr', 9: 'ctr', 256: 'vrsave', 268: 'tb',
+}
+
+/** The double-precision scalar operations, each of which is one name. */
+const SCALAR_NAMES: ReadonlyMap<number, readonly string[]> = new Map([
+  [PPC.XSADD, ['xsadddp']], [PPC.XSSUB, ['xssubdp']],
+  [PPC.XSMUL, ['xsmuldp']], [PPC.XSDIV, ['xsdivdp']],
+  [PPC.XSSQRT, ['xssqrtdp']], [PPC.XSNEG, ['xsnegdp']],
+  [PPC.XSCPSGN, ['xscpsgndp']], [PPC.XSMAX, ['xsmaxdp']], [PPC.XSMIN, ['xsmindp']],
+  // Unordered and ordered differ only in which NaNs raise an exception,
+  // which nothing here observes.
+  [PPC.XSCMP, ['xscmpudp', 'xscmpodp']],
+])
+
+/** The fused multiply-adds, by operation. */
+const FUSED_STEMS: ReadonlyMap<number, string> = new Map([
+  [PPC.XSMADD, 'madd'], [PPC.XSMSUB, 'msub'],
+  [PPC.XSNMADD, 'nmadd'], [PPC.XSNMSUB, 'nmsub'],
+])
+
+/**
+ * A conditional branch's name, from BO.
+ *
+ * BO says whether the condition register is tested and for which value,
+ * whether the count register is decremented and tested for zero, and --
+ * in the bits neither of those uses -- which way the branch is likely to
+ * go. The last is printed as a trailing `+` or `-` and changes nothing
+ * the branch does, but the first two are the whole of what it does: a
+ * decoder that read BO wrongly branches on the wrong thing.
+ *
+ * The generic spelling (`bc`, `bclr`, `bcctr`) is admitted as well,
+ * because the disassembler falls back to it with BO printed as an
+ * operand, where the lockstep tier checks it.
+ */
+function branchNames(inst: PpcInst, to: '' | 'lr' | 'ctr'): readonly string[] {
+  const { bo } = inst
+  const link = inst.link ? 'l' : ''
+  const testsCr = (bo & 0b10000) === 0
+  const decrements = (bo & 0b00100) === 0
+  const generic = `bc${to}${link}`
+  if (!testsCr && !decrements) return [`b${to}${link}`, generic]
+  const onTrue = (bo & 0b01000) !== 0 ? 't' : 'f'
+  const onZero = (bo & 0b00010) !== 0 ? 'z' : 'nz'
+  let stem: string
+  let hints: readonly string[]
+  if (!decrements) {
+    stem = `b${onTrue}`
+    // BO = 0b0x1at: `at` of 11 is likely, 10 unlikely, 00 no hint.
+    const at = bo & 0b11
+    hints = [at === 3 ? '+' : at === 2 ? '-' : '']
+  } else if (!testsCr) {
+    stem = `bd${onZero}`
+    // BO = 0b1a0zt: `a` set means a hint is given, and `t` which way.
+    hints = [(bo & 0b01000) === 0 ? '' : (bo & 1) !== 0 ? '+' : '-']
+  } else {
+    stem = `bd${onZero}${onTrue}`
+    hints = ['', '+', '-']
+  }
+  return [...hints.map((hint) => `${stem}${to}${link}${hint}`), generic]
+}
+
+/**
+ * The names the decoded fields imply.
+ *
+ * For the operations where one identity covers several instructions --
+ * a load is a load whatever its width, a conditional branch is one
+ * operation whatever it tests -- the check has to be of the fields, or a
+ * decoder that read them wrong would pass. This is where three real
+ * mistakes hid: `stfiwx` decoded as `stfsx`, `mfocrf` as `mfcr`, and the
+ * word merges as a doubleword permute, each admitted because the name was
+ * in the set the operation could stand for.
+ *
+ * Returns undefined for the operations whose identity is already exact,
+ * or whose remaining spellings differ only by operand -- `mr` is `or` with
+ * one register twice -- which the lockstep tier checks as it executes.
+ */
+function signature(inst: PpcInst): readonly string[] | undefined {
+  const named = fieldName(inst)
+  if (named !== undefined) return [named, ...(SECOND_SPELLINGS[named] ?? [])]
+  const scalar = SCALAR_NAMES.get(inst.op)
+  if (scalar !== undefined) return scalar
+  const fused = FUSED_STEMS.get(inst.op)
+  if (fused !== undefined) {
+    // The `a` form accumulates into its destination and the `m` form
+    // multiplies by it. When the other source is the same register the
+    // two compute the same thing, and either name is right.
+    const accumulates = inst.rb === inst.rd
+    const multiplies = inst.rc === inst.rd
+    return [
+      ...(accumulates ? [`xs${fused}adp`] : []),
+      ...(multiplies ? [`xs${fused}mdp`] : []),
+    ]
+  }
+  switch (inst.op) {
+    case PPC.XXLOGIC: return [LOGIC_NAMES[(inst.shift - 130) / 8] ?? '?']
+    case PPC.XSCVT: case PPC.XVCVT: return [CONVERSION_NAMES[inst.shift] ?? '?']
+    case PPC.B: return inst.link ? ['bl', 'bla'] : ['b', 'ba']
+    case PPC.BC: return branchNames(inst, '')
+    case PPC.BCLR: return branchNames(inst, 'lr')
+    case PPC.BCCTR: return branchNames(inst, 'ctr')
+    case PPC.MFSPR: return [SPR_NAMES[inst.spr] ? `mf${SPR_NAMES[inst.spr]}` : 'mfspr']
+    case PPC.MTSPR: return [SPR_NAMES[inst.spr] ? `mt${SPR_NAMES[inst.spr]}` : 'mtspr']
+    // With a condition bit in cr0, `isel` is printed as the test it makes.
+    case PPC.ISEL: return [(['isellt', 'iselgt', 'iseleq'] as const)[inst.bi] ?? 'isel']
+    // The only traps the decoder accepts are the unconditional ones, which
+    // the disassembler spells by width.
+    case PPC.TRAP: return ['trap', 'tdu']
+    default: return undefined
+  }
+}
 
 /**
  * The name an instruction must have, given the fields the interpreter
- * actually acts on.
- *
- * For the operations where one identity covers several instructions --
- * a load is a load whatever its width -- the check has to be of the
- * fields, or a decoder that read the width wrong would pass. This is
- * where three real mistakes hid: `stfiwx` decoded as `stfsx`, `mfocrf`
- * as `mfcr`, and the word merges as a doubleword permute, each admitted
- * because the name was in the set the operation could stand for.
- *
- * Returns undefined for the operations whose identity is already exact.
+ * acts on, for the operations that pick a width, a sign or a register file
+ * from a field.
  */
-function signature(inst: PpcInst): string | undefined {
+function fieldName(inst: PpcInst): string | undefined {
   const fpr = inst.destFile === File.FPR || inst.sourceFile === File.FPR
   const suffix = (update: boolean, indexed: boolean): string =>
     (update ? 'u' : '') + (indexed ? 'x' : '')
@@ -265,59 +305,22 @@ function signature(inst: PpcInst): string | undefined {
   }
 }
 
-/** Every signature, numbered once so a name maps to one stable identity. */
-const SIGNATURES: string[] = []
-function signatureId(name: string): number {
-  let index = SIGNATURES.indexOf(name)
-  if (index < 0) index = SIGNATURES.push(name) - 1
-  return REFINED_BASE + 5000 + index
-}
-
-/**
- * Second spellings the disassembler uses for the same instruction.
- * `mffprd` is `mfvsrd` named for the floating-point half it reads.
- */
-const SIGNATURE_SPELLINGS: Readonly<Record<string, string>> = {
-  mffprd: 'mfvsrd', mffprwz: 'mfvsrwz',
-  mtfprd: 'mtvsrd', mtfprwa: 'mtvsrwa', mtfprwz: 'mtvsrwz',
-}
-for (const [spelling, canonical] of Object.entries(SIGNATURE_SPELLINGS)) {
-  GENERATED[spelling] = [signatureId(canonical)]
-}
-// A compare with a field other than cr0 is still printed as the same
-// mnemonic, so nothing more is needed for those.
-const LOGIC_NAMES = [
-  'xxland', 'xxlandc', 'xxlor', 'xxlxor', 'xxlnor', 'xxlorc', 'xxlnand', 'xxleqv',
-]
-/** Measured spellings of the conversions, keyed on their nine-bit opcode. */
-const CONVERSION_NAMES: Readonly<Record<number, string>> = {
-  72: 'xscvdpuxws', 88: 'xscvdpsxws', 344: 'xscvdpsxds',
-  360: 'xscvuxddp', 376: 'xscvsxddp', 248: 'xvcvsxwdp',
+function decodeBytes(bytes: Uint8Array, address: bigint): PpcInst {
+  // Little-endian in memory; the bit numbering inside is the other way
+  // round, which the decoder handles.
+  const word = (bytes[0]! | (bytes[1]! << 8) | (bytes[2]! << 16) |
+    (bytes[3]! << 24)) >>> 0
+  return decode(word, address)
 }
 
 export const powerDecodeCheck: DecodeCheck = {
   decode(bytes, address) {
-    // Little-endian in memory; the bit numbering inside is the other
-    // way round, which the decoder handles.
-    const word = (bytes[0]! | (bytes[1]! << 8) | (bytes[2]! << 16) |
-      (bytes[3]! << 24)) >>> 0
-    const inst = decode(word, address)
-    const named = signature(inst)
-    if (named !== undefined) return { op: signatureId(named), length: 4 }
-    if (inst.op === PPC.XXLOGIC) {
-      return { op: REFINED_BASE + (inst.shift - 130) / 8, length: 4 }
-    }
-    if (inst.op === PPC.XSCVT || inst.op === PPC.XVCVT) {
-      return { op: REFINED_BASE + 1000 + inst.shift, length: 4 }
-    }
-    return { op: inst.op, length: 4 }
+    return { op: decodeBytes(bytes, address).op, length: 4 }
+  },
+  signature(bytes, address) {
+    return signature(decodeBytes(bytes, address))
   },
   name(op) {
-    if (op >= REFINED_BASE + 5000) return SIGNATURES[op - REFINED_BASE - 5000] ?? `?sig${op}`
-    if (op >= REFINED_BASE + 1000) {
-      return CONVERSION_NAMES[op - REFINED_BASE - 1000] ?? `?cvt${op}`
-    }
-    if (op >= REFINED_BASE) return LOGIC_NAMES[op - REFINED_BASE] ?? `?logic${op}`
     return PPC_NAME[op] ?? `?${op}`
   },
   aliases: GENERATED,

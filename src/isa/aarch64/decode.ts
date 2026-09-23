@@ -1256,6 +1256,12 @@ function decodeSimd(word: number, unsupported: Fail, bad: Fail): A64Inst {
   if (bit(word, 31) === 0 && bits(word, 28, 19) === 0b0111100000 &&
       bits(word, 11, 10) === 0b01) {
     const cmode = bits(word, 15, 12)
+    // Odd cmode below 12 is ORR or BIC by immediate, which merge into the
+    // destination rather than replace it. Nothing measured uses them, so
+    // they are refused instead of being run as the move they resemble.
+    if ((cmode & 1) === 1 && cmode < 12) {
+      return unsupported(`advanced SIMD ${op === 1 ? 'bic' : 'orr'} (vector, immediate)`)
+    }
     const imm8 = (bits(word, 18, 16) << 5) | bits(word, 9, 5)
     const expanded = expandSimdImmediate(imm8, cmode, op)
     if (expanded === null) {

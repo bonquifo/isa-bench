@@ -140,6 +140,11 @@ describe('the implemented SIMD subset has a sharp edge', () => {
     ['ins v0.s[1], v1.s[0] — insert from an element, not a register', 0x6e0c0420],
     ['tbl v0.16b, {v1.16b}, v2.16b', 0x4e020020],
     ['fmov v0.2d, #1.0 — the floating-point modified immediate', 0x6f01f400],
+    // Same group as movi, but these merge into the destination: run as a
+    // move they would silently discard the register's other bits.
+    ['orr v0.4s, #0x1 — beside movi, but merging', 0x4f001420],
+    ['bic v0.4s, #0x1 — beside mvni, but merging', 0x6f001420],
+    ['orr v0.8h, #0x1, lsl #8', 0x4f00b420],
   ]
 
   for (const [name, word] of neighbours) {

@@ -71,6 +71,24 @@ export interface DecodeCheck {
   refused?: readonly string[]
   /** Mnemonics to pass over: directives rather than instructions. */
   ignored?: readonly string[]
+  /**
+   * The exact names the decoded *fields* imply, for an operation that
+   * stands for several instructions -- a load whatever its width, a
+   * conditional branch whatever its condition. When this returns names,
+   * the check is that the disassembler printed one of them: equality, not
+   * membership in everything the operation could stand for.
+   *
+   * This is where membership hid real mistakes. On POWER a store decoded
+   * as a different store, a one-field move decoded as the whole-register
+   * one, and a word merge decoded as a doubleword permute, and each passed
+   * because the printed name was in the set its operation could stand for
+   * while the field that told them apart was never looked at.
+   *
+   * More than one name is allowed only where the disassembler has several
+   * spellings for the *same* behaviour. Returning undefined leaves the
+   * instruction to the alias check.
+   */
+  signature?(bytes: Uint8Array, address: bigint): readonly string[] | undefined
 }
 
 export interface ConformanceOptions {
@@ -141,6 +159,7 @@ export function describeDecodeTier(
         expect(lines.length).toBeGreaterThan(0)
         const problems: string[] = []
         let checked = 0
+        let signed = 0
         for (const line of lines) {
           if (ignored.has(line.mnemonic)) continue
           const where = `0x${line.address.toString(16)} ${line.text}`
@@ -164,6 +183,14 @@ export function describeDecodeTier(
           if (decoded.length !== line.bytes.length) {
             problems.push(`${where}: length ${decoded.length} != ${line.bytes.length}`)
           }
+          const implied = check.signature?.(line.bytes, line.address)
+          if (implied !== undefined) {
+            signed += 1
+            if (!implied.includes(line.mnemonic)) {
+              problems.push(`${where}: fields imply ${implied.join(' or ')}`)
+            }
+            continue
+          }
           const accepted = check.aliases?.[line.mnemonic] ?? []
           const actual = check.name(decoded.op)
           if (actual !== line.mnemonic && !accepted.includes(decoded.op)) {
@@ -171,6 +198,12 @@ export function describeDecodeTier(
           }
         }
         expect(problems.slice(0, 20).join('\n')).toBe('')
+        // A signature that quietly returned undefined for everything would
+        // leave this tier exactly as loose as it was, so it has to have
+        // been consulted.
+        if (check.signature) {
+          expect(signed, `${name}: instructions checked by signature`).toBeGreaterThan(0)
+        }
         // A pass that checked nothing would look like a pass that
         // checked everything.
         expect(checked).toBeGreaterThan(0)

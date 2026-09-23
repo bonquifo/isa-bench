@@ -71,6 +71,31 @@ describe('reading llvm-objdump output', () => {
     expect(lines).toHaveLength(1)
   })
 
+  it('joins an x86 prefix printed on a line of its own to its instruction', () => {
+    // `lock` before a REX byte is printed alone, and the instruction it
+    // belongs to on the next line. Apart, the first is a one-byte
+    // "instruction" no decoder can agree with.
+    const lines = parseObjdump([
+      '  205b4c: f0                           \tlock',
+      '  205b4d: 44 0f b1 07                  \tcmpxchgl\t%r8d, (%rdi)',
+      '  205b51: 31 c0                        \txorl\t%eax, %eax',
+    ].join('\n'))
+    expect(lines).toHaveLength(2)
+    expect(lines[0]!.address).toBe(0x205b4cn)
+    expect([...lines[0]!.bytes]).toEqual([0xf0, 0x44, 0x0f, 0xb1, 0x07])
+    expect(lines[0]!.mnemonic).toBe('cmpxchgl')
+    expect(lines[0]!.text).toBe('lock cmpxchgl\t%r8d, (%rdi)')
+    expect(lines[1]!.mnemonic).toBe('xorl')
+  })
+
+  it('leaves a prefix alone when what follows is not contiguous with it', () => {
+    const lines = parseObjdump([
+      '  100: f0 \tlock',
+      '  110: 90 \tnop',
+    ].join('\n'))
+    expect(lines.map((line) => line.mnemonic)).toEqual(['lock', 'nop'])
+  })
+
   it('finds nothing in empty input rather than inventing a line', () => {
     expect(parseObjdump('')).toEqual([])
   })

@@ -97,6 +97,29 @@ describe('power: state this backend does not model', () => {
     expect(() => decode(xForm(31, 2, 3, 4, 780), 0x1000n)).toThrow(UnimplementedInstruction)
   })
 
+  it('decodes the VSX arithmetic at the encodings LLVM assembles', () => {
+    // Words from `clang --target=powerpc64le -c` on each instruction.
+    // Before these were measured, xscmpudp decoded as a negated
+    // multiply-add, and xsaddsp as a compare.
+    expect(decode(0xf0821918, 0x1000n).op).toBe(PPC.XSCMP) // xscmpudp
+    expect(decode(0xf0221d08, 0x1000n).op).toBe(PPC.XSNMADD) // xsnmaddadp
+    expect(decode(0xf0221dc8, 0x1000n).op).toBe(PPC.XSNMSUB) // xsnmsubmdp
+  })
+
+  it('refuses the VSX arithmetic it has no semantics for', () => {
+    // Single-precision scalar add, and the element-wise subtract and
+    // divide, which used to decode as add and multiply.
+    expect(() => decode(0xf0221800, 0x1000n)).toThrow(UnimplementedInstruction) // xsaddsp
+    expect(() => decode(0xf0221a40, 0x1000n)).toThrow(UnimplementedInstruction) // xvsubsp
+    expect(() => decode(0xf0221ac0, 0x1000n)).toThrow(UnimplementedInstruction) // xvdivsp
+  })
+
+  it('refuses a conditional trap rather than always taking it', () => {
+    expect(() => decode(0x7c832008, 0x1000n)).toThrow(UnimplementedInstruction) // tweq 3, 4
+    expect(decode(0x7fe00008, 0x1000n).op).toBe(PPC.TRAP) // trap
+    expect(decode(0x7fe00088, 0x1000n).op).toBe(PPC.TRAP) // tdu 0, 0
+  })
+
   it('writes only doubleword 0 for a scalar VSX store', () => {
     // `stxsdx` once wrote all sixteen bytes, overwriting the eight after
     // its operand. Those eight must survive.

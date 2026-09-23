@@ -6,11 +6,15 @@
  * so than any other target here: `move` is an or with the zero register,
  * `li` is whichever of three instructions produces the constant, `nop`
  * is a shift by zero, and `b` is a branch on a condition that is always
- * true. A decoder that agrees with the disassembler across all of them
- * has the encoding right; one that does not has usually mistaken a
- * special case for the general form it is built from.
+ * true. Those differ by operand, and the alias table admits each as one
+ * of the instructions it can stand for.
+ *
+ * The floating-point unit is the other way round: its names spell out
+ * fields -- the format, the compare predicate, the rounding direction --
+ * that decide what the instruction computes, and the signature further
+ * down requires the exact name those fields imply.
  */
-import { MIPS, MIPS_NAME, decode } from './decode.ts'
+import { MIPS, MIPS_NAME, decode, type MipsInst } from './decode.ts'
 import type { DecodeCheck } from '../conformance.node.ts'
 
 const ALIASES: Readonly<Record<string, readonly number[]>> = {
@@ -22,10 +26,7 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   not: [MIPS.NOR],
   negu: [MIPS.SUBU],
   neg: [MIPS.SUBU],
-  b: [MIPS.BEQ],
   bal: [MIPS.BGEZAL],
-  beqz: [MIPS.BEQ],
-  bnez: [MIPS.BNE],
   blez: [MIPS.BLEZ],
   bgez: [MIPS.BGEZ],
   bltz: [MIPS.BLTZ],
@@ -38,101 +39,109 @@ const ALIASES: Readonly<Record<string, readonly number[]>> = {
   srlv: [MIPS.SRLV],
   srav: [MIPS.SRAV],
   sltu: [MIPS.SLTU],
-  // Trap instructions, of which the compiler emits one.
-  teq: [MIPS.TRAP],
-  tne: [MIPS.TRAP],
-  tge: [MIPS.TRAP],
-  tgeu: [MIPS.TRAP],
-  tlt: [MIPS.TRAP],
-  tltu: [MIPS.TRAP],
-  // The conditional moves on a floating-point condition, which sit in
-  // the integer opcode space and read coprocessor state.
-  movt: [MIPS.MOVCI],
-  movf: [MIPS.MOVCI],
-  // The coprocessor. Its mnemonics name the format, which the decoder
-  // carries as a field.
-  'add.s': [MIPS.FP_ADD],
-  'add.d': [MIPS.FP_ADD],
-  'sub.s': [MIPS.FP_SUB],
-  'sub.d': [MIPS.FP_SUB],
-  'mul.s': [MIPS.FP_MUL],
-  'mul.d': [MIPS.FP_MUL],
-  'div.s': [MIPS.FP_DIV],
-  'div.d': [MIPS.FP_DIV],
-  'sqrt.s': [MIPS.FP_SQRT],
-  'sqrt.d': [MIPS.FP_SQRT],
-  'abs.s': [MIPS.FP_ABS],
-  'abs.d': [MIPS.FP_ABS],
-  'neg.s': [MIPS.FP_NEG],
-  'neg.d': [MIPS.FP_NEG],
-  'mov.s': [MIPS.FP_MOV],
-  'mov.d': [MIPS.FP_MOV],
-  'movz.s': [MIPS.FP_MOVZ],
-  'movz.d': [MIPS.FP_MOVZ],
-  'movn.s': [MIPS.FP_MOVN],
-  'movn.d': [MIPS.FP_MOVN],
-  'movt.s': [MIPS.FP_MOVCF],
-  'movt.d': [MIPS.FP_MOVCF],
-  'movf.s': [MIPS.FP_MOVCF],
-  'movf.d': [MIPS.FP_MOVCF],
-  'madd.s': [MIPS.FP_MADD],
-  'madd.d': [MIPS.FP_MADD],
-  'msub.s': [MIPS.FP_MADD],
-  'msub.d': [MIPS.FP_MADD],
-  'nmadd.s': [MIPS.FP_MADD],
-  'nmadd.d': [MIPS.FP_MADD],
-  'nmsub.s': [MIPS.FP_MADD],
-  'nmsub.d': [MIPS.FP_MADD],
-  bc1t: [MIPS.BC1],
-  bc1f: [MIPS.BC1],
+  // The moves to and from the coprocessor.
   mfc1: [MIPS.MFC1],
   mtc1: [MIPS.MTC1],
   mfhc1: [MIPS.MFHC1],
   mthc1: [MIPS.MTHC1],
   cfc1: [MIPS.CFC1],
   ctc1: [MIPS.CTC1],
-  lwc1: [MIPS.FP_LOAD],
-  ldc1: [MIPS.FP_LOAD],
-  swc1: [MIPS.FP_STORE],
-  sdc1: [MIPS.FP_STORE],
 }
 
-/**
- * The comparisons and conversions, whose names carry the predicate or
- * the format pair. Generated rather than listed: there are sixteen
- * predicates times two formats, and writing them out would be a table
- * of the same fact repeated thirty-two times.
- */
-const GENERATED: Record<string, readonly number[]> = { ...ALIASES }
-const PREDICATES = [
+/** The compare predicates, in the order the function field numbers them. */
+const FP_PREDICATES = [
   'f', 'un', 'eq', 'ueq', 'olt', 'ult', 'ole', 'ule',
   'sf', 'ngle', 'seq', 'ngl', 'lt', 'nge', 'le', 'ngt',
 ]
-for (const format of ['s', 'd']) {
-  for (const predicate of PREDICATES) {
-    GENERATED[`c.${predicate}.${format}`] = [MIPS.FP_CMP]
-  }
-  for (const to of ['s', 'd', 'w', 'l']) {
-    GENERATED[`cvt.${to}.${format}`] = [MIPS.FP_CVT]
-    GENERATED[`cvt.${to}.w`] = [MIPS.FP_CVT]
-    GENERATED[`cvt.${to}.l`] = [MIPS.FP_CVT]
-  }
-  for (const direction of ['round', 'trunc', 'ceil', 'floor']) {
-    GENERATED[`${direction}.w.${format}`] = [MIPS.FP_ROUND]
-    GENERATED[`${direction}.l.${format}`] = [MIPS.FP_ROUND]
+
+function decodeBytes(bytes: Uint8Array, address: bigint): MipsInst {
+  const word = (bytes[0]! | (bytes[1]! << 8) | (bytes[2]! << 16) |
+    (bytes[3]! << 24)) >>> 0
+  return decode(word, address)
+}
+
+/** The format letter a coprocessor mnemonic ends in, by operand width. */
+const FORMAT: Readonly<Record<number, string>> = { 4: 's', 8: 'd', 1: 'w', 2: 'l' }
+
+/** The arithmetic whose name is a stem and the format. */
+const FORMATTED: ReadonlyMap<number, string> = new Map([
+  [MIPS.FP_ADD, 'add'], [MIPS.FP_SUB, 'sub'], [MIPS.FP_MUL, 'mul'],
+  [MIPS.FP_DIV, 'div'], [MIPS.FP_SQRT, 'sqrt'], [MIPS.FP_ABS, 'abs'],
+  [MIPS.FP_NEG, 'neg'], [MIPS.FP_MOV, 'mov'], [MIPS.FP_MOVZ, 'movz'],
+  [MIPS.FP_MOVN, 'movn'],
+])
+
+/** The rounding directions, in the order the function field numbers them. */
+const DIRECTIONS = ['round', 'trunc', 'ceil', 'floor']
+
+/** The traps, by function number less 0x30. */
+const TRAPS = ['tge', 'tgeu', 'tlt', 'tltu', 'teq', undefined, 'tne']
+
+/** Multiply-add by which of its two negations it applies. */
+const MADD = ['madd', 'msub', 'nmadd', 'nmsub']
+
+/**
+ * The names the decoded fields imply.
+ *
+ * The floating-point unit is where membership was loosest. Format,
+ * predicate and rounding direction are fields, so `add.s` and `add.d`,
+ * sixteen compare predicates, four rounding directions and four
+ * multiply-adds each shared an operation, and a decoder that misread any
+ * of those fields -- running a double as a single, an ordered compare as
+ * an unordered one -- passed. So did one that read a trap's condition,
+ * or a branch's true-or-false bit, the wrong way round. Here those fields
+ * decide the name.
+ */
+function signature(inst: MipsInst): readonly string[] | undefined {
+  const format = FORMAT[inst.fmt] ?? '?'
+  const stem = FORMATTED.get(inst.op)
+  if (stem !== undefined) return [`${stem}.${format}`]
+
+  switch (inst.op) {
+    case MIPS.FP_CMP:
+      return [`c.${FP_PREDICATES[inst.predicate] ?? '?'}.${format}`]
+    case MIPS.FP_CVT:
+      return [`cvt.${FORMAT[inst.toFmt] ?? '?'}.${format}`]
+    case MIPS.FP_ROUND:
+      return [`${DIRECTIONS[inst.predicate] ?? '?'}.${FORMAT[inst.toFmt] ?? '?'}.${format}`]
+    case MIPS.FP_MADD:
+      return [`${MADD[inst.predicate] ?? '?'}.${format}`]
+    case MIPS.FP_MOVCF:
+      return [`mov${inst.predicate === 1 ? 't' : 'f'}.${format}`]
+    case MIPS.MOVCI:
+      return [inst.predicate === 1 ? 'movt' : 'movf']
+    case MIPS.BC1:
+      return [inst.predicate === 1 ? 'bc1t' : 'bc1f']
+    case MIPS.FP_LOAD:
+      return [inst.width === 8 ? 'ldc1' : 'lwc1']
+    case MIPS.FP_STORE:
+      return [inst.width === 8 ? 'sdc1' : 'swc1']
+    case MIPS.TRAP:
+      return [TRAPS[inst.predicate] ?? '?']
+
+    // Which operand is the zero register decides the pseudo-instruction.
+    case MIPS.BEQ:
+      if (inst.rs === 0 && inst.rt === 0) return ['b']
+      return inst.rt === 0 ? ['beqz'] : ['beq']
+    case MIPS.BNE:
+      return inst.rt === 0 ? ['bnez'] : ['bne']
+
+    default:
+      return undefined
   }
 }
 
 export const mipsDecodeCheck: DecodeCheck = {
   decode(bytes, address) {
-    const word = (bytes[0]! | (bytes[1]! << 8) | (bytes[2]! << 16) |
-      (bytes[3]! << 24)) >>> 0
-    return { op: decode(word, address).op, length: 4 }
+    return { op: decodeBytes(bytes, address).op, length: 4 }
+  },
+  signature(bytes, address) {
+    return signature(decodeBytes(bytes, address))
   },
   name(op) {
     return MIPS_NAME[op] ?? `?${op}`
   },
-  aliases: GENERATED,
+  aliases: ALIASES,
   // Assembler directives the disassembler echoes, which are not code.
   ignored: ['.set', '<unknown>'],
 }

@@ -557,18 +557,18 @@ const FP_X: Readonly<Record<number, PpcOp>> = {
 
 /** Primary 60, VSX. Indexed by the XX3-form extended opcode. */
 const XX3: Readonly<Record<number, PpcOp>> = {
+  // The double-precision scalar arithmetic. The single-precision forms
+  // are 0, 8, 16 and 24 and round differently, so they are not here.
   32: PPC.XSADD, 40: PPC.XSSUB, 48: PPC.XSMUL, 56: PPC.XSDIV,
   33: PPC.XSMADD, 41: PPC.XSMADD, 49: PPC.XSMSUB, 57: PPC.XSMSUB,
-  35: PPC.XSNMADD, 43: PPC.XSNMADD, 51: PPC.XSNMSUB, 59: PPC.XSNMSUB,
-  0: PPC.XSCMP, 8: PPC.XSCMP,
+  161: PPC.XSNMADD, 169: PPC.XSNMADD, 177: PPC.XSNMSUB, 185: PPC.XSNMSUB,
+  // xscmpudp and xscmpodp.
+  35: PPC.XSCMP, 43: PPC.XSCMP,
   176: PPC.XSCPSGN, 160: PPC.XSMAX, 168: PPC.XSMIN,
   // The bitwise operations are on all 128 bits, and the eight of them
   // are spaced by eight: and, andc, or, xor, nor, orc, nand, eqv.
   130: PPC.XXLOGIC, 138: PPC.XXLOGIC, 146: PPC.XXLOGIC, 154: PPC.XXLOGIC,
   162: PPC.XXLOGIC, 170: PPC.XXLOGIC, 178: PPC.XXLOGIC, 186: PPC.XXLOGIC,
-  // The element-wise family, which the corpus reaches through
-  // conversions rather than arithmetic.
-  64: PPC.XVADD, 72: PPC.XVADD, 80: PPC.XVMUL, 88: PPC.XVMUL,
   // The word merges, measured: 18 is `xxmrghw` and 50 is `xxmrglw`.
   // `xxpermdi` and `xxsldwi` are not here because two of these eight
   // bits are an operand for them; they are matched on their five-bit
@@ -1023,6 +1023,11 @@ function decodeX(inst: PpcInst, word: number, address: bigint): PpcInst {
       return inst
 
     case PPC.TRAP:
+      // TO says which comparisons trap. All five set is `trap`, which
+      // traps always and is the only form measured here; the others trap
+      // only sometimes, and running one as an unconditional trap would
+      // stop a program that should have carried on.
+      if (fld(word, 6, 10) !== 31) return refuse(address, word, 'conditional trap')
       inst.flow = Flow.TRAP
       return inst
 
