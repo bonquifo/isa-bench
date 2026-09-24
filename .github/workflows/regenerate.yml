@@ -161,6 +161,10 @@ jobs:
 
   verify:
     needs: [fixtures, toolchain]
+    # A job whose ancestors were skipped is skipped too, unless it says
+    # otherwise -- and the image jobs are skipped whenever nothing needed
+    # building.
+    if: always() && needs.fixtures.result == 'success' && needs.toolchain.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -188,6 +192,7 @@ jobs:
 
   publish:
     needs: verify
+    if: always() && needs.verify.result == 'success' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
