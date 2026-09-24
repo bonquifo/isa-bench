@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!--
+    ISA Bench's icon, and the source of every raster of it: desktop/icon.png
+    (installers) and public/icon.png (the window) are rendered from this file
+    by `node scripts/icons.mjs`, and a test fails if they drift.
+
+    A die: the hexagon, pinned on every edge. Inside it eight cells around
+    one core: one program, eight instruction sets.
+  -->
+  <defs>
+    <radialGradient id="plate" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#1a0a33"/>
+      <stop offset="1" stop-color="#05010a"/>
+    </radialGradient>
+    <linearGradient id="die" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#130829"/>
+      <stop offset="1" stop-color="#070210"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="40%" r="75%">
+      <stop offset="0" stop-color="#f4ffc2"/>
+      <stop offset="0.45" stop-color="#c8ff3d"/>
+      <stop offset="1" stop-color="#7fd400"/>
+    </radialGradient>
+    <filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="bloom" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="36" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- The plate: macOS's icon grid, 824 px with a 185 px corner. -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#plate)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="none" stroke="#00f0ff" stroke-opacity="0.18" stroke-width="4"/>
+
+  <!-- Pins: two on each edge of the die, square to it. -->
+  <g stroke="#00f0ff" stroke-width="18" stroke-linecap="round" opacity="0.9" filter="url(#glow)">
+    <path d="M593.1 246.8 L624.1 193.1 M701.1 309.2 L732.1 255.5"/>
+    <path d="M782.2 449.6 L844.2 449.6 M782.2 574.4 L844.2 574.4"/>
+    <path d="M701.1 714.8 L732.1 768.5 M593.1 777.2 L624.1 830.9"/>
+    <path d="M430.9 777.2 L399.9 830.9 M322.9 714.8 L291.9 768.5"/>
+    <path d="M241.8 574.4 L179.8 574.4 M241.8 449.6 L179.8 449.6"/>
+    <path d="M322.9 309.2 L291.9 255.5 M430.9 246.8 L399.9 193.1"/>
+  </g>
+
+  <!-- The die. -->
+  <path d="M512 200 L782.2 356 L782.2 668 L512 824 L241.8 668 L241.8 356 Z" fill="url(#die)"/>
+  <path d="M512 200 L782.2 356 L782.2 668 L512 824 L241.8 668 L241.8 356 Z"
+        fill="none" stroke="#00f0ff" stroke-width="20" stroke-linejoin="round" filter="url(#glow)"/>
+  <path d="M512 236 L751 374 L751 650 L512 788 L273 650 L273 374 Z"
+        fill="none" stroke="#00f0ff" stroke-opacity="0.25" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- Traces from the grid to the die's edge. -->
+  <g stroke="#ff2bd6" stroke-width="8" stroke-linecap="round" opacity="0.8">
+    <path d="M512 362 V262 M512 662 V762 M362 512 H282 M662 512 H742"/>
+  </g>
+  <g fill="#ff2bd6">
+    <circle cx="512" cy="258" r="12"/><circle cx="512" cy="766" r="12"/>
+    <circle cx="278" cy="512" r="12"/><circle cx="746" cy="512" r="12"/>
+  </g>
+
+  <!-- Eight cells. -->
+  <g fill="#ff2bd6" fill-opacity="0.16" stroke="#ff2bd6" stroke-width="10" filter="url(#glow)">
+    <rect x="362" y="362" width="88" height="88" rx="14"/>
+    <rect x="468" y="362" width="88" height="88" rx="14"/>
+    <rect x="574" y="362" width="88" height="88" rx="14"/>
+    <rect x="362" y="468" width="88" height="88" rx="14"/>
+    <rect x="574" y="468" width="88" height="88" rx="14"/>
+    <rect x="362" y="574" width="88" height="88" rx="14"/>
+    <rect x="468" y="574" width="88" height="88" rx="14"/>
+    <rect x="574" y="574" width="88" height="88" rx="14"/>
+  </g>
+
+  <!-- One core. -->
+  <rect x="468" y="468" width="88" height="88" rx="14" fill="url(#core)" filter="url(#bloom)"/>
+</svg>

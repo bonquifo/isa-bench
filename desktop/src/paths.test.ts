@@ -66,6 +66,19 @@ describe('desktop layout', () => {
     }
   })
 
+  it("gives the window the icon the UI bundle ships, or the checkout's in development", () => {
+    const root = mkdtempSync(join(tmpdir(), 'isa-desktop-icon-'))
+    const main = pathToFileURL(join(root, 'desktop', 'dist', 'main.js')).href
+    expect(desktopFromMain(main, [], {}).layout.iconPath).toBeUndefined()
+    mkdirSync(join(root, 'public'), { recursive: true })
+    writeFileSync(join(root, 'public', 'icon.png'), '')
+    expect(desktopFromMain(main, [], {}).layout.iconPath).toBe(join(root, 'public', 'icon.png'))
+    mkdirSync(join(root, 'dist'), { recursive: true })
+    writeFileSync(join(root, 'dist', 'index.html'), '<html></html>')
+    writeFileSync(join(root, 'dist', 'icon.png'), '')
+    expect(desktopFromMain(main, [], {}).layout.iconPath).toBe(join(root, 'dist', 'icon.png'))
+  })
+
   it('treats --dev as the Vite development shell', () => {
     expect(desktopFromMain(import.meta.url, ['--dev'], {}).development).toBe(true)
     expect(desktopFromMain(import.meta.url, [], { ISA_BENCH_DEV_URL: 'http://127.0.0.1:5173' }).development).toBe(true)

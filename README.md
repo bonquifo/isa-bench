@@ -296,6 +296,11 @@ either. Two workflows carry a change from a commit to an installer:
 
 To ship a version: `git tag v1.2.3 && git push origin v1.2.3`.
 
+The app icon has one source, `desktop/icon.svg`; after editing it, run
+`node scripts/icons.mjs` to re-render the PNGs the installers and the window
+use (a test fails if they are stale). `public/favicon.svg` is the same design
+redrawn for 16 and 32 pixels.
+
 Locally, `node scripts/images.mjs pull` fetches every image the generators
 use instead of building them, which takes hours for the two LLVM builds.
 Dependabot proposes dependency updates weekly, as pull requests CI checks.

@@ -11,6 +11,11 @@ export interface DesktopLayout {
    * sysroot.tar), absent when it was not packaged or built.
    */
   toolchainDir?: string
+  /**
+   * The window's icon. Installers carry their own, but a Linux window and
+   * the development shell show Electron's unless the window is given one.
+   */
+  iconPath?: string
 }
 
 /** The files the toolchain protocol will serve, and nothing else. */
@@ -54,12 +59,18 @@ export function desktopFromMain(
     // Development checkout: desktop/dist/main.js is two levels down.
     join(here, '..', '..', 'toolchain'),
   ])
+  const iconDir = firstDirectoryWith('icon.png', [
+    staticDir,
+    // Development checkout: Vite serves public/, and dist/ may not exist.
+    join(here, '..', '..', 'public'),
+  ])
   return {
     development,
     layout: {
       ...(staticDir ? { staticDir } : {}),
       preloadPath: join(here, 'preload.cjs'),
       ...(toolchainDir ? { toolchainDir } : {}),
+      ...(iconDir ? { iconPath: join(iconDir, 'icon.png') } : {}),
     },
   }
 }

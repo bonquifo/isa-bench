@@ -59,6 +59,7 @@ async function start(): Promise<void> {
     minWidth: 960,
     minHeight: 700,
     title: 'ISA Bench',
+    ...(started.layout.iconPath ? { icon: started.layout.iconPath } : {}),
     autoHideMenuBar: true,
     webPreferences: {
       preload: started.layout.preloadPath,
