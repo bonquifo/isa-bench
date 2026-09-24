@@ -24,7 +24,7 @@
  */
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dirname, '../..')
@@ -65,8 +65,9 @@ function docker(args: string[]): string {
 
 /** Runs a shell script in `image` with the stage directory at /stage. */
 function inImage(image: string, script: string): void {
+  // umask 0, so what the image's user creates the host user can remove.
   docker(['run', '--rm', '--network', 'none', '-v', `${mount(STAGE)}:/stage`,
-    '--entrypoint', 'sh', image, '-c', script])
+    '--entrypoint', 'sh', image, '-c', `umask 0 && ${script}`])
 }
 
 function sha256(path: string): string {
@@ -77,6 +78,11 @@ function buildToolchain(): void {
   rmSync(STAGE, { recursive: true, force: true })
   mkdirSync(join(STAGE, 'root'), { recursive: true })
   mkdirSync(OUT, { recursive: true })
+  // The images run as an unprivileged user, which on a Linux host cannot
+  // write to a directory the host user made -- Docker Desktop hides this by
+  // ignoring ownership on bind mounts, CI does not.
+  chmodSync(STAGE, 0o777)
+  chmodSync(join(STAGE, 'root'), 0o777)
 
   // The compilers, and clang's headers, out of images that have no shell.
   const container = docker(['create', CLANG_WASM_IMAGE, '/llvm.wasm']).trim()
@@ -148,10 +154,11 @@ function buildToolchain(): void {
     pruned.push(...unused.map((file) => `${dir}/${file.slice(2)}`))
   }
 
-  // One reproducible tar: sorted, zero timestamps, no owners.
+  // One reproducible tar: sorted, zero timestamps, no owners, and modes
+  // normalised, since what a host's bind mount reports for them varies.
   inImage(TAR_IMAGE,
     'cd /stage/root && tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner ' +
-    '--format=ustar -cf /stage/sysroot.tar .')
+    "--mode='a=rX,u+w' --format=ustar -cf /stage/sysroot.tar .")
   const tar = readFileSync(join(STAGE, 'sysroot.tar'))
   writeFileSync(join(OUT, 'sysroot.tar'), tar)
 

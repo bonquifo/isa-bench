@@ -24,7 +24,7 @@
  */
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -271,6 +271,10 @@ int main(void) {
 function main(): void {
   mkdirSync(OUT_DIR, { recursive: true })
   const work = mkdtempSync(join(tmpdir(), 'mos-corpus-'))
+  // The images run as an unprivileged user, which on a Linux host cannot
+  // write to a directory the host user made -- Docker Desktop hides this by
+  // ignoring ownership on bind mounts, CI does not.
+  chmodSync(work, 0o777)
   const outcomes: Outcome[] = []
 
   const programs = [

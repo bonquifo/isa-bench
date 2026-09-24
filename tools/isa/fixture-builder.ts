@@ -21,7 +21,7 @@
  * src/isa/common/fixtures.node.ts reads back.
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 export interface LockstepStep {
@@ -378,6 +378,10 @@ export function buildFixtures(target: FixtureTarget): void {
   mkdirSync(target.outDir, { recursive: true })
   const work = target.workDir
   mkdirSync(work, { recursive: true })
+  // The images run as an unprivileged user, which on a Linux host cannot
+  // write to a directory the host user made -- Docker Desktop hides this by
+  // ignoring ownership on bind mounts, CI does not.
+  chmodSync(work, 0o777)
 
   const sources: { name: string; path: string }[] = []
   for (const [dir, prefix] of [[target.sharedProgramsDir, ''], [target.programsDir, '']] as const) {

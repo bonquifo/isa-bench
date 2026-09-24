@@ -48,7 +48,7 @@
  * of them says rather more than agreement with either.
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CORPUS_FLAGS, corpusPrograms } from '../corpus.ts'
@@ -104,6 +104,10 @@ function sh(script: string): string {
 function main(): void {
   mkdirSync(WORK, { recursive: true })
   mkdirSync(OUT, { recursive: true })
+  // The images run as an unprivileged user, which on a Linux host cannot
+  // write to a directory the host user made -- Docker Desktop hides this by
+  // ignoring ownership on bind mounts, CI does not.
+  chmodSync(WORK, 0o777)
 
   // ---- The shared freestanding programs -----------------------------
   const sharedDir = join(TOOLS, 'programs')
