@@ -21,7 +21,7 @@
  * src/isa/common/fixtures.node.ts reads back.
  */
 import { execFileSync } from 'node:child_process'
-import { chmodSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 export interface LockstepStep {
@@ -385,6 +385,9 @@ export function buildFixtures(target: FixtureTarget): void {
 
   const sources: { name: string; path: string }[] = []
   for (const [dir, prefix] of [[target.sharedProgramsDir, ''], [target.programsDir, '']] as const) {
+    // A target with no programs of its own has an empty directory, which
+    // git does not keep, so a fresh checkout has none at all.
+    if (!existsSync(dir)) continue
     for (const file of readdirSync(dir).filter((f) => f.endsWith('.c')).sort()) {
       sources.push({ name: prefix + file.replace(/\.c$/, ''), path: join(dir, file) })
     }
