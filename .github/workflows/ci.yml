@@ -106,9 +106,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          archive="$(ls release/*.tar.gz | head -1)"
+          archive="$(find release -maxdepth 1 -name '*.tar.gz' | head -1)"
+          # Listed to a file first: an awk that exits at its first match
+          # would cut tar off mid-listing, and pipefail fails the step on
+          # tar's broken pipe.
+          tar tvzf "$archive" > listing.txt
           for entry in isa-bench chrome-sandbox; do
-            mode="$(tar tvzf "$archive" | awk -v name="/$entry\$" '$NF ~ name {print $1; exit}')"
+            mode="$(awk -v name="/$entry\$" '$NF ~ name {print $1; exit}' listing.txt)"
             echo "$entry: $mode"
             case "$mode" in *x*) ;; *) echo "::error::$entry is not executable in $archive"; exit 1 ;; esac
           done
