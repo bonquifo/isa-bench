@@ -24,6 +24,8 @@ import { fileURLToPath } from 'node:url'
 import { CORPUS_FLAGS, corpusPrograms } from '../corpus.ts'
 import { nativeOracle, type FixtureTarget, type LockstepStep } from '../fixture-builder.ts'
 import { generateRandomProgram } from '../x86/random.ts'
+import { RunState, createRetireChunk } from '../../../src/isa/common/trace.ts'
+import { x86Backend } from '../../../src/isa/x86/backend.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const TOOLS = resolve(HERE, '..')
@@ -54,6 +56,41 @@ export function parseX86TraceLog(text: string): LockstepStep[] {
 
 const RANDOM_SEEDS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
 
+/**
+ * Zeroes, at every step, the flag bits the architecture leaves undefined.
+ *
+ * After a divide, a multiply or a multi-bit shift, some arithmetic flags
+ * are undefined, and a processor puts something there regardless -- a
+ * different something on an Intel part than on an AMD one. Recorded as
+ * captured, the fixtures therefore changed with the machine that made
+ * them, and CI, whose runners are not all the same processor, could never
+ * regenerate them cleanly. The lockstep comparison already ignores these
+ * bits (they are the ones the interpreter declares undefined through
+ * `undefinedBits`), so zeroing them removes nothing a test reads.
+ *
+ * The interpreter is stepped exactly as the lockstep test steps it. If it
+ * leaves the recorded path it stops rewriting there, and the test will
+ * report the divergence the same way it would have.
+ */
+function zeroUndefinedFlags(elf: Uint8Array, steps: LockstepStep[]): void {
+  const initialRegisters = steps[0]!.x.map((value) => BigInt.asIntN(64, value))
+  const { interpreter } = x86Backend.load(elf, { initialRegisters })
+  const chunk = createRetireChunk(1)
+  let rewritten = 0
+  for (const step of steps) {
+    if (interpreter.programCounter !== step.pc) break
+    for (let r = 0; r < step.x.length; r++) {
+      const unspecified = interpreter.undefinedBits?.(r) ?? 0n
+      if (unspecified !== 0n && (step.x[r]! & unspecified) !== 0n) {
+        step.x[r] = step.x[r]! & ~unspecified
+        rewritten += 1
+      }
+    }
+    if (interpreter.run(chunk) !== RunState.MORE) break
+  }
+  if (rewritten > 0) console.log(`  zeroed undefined flag bits at ${rewritten} steps`)
+}
+
 export const x86Target: FixtureTarget = {
   id: 'x86',
   codegen: 'isa-bench/codegen-min:23.1.0',
@@ -72,6 +109,7 @@ export const x86Target: FixtureTarget = {
   randomGenerator: 'tools/isa/x86/random.ts',
   generateRandom: (seed: number) => generateRandomProgram(seed),
   parseCpuLog: parseX86TraceLog,
+  canonicalize: zeroUndefinedFlags,
   libc: {
     triple: 'x86_64-unknown-linux-musl',
     image: 'isa-bench/codegen-musl:23.1.0-1.2.5-r3',

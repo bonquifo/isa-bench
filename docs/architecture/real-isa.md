@@ -1790,12 +1790,23 @@ docker build -f Dockerfile.mos-wasm    -t isa-bench/mos-wasm:23.0.1 .
 cd ../.. && npx vite-node tools/isa/build-toolchain.ts
 ```
 
-The initial stack pointer recorded in each lockstep fixture comes from
-where qemu-user maps the guest's stack, which address-space randomisation
-used to move on every capture, so regenerating produced a diff even when
-nothing else had changed. qemu now runs under `setarch -R`, and two
-captures of the same inputs are byte-identical -- which is what lets CI
-regenerate fixtures and commit only real changes.
+Regenerating the same inputs gives the same bytes on any machine, which
+is what lets CI regenerate fixtures and commit only real changes. Two
+things stood in the way:
+
+- **Where qemu put the stack.** qemu-user maps the guest's stack wherever
+  the host's mmap lands and sizes it from the host's stack limit, so the
+  initial stack pointer in every lockstep fixture changed with
+  address-space randomisation, with the kernel and with `ulimit -s`. qemu
+  now runs with a reserved guest address space and a fixed stack size
+  (`-R 0x80000000 -s 0x800000`), which makes the layout qemu's own.
+- **What x86 leaves undefined.** The x86 reference is whatever processor
+  runs the capture, and after a divide, a multiply or a multi-bit shift
+  an Intel part and an AMD one leave different values in the flags the
+  architecture does not define. The builder replays each trace on the
+  interpreter and zeroes, at every step, exactly the bits `undefinedBits`
+  reports -- the bits the lockstep comparison already ignores -- so the
+  fixture holds only what any correct processor must produce.
 
 In practice none of this is run by hand. The
 [Regenerate](../../.github/workflows/regenerate.yml) workflow rebuilds

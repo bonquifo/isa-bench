@@ -49,19 +49,23 @@ export interface Oracle {
   trace(elf: string, log: string): string
 }
 
+/** A 2 GiB guest address space and an 8 MiB stack, whatever the host. */
+const QEMU_LAYOUT = '-R 0x80000000 -s 0x800000'
+
 /** An oracle that is a qemu linux-user emulator at a known path. */
 export function qemuOracle(image: string, qemu: string): Oracle {
   return {
     image,
-    // qemu places the guest's stack wherever the host's mmap puts it, so
-    // with address-space randomisation on, the initial stack pointer in
-    // every lockstep fixture changed on every capture and regenerating
-    // could never come out clean. `setarch -R` turns it off, for which the
-    // container needs the same relaxation as the native oracle below.
-    dockerArgs: ['--security-opt', 'seccomp=unconfined'],
-    run: (elf) => `setarch -R ${qemu} ${elf}`,
+    // Left to itself, qemu puts the guest's stack wherever the host's mmap
+    // lands and sizes it from the host's stack limit, so the initial stack
+    // pointer in every lockstep fixture changed with address-space
+    // randomisation, with the kernel and with `ulimit -s`, and no two
+    // machines could regenerate the same fixtures. A reserved guest
+    // address space (-R) and a fixed stack size (-s) make the guest's
+    // layout qemu's own business, the same on every host.
+    run: (elf) => `${qemu} ${QEMU_LAYOUT} ${elf}`,
     trace: (elf, log) =>
-      `setarch -R ${qemu} -one-insn-per-tb -d in_asm,cpu,nochain -D ${log} ${elf} > /dev/null`,
+      `${qemu} ${QEMU_LAYOUT} -one-insn-per-tb -d in_asm,cpu,nochain -D ${log} ${elf} > /dev/null`,
   }
 }
 
@@ -137,6 +141,13 @@ export interface FixtureTarget {
   randomGenerator: string
   generateRandom(seed: number): { source: string }
   parseCpuLog(text: string): LockstepStep[]
+  /**
+   * Rewrites what the reference recorded that the architecture does not
+   * define, so the fixture holds only what any correct implementation
+   * would produce and does not depend on which one captured it. Only x86
+   * needs it: its reference is whatever processor runs the capture.
+   */
+  canonicalize?(elf: Uint8Array, steps: LockstepStep[]): void
   /** Optional second tier: whole programs linked against a real libc. */
   libc?: LibcTier
 }
@@ -309,6 +320,7 @@ function buildOne(target: FixtureTarget, name: string, source: string, work: str
     throw new Error(`${name}: guest dump was ${final.length} bytes, expected ${target.dumpBytes}`)
   }
   if (steps.length === 0) throw new Error(`${name}: the oracle produced no cpu trace`)
+  target.canonicalize?.(elf, steps)
 
   writeFileSync(join(target.outDir, `${name}.elf`), elf)
   writeFileSync(join(target.outDir, `${name}.objdump.txt`), objdump)
