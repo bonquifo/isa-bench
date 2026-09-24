@@ -72,8 +72,18 @@ async function start(): Promise<void> {
     return { action: 'deny' }
   })
   if (started.development) {
-    await window.loadURL(process.env.ISA_BENCH_DEV_URL ?? 'http://127.0.0.1:5173')
-    return
+    // `npm run desktop:dev` starts Vite and Electron together, and Electron
+    // is usually first, so the server is waited for rather than assumed.
+    const url = process.env.ISA_BENCH_DEV_URL ?? 'http://127.0.0.1:5173'
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await window.loadURL(url)
+        return
+      } catch (error) {
+        if (attempt >= 60) throw new Error(`no development server at ${url} after 30 s`, { cause: error })
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
+    }
   }
   // The simulation runs entirely in the renderer, so the packaged app loads the
   // built bundle straight off disk. There is no local server and no network use.

@@ -41,6 +41,15 @@ export default defineConfig({
   // `.bin` is the 6502's shipped format: its linker emits a chunked memory
   // image rather than an ELF, and the image is what the simulator ran and
   // so what the corpus tier compared against.
+  // The desktop shell loads http://127.0.0.1:5173 in development, so the
+  // server listens exactly there. Left to choose, it bound `localhost` --
+  // on Windows the IPv6 loopback -- and moved to another port when that was
+  // taken, and Electron then loaded a page nothing was serving.
+  server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+  },
   build: {
     assetsInlineLimit: (filePath: string) =>
       filePath.endsWith('.elf') || filePath.endsWith('.bin') ? true : undefined,
