@@ -6,6 +6,11 @@ architectures and shows you how each one's modeled timing compares.
 Write C, pick your ISAs, hit **RUN MODEL**. Everything runs locally inside the
 app — no server, no Docker, no network, no account.
 
+**[Read the datasheet](https://bonquifo.github.io/isa-bench/)**: what the app
+does, how a run works, how every target was verified, and the sources behind
+it, on one page. Its source is [`docs/datasheet/index.html`](docs/datasheet/index.html),
+and a change to it on `main` republishes it.
+
 ## Install
 
 Download the installer for your platform from the

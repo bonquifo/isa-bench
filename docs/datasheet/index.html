@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="What ISA Bench does, how one C program runs on eight real instruction sets, how it was tested, and the sources behind it.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPCEtLSBkZXNrdG9wL2ljb24uc3ZnLCByZWRyYXduIGZvciAxNiBhbmQgMzIgcHg6IGZ1bGwgYmxlZWQsIG5vIGdsb3csIG9uIHRoZSBwaXhlbCBncmlkLiAtLT4KICA8cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMGQwNTIwIi8+CiAgPHBhdGggZD0iTTE2IDIuNSBMMjcuNyA5LjI1IEwyNy43IDIyLjc1IEwxNiAyOS41IEw0LjMgMjIuNzUgTDQuMyA5LjI1IFoiIGZpbGw9IiMxMjA3MmEiIHN0cm9rZT0iIzAwZjBmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPGcgZmlsbD0iI2ZmMmJkNiI+CiAgICA8cmVjdCB4PSIxMSIgeT0iMTEiIHdpZHRoPSIzIiBoZWlnaHQ9IjMiLz48cmVjdCB4PSIxNSIgeT0iMTEiIHdpZHRoPSIzIiBoZWlnaHQ9IjMiLz48cmVjdCB4PSIxOSIgeT0iMTEiIHdpZHRoPSIzIiBoZWlnaHQ9IjMiLz4KICAgIDxyZWN0IHg9IjExIiB5PSIxNSIgd2lkdGg9IjMiIGhlaWdodD0iMyIvPjxyZWN0IHg9IjE5IiB5PSIxNSIgd2lkdGg9IjMiIGhlaWdodD0iMyIvPgogICAgPHJlY3QgeD0iMTEiIHk9IjE5IiB3aWR0aD0iMyIgaGVpZ2h0PSIzIi8+PHJlY3QgeD0iMTUiIHk9IjE5IiB3aWR0aD0iMyIgaGVpZ2h0PSIzIi8+PHJlY3QgeD0iMTkiIHk9IjE5IiB3aWR0aD0iMyIgaGVpZ2h0PSIzIi8+CiAgPC9nPgogIDxyZWN0IHg9IjE1IiB5PSIxNSIgd2lkdGg9IjMiIGhlaWdodD0iMyIgZmlsbD0iI2M4ZmYzZCIvPgo8L3N2Zz4K">
+<title>ISA Bench Datasheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+  img, svg { max-width: 100%; }
+  /* One visual world on purpose: the app's own neon-on-void palette. */
+  :root {
+    color-scheme: dark;
+    --void: #07030f;
+    --panel: #0e0720;
+    --panel-2: #140a2b;
+    --line: #2a1d4a;
+    --ink: #ece8f7;
+    --muted: #a89fc4;
+    --faint: #6f6690;
+    --cyan: #00f0ff;
+    --magenta: #ff2bd6;
+    --lime: #c8ff3d;
+    --amber: #ffc83d;
+    --red: #ff4d6d;
+    --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  html { background: var(--void); }
+  body {
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    padding-inline: 20px;
+  }
+  .page { max-width: 1040px; margin: 0 auto; padding-block: 40px 80px; }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+  h2 { font-size: clamp(1.5rem, 3.2vw, 2rem); font-weight: 700; }
+  h3 { font-size: 1.15rem; font-weight: 600; color: var(--ink); }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--cyan); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+  code, .mono, pre { font-family: var(--mono); font-size: 0.88em; font-variant-ligatures: none; }
+  code { color: var(--lime); background: #140a2b; padding: 1px 5px; border-radius: 4px; }
+  strong { color: #fff; font-weight: 600; }
+
+  /* ---- masthead ------------------------------------------------------- */
+  .mast {
+    display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center;
+    padding-bottom: 32px; border-bottom: 1px solid var(--line);
+  }
+  .mast svg { width: 132px; height: 132px; display: block; }
+  .partno {
+    font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--cyan); display: flex; flex-wrap: wrap; gap: 6px 18px;
+  }
+  .partno span:nth-child(2) { color: var(--magenta); }
+  .partno span:nth-child(3) { color: var(--lime); }
+  .mast h1 { font-size: clamp(2.4rem, 7vw, 4.2rem); font-weight: 700; letter-spacing: -0.01em; margin-block: 6px 10px; }
+  .mast h1 em { font-style: normal; color: var(--cyan); text-shadow: 0 0 24px rgba(0, 240, 255, 0.45); }
+  .lede { color: var(--muted); font-size: 1.12rem; max-width: 60ch; }
+
+  /* ---- spec strip ------------------------------------------------------ */
+  .spec {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    margin-block: 28px 0;
+  }
+  .spec div { background: var(--panel); padding: 16px 18px; display: grid; gap: 2px; }
+  .spec b { font-family: var(--display); font-size: 1.9rem; font-weight: 700; line-height: 1.1; color: #fff; font-variant-numeric: tabular-nums; }
+  .spec span { font-size: 0.86rem; color: var(--muted); }
+
+  /* ---- sections -------------------------------------------------------- */
+  section { padding-block: 56px 0; display: grid; gap: 18px; }
+  .sec-head { display: grid; gap: 6px; }
+  .sec-no { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--magenta); }
+  .sec-lede { color: var(--muted); font-size: 1.05rem; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .cap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 8px; align-content: start; }
+  .cap p { color: var(--muted); font-size: 0.95rem; }
+  .cap .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); }
+
+  /* ---- tables ---------------------------------------------------------- */
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); font-weight: 600; background: var(--panel-2); }
+  tr:last-child td { border-bottom: 0; }
+  td { color: var(--muted); }
+  td:first-child { color: var(--ink); font-weight: 500; white-space: nowrap; }
+  .num td:not(:first-child), .num th:not(:first-child) { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 9px; vertical-align: 0; }
+
+  /* ---- flow diagram ---------------------------------------------------- */
+  .flow { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); align-items: stretch; }
+  .node {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 14px;
+    display: grid; gap: 4px; align-content: start; position: relative;
+  }
+  .node b { font-family: var(--display); font-size: 0.98rem; color: #fff; }
+  .node span { font-size: 0.82rem; color: var(--muted); line-height: 1.45; }
+  .node .k { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .node.c1 .k { color: var(--cyan); } .node.c2 .k { color: var(--magenta); } .node.c3 .k { color: var(--lime); }
+  .arrow { display: grid; place-items: center; color: var(--faint); font-family: var(--mono); font-size: 1.1rem; }
+  .ref {
+    margin-top: 12px; padding: 12px 16px; border: 1px dashed #5a3f7f; border-radius: 10px; color: var(--muted); font-size: 0.92rem;
+  }
+  .ref b { color: var(--amber); font-family: var(--display); }
+
+  /* ---- bars ------------------------------------------------------------ */
+  .chart { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 10px; }
+  .chart h3 { font-size: 1rem; }
+  .chart .unit { color: var(--faint); font-size: 0.85rem; }
+  .bar-row { display: grid; grid-template-columns: 104px minmax(0, 1fr) 118px; gap: 12px; align-items: center; font-size: 0.88rem; }
+  .bar-name { color: var(--ink); white-space: nowrap; }
+  .bar-track { height: 12px; background: #1b1135; border-radius: 3px; overflow: hidden; }
+  .bar-fill { display: block; height: 100%; border-radius: 3px; }
+  .bar-val { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }
+  .bar-val small { color: var(--faint); margin-left: 8px; font-size: 0.8em; }
+
+  pre.src {
+    margin: 0; background: #0a0517; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+    font-family: var(--mono); font-size: 0.8rem; line-height: 1.55; color: #cfc6ea; overflow-x: auto;
+  }
+  pre.src .c { color: var(--faint); } pre.src .kw { color: var(--magenta); } pre.src .s { color: var(--lime); }
+
+  /* ---- verification ladder -------------------------------------------- */
+  .tiers { display: grid; gap: 12px; }
+  .tier { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
+  .tier-name { font-family: var(--display); font-weight: 600; color: #fff; display: grid; gap: 2px; align-content: start; }
+  .tier-name small { font-family: var(--mono); font-weight: 400; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
+  .tier p { color: var(--muted); font-size: 0.95rem; }
+
+  .found { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .found div { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 18px; padding: 14px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .found div:last-child { border-bottom: 0; }
+  .found b { color: var(--amber); font-family: var(--display); font-weight: 600; }
+  .found span { color: var(--muted); font-size: 0.94rem; }
+
+  .pipeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .stage { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--cyan); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+  .stage:nth-child(2) { border-top-color: var(--magenta); }
+  .stage:nth-child(3) { border-top-color: var(--lime); }
+  .stage ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.92rem; display: grid; gap: 4px; }
+  .stage .when { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+
+  .limits { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+  .limits li { padding: 12px 16px 12px 16px; border-left: 3px solid var(--magenta); background: var(--panel); border-radius: 0 8px 8px 0; color: var(--muted); font-size: 0.95rem; }
+  .limits li b { color: var(--ink); }
+
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--faint); font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 8px 24px; }
+
+  @media (max-width: 860px) {
+    .flow { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .arrow { transform: rotate(90deg); height: 26px; }
+    .grid-3, .pipeline { grid-template-columns: minmax(0, 1fr); }
+    .spec { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 620px) {
+    .mast { grid-template-columns: minmax(0, 1fr); }
+    .mast svg { width: 96px; height: 96px; }
+    .grid-2 { grid-template-columns: minmax(0, 1fr); }
+    .tier, .found div { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .bar-row { grid-template-columns: 86px minmax(0, 1fr) 92px; gap: 8px; }
+    .bar-val small { display: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mast svg { animation: pulse 5s ease-in-out infinite; }
+    @keyframes pulse { 50% { filter: drop-shadow(0 0 18px rgba(0, 240, 255, 0.35)); } }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="mast">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="ISA Bench icon"><defs><radialGradient id="ic-plate" cx="50%" cy="42%" r="70%"><stop offset="0" stop-color="#1a0a33"/><stop offset="1" stop-color="#05010a"/></radialGradient><linearGradient id="ic-die" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#130829"/><stop offset="1" stop-color="#070210"/></linearGradient><radialGradient id="ic-core" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#f4ffc2"/><stop offset="0.45" stop-color="#c8ff3d"/><stop offset="1" stop-color="#7fd400"/></radialGradient><filter id="ic-glow" filterUnits="userSpaceOnUse" x="0" y="0" role="img" aria-label="ISA Bench icon"><feGaussianBlur stdDeviation="14" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="ic-bloom" filterUnits="userSpaceOnUse" x="0" y="0" role="img" aria-label="ISA Bench icon"><feGaussianBlur stdDeviation="36" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="100" y="100" width="824" height="824" rx="185" fill="url(#ic-plate)"/><rect x="100" y="100" width="824" height="824" rx="185" fill="none" stroke="#00f0ff" stroke-opacity="0.18" stroke-width="4"/><g stroke="#00f0ff" stroke-width="18" stroke-linecap="round" opacity="0.9" filter="url(#ic-glow)"><path d="M593.1 246.8 L624.1 193.1 M701.1 309.2 L732.1 255.5"/><path d="M782.2 449.6 L844.2 449.6 M782.2 574.4 L844.2 574.4"/><path d="M701.1 714.8 L732.1 768.5 M593.1 777.2 L624.1 830.9"/><path d="M430.9 777.2 L399.9 830.9 M322.9 714.8 L291.9 768.5"/><path d="M241.8 574.4 L179.8 574.4 M241.8 449.6 L179.8 449.6"/><path d="M322.9 309.2 L291.9 255.5 M430.9 246.8 L399.9 193.1"/></g><path d="M512 200 L782.2 356 L782.2 668 L512 824 L241.8 668 L241.8 356 Z" fill="url(#ic-die)"/><path d="M512 200 L782.2 356 L782.2 668 L512 824 L241.8 668 L241.8 356 Z" fill="none" stroke="#00f0ff" stroke-width="20" stroke-linejoin="round" filter="url(#ic-glow)"/><path d="M512 236 L751 374 L751 650 L512 788 L273 650 L273 374 Z" fill="none" stroke="#00f0ff" stroke-opacity="0.25" stroke-width="4" stroke-linejoin="round"/><g stroke="#ff2bd6" stroke-width="8" stroke-linecap="round" opacity="0.8"><path d="M512 362 V262 M512 662 V762 M362 512 H282 M662 512 H742"/></g><g fill="#ff2bd6"><circle cx="512" cy="258" r="12"/><circle cx="512" cy="766" r="12"/><circle cx="278" cy="512" r="12"/><circle cx="746" cy="512" r="12"/></g><g fill="#ff2bd6" fill-opacity="0.16" stroke="#ff2bd6" stroke-width="10" filter="url(#ic-glow)"><rect x="362" y="362" width="88" height="88" rx="14"/><rect x="468" y="362" width="88" height="88" rx="14"/><rect x="574" y="362" width="88" height="88" rx="14"/><rect x="362" y="468" width="88" height="88" rx="14"/><rect x="574" y="468" width="88" height="88" rx="14"/><rect x="362" y="574" width="88" height="88" rx="14"/><rect x="468" y="574" width="88" height="88" rx="14"/><rect x="574" y="574" width="88" height="88" rx="14"/></g><rect x="468" y="468" width="88" height="88" rx="14" fill="url(#ic-core)" filter="url(#ic-bloom)"/></svg> 
+    <div>
+      <div class="partno"><span>Datasheet</span><span>8 instruction sets</span><span>Rev. main · 2026-09-24</span></div>
+      <h1>ISA <em>Bench</em></h1>
+      <p class="lede">A desktop app that compiles one C program for eight instruction sets, runs every build on an interpreter checked against a real reference, and compares what each architecture actually executed on one shared, deterministic timing model.</p>
+    </div>
+  </header>
+
+  <div class="spec" role="list">
+    <div role="listitem"><b>8</b><span>instruction sets, real encodings</span></div>
+    <div role="listitem"><b>283,652</b><span>instructions checked register by register against qemu or the host CPU</span></div>
+    <div role="listitem"><b>23,502</b><span>single-instruction 6502 cases from SingleStepTests</span></div>
+    <div role="listitem"><b>1,803</b><span>tests (1,776 regular + 27 deep), all passing</span></div>
+  </div>
+
+  <!-- ================================================================ -->
+  <section id="capabilities">
+    <div class="sec-head">
+      <span class="sec-no">01 · Capabilities</span>
+      <h2>What it does</h2>
+      <p class="sec-lede">Pick a program, pick the instruction sets, press <strong>Run model</strong>. Everything runs locally inside the app: no server, no Docker, no network, no account.</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Target</th><th>Real ISA as run</th><th>C library linked</th><th>Checked against</th></tr></thead>
+        <tbody>
+          <tr><td><span class="swatch" style="background:#ff9a3c"></span>RISC-V</td><td>RV64GC</td><td>musl 1.2.5</td><td>qemu-riscv64, every instruction</td></tr>
+          <tr><td><span class="swatch" style="background:#4dd7ff"></span>ARM</td><td>AArch64</td><td>musl 1.2.5</td><td>qemu-aarch64, every instruction</td></tr>
+          <tr><td><span class="swatch" style="background:#ff5fd2"></span>x86</td><td>x86-64</td><td>musl 1.2.5</td><td>the host processor, single-stepped with ptrace</td></tr>
+          <tr><td><span class="swatch" style="background:#c8ff3d"></span>MIPS</td><td>MIPS32 (little-endian)</td><td>musl 1.2.5</td><td>qemu-mipsel, every instruction</td></tr>
+          <tr><td><span class="swatch" style="background:#ffc83d"></span>POWER</td><td>POWER (ppc64le)</td><td>musl 1.2.5</td><td>qemu-ppc64le, every instruction</td></tr>
+          <tr><td><span class="swatch" style="background:#7aa2ff"></span>SPARC</td><td>SPARC V8</td><td>picolibc 1.8.10 (musl has no SPARC port)</td><td>qemu-sparc, every instruction</td></tr>
+          <tr><td><span class="swatch" style="background:#5dffb0"></span>WebAssembly</td><td>wasm32 (WASI)</td><td>wasi-libc</td><td>a real engine on every operand edge value, then wasmtime on whole programs</td></tr>
+          <tr><td><span class="swatch" style="background:#ff4d6d"></span>6502</td><td>MOS 6502 (NMOS)</td><td>llvm-mos SDK</td><td>23,502 SingleStepTests cases, then mos-sim on whole programs</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-3">
+      <div class="cap"><span class="tag">Programs</span><h3>Three sources</h3><p>Twelve built-in kernels (<code>matmul</code>, <code>sieve</code>, <code>fir</code>, <code>pointer_chase</code> and more, each with a size and seed), fourteen canned C programs, or your own C typed into the editor. Custom IR is there for controlling the instruction stream directly.</p></div>
+      <div class="cap"><span class="tag">Real instruction sets</span><h3>Your C, compiled in the app</h3><p>The app carries clang and lld (LLVM 23.1.0) and llvm-mos, built to WebAssembly, plus each target's C library. Your program is compiled for all eight targets offline, in about a quarter of a second to two seconds per target, and run on the verified interpreters.</p></div>
+      <div class="cap"><span class="tag">Model lowering</span><h3>A second path, clearly labelled</h3><p>Any program can also run on pseudo-backends that model how each architecture shapes code. A report is always all real or all lowered, and says which in its header.</p></div>
+      <div class="cap"><span class="tag">Timing</span><h3>Two deterministic models</h3><p>A scoreboarded in-order pipeline (the default) and a detailed out-of-order model with renaming, a reorder buffer, load/store queues and speculation. Both produce model cycles, not nanoseconds.</p></div>
+      <div class="cap"><span class="tag">Hardware</span><h3>One profile, or presets</h3><p>By default every target gets the identical core, caches and predictor, so differences come from the instruction streams. Illustrative per-target presets are available and ranked by modelled time instead.</p></div>
+      <div class="cap"><span class="tag">Output</span><h3>Reports you can keep</h3><p>Ranked tables, instruction mix, a trace view and a protocol pane that names each target's library and oracle. Runs save locally and export to JSON and CSV.</p></div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section id="how">
+    <div class="sec-head">
+      <span class="sec-no">02 · How it works</span>
+      <h2>One run, end to end</h2>
+      <p class="sec-lede">What happens between pressing Run and reading the table, for a program you wrote yourself.</p>
+    </div>
+
+    <div class="flow" aria-label="Run pipeline">
+      <div class="node c1"><span class="k">Source</span><b>Your C</b><span>Checked by the Guest C front end, then wrapped with a small driver that prints the return value.</span></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="node c2"><span class="k">In-app compiler</span><b>clang / llvm-mos</b><span>WebAssembly builds in a worker. Compile, then the exact link the native driver would run.</span></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="node c2"><span class="k">8 binaries</span><b>ELF · .wasm · .bin</b><span>Static, stripped, linked against the same libraries as the shipped programs.</span></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="node c3"><span class="k">Execution</span><b>Verified interpreters</b><span>Each architecture's own decoder and semantics. Unknown instructions stop the run by name.</span></div>
+    </div>
+    <div class="flow" aria-label="Run pipeline, continued" style="margin-top:10px">
+      <div class="node c3"><span class="k">Trace</span><b>Retired instructions</b><span>Class, registers read and written, branch direction, memory addresses, delay slots, traps.</span></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="node c1"><span class="k">Timing</span><b>Shared model</b><span>The same pipeline, caches, predictor and return stack for every target. No per-ISA adjustments.</span></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="node c1"><span class="k">Report</span><b>Counted vs modelled</b><span>Exact counts from execution, kept apart from the model's cycles and cache figures.</span></div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="node c2"><span class="k">Gate</span><b>Reference check</b><span>Every row must match the reference's return value and output, or the run is rejected.</span></div>
+    </div>
+    <p class="ref"><b>The reference.</b> Independently of the eight binaries, the program is compiled to the project's IR and run on a reference interpreter. That answer is the one every target must reproduce. The single stated exception: the 6502's <code>int</code> is 16 bits, so when an answer needs more it computes a different one, is shown, and is left out of every ranking because it did different work.</p>
+
+    <div class="grid-2">
+      <div class="cap"><span class="tag">Counted</span><h3>Exact, from execution</h3><p>Instructions retired, instruction bytes executed, data-memory instructions (including implicit stack traffic such as an x86 <code>call</code> or a 6502 <code>jsr</code>), conditional branches and the share taken, distinct code executed, and platform traps such as SPARC window spills.</p></div>
+      <div class="cap"><span class="tag">Modelled</span><h3>From the shared core</h3><p>Model cycles, cycles per instruction (shown, never ranked), branch mispredictions, I-cache and D-cache misses and memory line requests. Energy is deliberately not reported: the estimate is uncalibrated and cannot support a comparison.</p></div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section id="example">
+    <div class="sec-head">
+      <span class="sec-no">03 · Worked example</span>
+      <h2>One new program, eight machines</h2>
+      <p class="sec-lede">A program that is not in the corpus, typed into the packaged Windows app. It compiled for all eight targets, and every target printed the same output and returned the reference's answer, 1,241. The whole run took 2.6 to 4.6 seconds.</p>
+    </div>
+
+    <div class="grid-2">
+      <pre class="src" aria-label="Test program"><span class="c">/* Insertion sort, a checksum and a histogram. Every
+   intermediate stays below 32767, so a 16-bit int agrees. */</span>
+<span class="kw">int</span> data[48];
+
+<span class="kw">int</span> main(<span class="kw">void</span>) {
+  <span class="kw">int</span> seed = 123;
+  <span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; 48; i++) {
+    seed = (seed * 21 + 7) % 1009;
+    data[i] = seed;
+  }
+  <span class="kw">for</span> (<span class="kw">int</span> i = 1; i &lt; 48; i++) {
+    <span class="kw">int</span> v = data[i], j = i - 1;
+    <span class="kw">while</span> (j &gt;= 0 &amp;&amp; data[j] &gt; v) {
+      data[j + 1] = data[j]; j--;
+    }
+    data[j + 1] = v;
+  }
+  <span class="kw">int</span> buckets[4] = {0, 0, 0, 0};
+  <span class="kw">int</span> check = 0;
+  <span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; 48; i++) {
+    buckets[data[i] / 253]++;
+    check = (check * 7 + data[i]) % 4093;
+  }
+  printf(<span class="s">"min=%d max=%d\n"</span>, data[0], data[47]);
+  printf(<span class="s">"buckets=%d %d %d %d\n"</span>, ...);
+  <span class="kw">return</span> check;   <span class="c">/* 1241 on every target */</span>
+}</pre>
+      <div style="display:grid;gap:16px;align-content:start">
+        <div class="chart">
+          <h3>Model cycles <span class="unit">· shared in-order core, fewer is better</span></h3>
+          <div class="bar-row"><span class="bar-name">AArch64</span><span class="bar-track"><span class="bar-fill" style="width:33.50%;background:#4dd7ff"></span></span><span class="bar-val">26,289<small>1.00&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">SPARC V8</span><span class="bar-track"><span class="bar-fill" style="width:33.80%;background:#7aa2ff"></span></span><span class="bar-val">26,522<small>1.01&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">x86-64</span><span class="bar-track"><span class="bar-fill" style="width:35.18%;background:#ff5fd2"></span></span><span class="bar-val">27,606<small>1.05&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">RV64GC</span><span class="bar-track"><span class="bar-fill" style="width:35.65%;background:#ff9a3c"></span></span><span class="bar-val">27,975<small>1.06&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">MIPS32</span><span class="bar-track"><span class="bar-fill" style="width:45.58%;background:#c8ff3d"></span></span><span class="bar-val">35,766<small>1.36&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">POWER</span><span class="bar-track"><span class="bar-fill" style="width:46.15%;background:#ffc83d"></span></span><span class="bar-val">36,215<small>1.38&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">WebAssembly</span><span class="bar-track"><span class="bar-fill" style="width:46.87%;background:#5dffb0"></span></span><span class="bar-val">36,775<small>1.40&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">MOS 6502</span><span class="bar-track"><span class="bar-fill" style="width:100.00%;background:#ff4d6d"></span></span><span class="bar-val">78,469<small>2.98&times;</small></span></div>
+        </div>
+        <div class="chart">
+          <h3>Instructions retired <span class="unit">· counted exactly from execution</span></h3>
+          <div class="bar-row"><span class="bar-name">AArch64</span><span class="bar-track"><span class="bar-fill" style="width:15.66%;background:#4dd7ff"></span></span><span class="bar-val">10,341<small>1.00&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">SPARC V8</span><span class="bar-track"><span class="bar-fill" style="width:23.52%;background:#7aa2ff"></span></span><span class="bar-val">15,539<small>1.50&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">x86-64</span><span class="bar-track"><span class="bar-fill" style="width:16.46%;background:#ff5fd2"></span></span><span class="bar-val">10,874<small>1.05&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">RV64GC</span><span class="bar-track"><span class="bar-fill" style="width:18.44%;background:#ff9a3c"></span></span><span class="bar-val">12,183<small>1.18&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">MIPS32</span><span class="bar-track"><span class="bar-fill" style="width:23.49%;background:#c8ff3d"></span></span><span class="bar-val">15,518<small>1.50&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">POWER</span><span class="bar-track"><span class="bar-fill" style="width:20.71%;background:#ffc83d"></span></span><span class="bar-val">13,681<small>1.32&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">WebAssembly</span><span class="bar-track"><span class="bar-fill" style="width:37.08%;background:#5dffb0"></span></span><span class="bar-val">24,494<small>2.37&times;</small></span></div>
+<div class="bar-row"><span class="bar-name">MOS 6502</span><span class="bar-track"><span class="bar-fill" style="width:100.00%;background:#ff4d6d"></span></span><span class="bar-val">66,054<small>6.39&times;</small></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll">
+      <table class="num">
+        <thead><tr><th>Target</th><th>Instructions</th><th>Instruction bytes</th><th>Model cycles</th><th>Mispredictions</th></tr></thead>
+        <tbody>
+          <tr><td><span class="swatch" style="background:#4dd7ff"></span>AArch64</td><td>10,341</td><td>41,364</td><td>26,289</td><td>335</td></tr>
+<tr><td><span class="swatch" style="background:#7aa2ff"></span>SPARC V8</td><td>15,539</td><td>62,156</td><td>26,522</td><td>327</td></tr>
+<tr><td><span class="swatch" style="background:#ff5fd2"></span>x86-64</td><td>10,874</td><td>35,232</td><td>27,606</td><td>319</td></tr>
+<tr><td><span class="swatch" style="background:#ff9a3c"></span>RV64GC</td><td>12,183</td><td>37,192</td><td>27,975</td><td>460</td></tr>
+<tr><td><span class="swatch" style="background:#c8ff3d"></span>MIPS32</td><td>15,518</td><td>62,072</td><td>35,766</td><td>447</td></tr>
+<tr><td><span class="swatch" style="background:#ffc83d"></span>POWER</td><td>13,681</td><td>54,724</td><td>36,215</td><td>397</td></tr>
+<tr><td><span class="swatch" style="background:#5dffb0"></span>WebAssembly</td><td>24,494</td><td>48,072</td><td>36,775</td><td>278</td></tr>
+<tr><td><span class="swatch" style="background:#ff4d6d"></span>MOS 6502</td><td>66,054</td><td>124,565</td><td>78,469</td><td>953</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-lede" style="font-size:0.95rem">Reading it: AArch64 needed the fewest instructions and the fewest model cycles. SPARC retired half again as many instructions but nearly matched it on cycles. x86-64's variable-length encoding executed the fewest bytes. WebAssembly, a stack machine, retired more than twice as many instructions as AArch64 or x86-64. The 6502, with three 8-bit registers and no multiply, needed 6.4 times AArch64's instructions and 15 times its data-memory traffic. Counts include library code, and the libraries differ.</p>
+  </section>
+
+  <!-- ================================================================ -->
+  <section id="tested">
+    <div class="sec-head">
+      <span class="sec-no">04 · How it was tested</span>
+      <h2>Every claim has a reference</h2>
+      <p class="sec-lede">The interpreters are only as trustworthy as what they were compared against. Each tier below checks something the others cannot.</p>
+    </div>
+
+    <div class="tiers">
+      <div class="tier"><div class="tier-name">Lockstep<small>6 targets</small></div><p>116 freestanding programs, including 12 randomly generated per target, run on the interpreter and on the reference together. Every register is compared before every instruction: 283,652 instructions in all, against qemu for five targets and against the physical x86 processor for x86-64. Then the final memory and register state is compared byte for byte.</p></div>
+      <div class="tier"><div class="tier-name">Decode<small>by signature</small></div><p>Every instruction in every fixture is decoded by the project and by <code>llvm-objdump</code>, and the two must agree on what every instruction is. This audit found real encoding mistakes that execution alone had not, including four in the POWER decoder.</p></div>
+      <div class="tier"><div class="tier-name">Whole programs<small>libc tier</small></div><p>18 programs per target, linked against a real C library, must print the same bytes and exit the same way as under the reference. This covers system calls, <code>printf</code> and the start-up code.</p></div>
+      <div class="tier"><div class="tier-name">WebAssembly<small>no stepping possible</small></div><p>Engines compile WebAssembly, so there is nothing to single-step. Instead every operation is compared against a real engine on every edge value of its operand types (both zeros, both infinities, both signs of NaN), then 14 whole modules are compared on all of linear memory against wasmtime.</p></div>
+      <div class="tier"><div class="tier-name">6502<small>per-opcode vectors</small></div><p>23,502 single-instruction cases from the SingleStepTests project cover every documented opcode from arbitrary states, including decimal mode. They are generated by a reference implementation built to the published documentation and test sets, not recorded from silicon. Whole programs are compared against mos-sim, which gets decimal-mode N and V wrong. The vectors and Bruce Clark's documented NMOS behaviour agree on that, and the app follows them.</p></div>
+      <div class="tier"><div class="tier-name">In-app compiler<small>byte identity</small></div><p>The compiler inside the app rebuilds all fourteen shipped programs, and for the five musl targets and the 6502 the result must be the shipped binary, byte for byte. SPARC and WebAssembly link differently by design and are held to the reference's answers.</p></div>
+      <div class="tier"><div class="tier-name">Timing model<small>impossibility checks</small></div><p>A test runs the timing model over all eight targets and checks for what a trace bug makes impossible: a predictor that never mispredicts, returns that never pair with calls, memory counted by class exceeding memory seen in the trace.</p></div>
+      <div class="tier"><div class="tier-name">The packaged app<small>end to end</small></div><p>Before release, the packaged Windows app was launched and driven through its real window over the DevTools protocol: select Custom C, paste the program above, run all eight targets, read the report. Done by hand for each packaged build here, not yet in CI.</p></div>
+    </div>
+
+    <div class="scroll">
+      <table class="num">
+        <thead><tr><th>Suite</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Regular suite (every push)</td><td>1,776 passed, 1 skipped</td></tr>
+          <tr><td>Deep suite (every push, about 7 min)</td><td>27 passed: every corpus program on every backend, plus the in-app compiler over the whole corpus</td></tr>
+          <tr><td>Line coverage</td><td>92.9% at last measurement</td></tr>
+          <tr><td>Typecheck and lint</td><td>clean</td></tr>
+          <tr><td>Dependency audit</td><td>0 vulnerabilities</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section id="found">
+    <div class="sec-head">
+      <span class="sec-no">05 · What testing caught</span>
+      <h2>Bugs found on the way</h2>
+      <p class="sec-lede">Each of these produced plausible numbers until a check was added that could see it. All are fixed.</p>
+    </div>
+    <div class="found">
+      <div><b>MIPS branches</b><span>The outcome was recorded on the delay slot instead of the branch, so every branch looked untaken: 0% mispredicted on every program.</span></div>
+      <div><b>SPARC returns</b><span><code>ret</code>, <code>retl</code> and indirect calls are all <code>jmpl</code> and were all timed as indirect jumps, so no return was ever predicted. Register-window spills and fills moved 64 bytes each for free.</span></div>
+      <div><b>POWER conditional returns</b><span>A <code>beqlr</code> that fell through still popped the return stack, and every later return mispredicted.</span></div>
+      <div><b>x86 string moves</b><span>A <code>rep movsq</code> reported its first element instead of the range, so copying a page cost one store.</span></div>
+      <div><b>In-app clang</b><span>The WebAssembly port of LLVM returned a stale error code from every file close, so clang reported every object it wrote as an I/O failure.</span></div>
+      <div><b>Version strings</b><span>A build from the source tarball left the release commit out of each ELF's <code>.comment</code>, the only difference from the shipped binaries.</span></div>
+      <div><b>6502 fixtures</b><span>The committed 6502 binaries could not be rebuilt from the repository. Every one differed while every output agreed. They were regenerated from the pinned SDK.</span></div>
+      <div><b>Host-dependent fixtures</b><span>qemu's stack address depended on the host kernel, and x86 recorded whichever values the capturing CPU left in undefined flags. Both are now fixed at capture, and two machines produce identical fixtures.</span></div>
+      <div><b>The Windows icon</b><span>A build setting meant the executables had never carried the app's icon.</span></div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section id="pipeline">
+    <div class="sec-head">
+      <span class="sec-no">06 · Delivery</span>
+      <h2>From commit to installer, without a hand step</h2>
+      <p class="sec-lede">Two workflows on GitHub carry every change through. Everything generated is reproducible from the repository and pinned by checksum.</p>
+    </div>
+    <div class="pipeline">
+      <div class="stage"><span class="when">When a generator changes</span><h3>Regenerate</h3><ul>
+        <li>Rebuilds only the Docker images whose inputs changed. Each is stored under a hash of its inputs, so an unchanged one is a pull.</li>
+        <li>Recaptures every target's fixtures and rebuilds the in-app compiler.</li>
+        <li>Runs the regular and deep suites on the result.</li>
+        <li>Publishes a new compiler bundle and commits what changed.</li></ul></div>
+      <div class="stage"><span class="when">Every push and pull request</span><h3>CI</h3><ul>
+        <li>Fetches the compiler bundle and verifies it against the lock file.</li>
+        <li>Typecheck, lint, tests, build.</li>
+        <li>The deep suite.</li></ul></div>
+      <div class="stage"><span class="when">Main, or a v* tag</span><h3>Release</h3><ul>
+        <li>Packages Windows, Linux and macOS, each on its own runner.</li>
+        <li>Main refreshes the rolling <strong>Latest main</strong> prerelease.</li>
+        <li>A tag such as <code>v1.1.0</code> publishes that version.</li>
+        <li>Dependabot proposes updates weekly, as pull requests CI checks.</li></ul></div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section id="limits">
+    <div class="sec-head">
+      <span class="sec-no">07 · Limits</span>
+      <h2>What it does not claim</h2>
+    </div>
+    <ul class="limits">
+      <li><b>No measured hardware performance.</b> Cycles are the model's, on one idealised core. Nothing in the app is timed on real silicon.</li>
+      <li><b>The instructions are real; the timing is not.</b> Instruction counts, bytes and memory traffic are exact. Cycles, cache misses and mispredictions are modelled.</li>
+      <li><b>Libraries differ.</b> Most targets link musl, SPARC links picolibc, WebAssembly links wasi-libc and the 6502 links llvm-mos's own, so a difference inside <code>printf</code> is partly a difference of library.</li>
+      <li><b>Your C is a subset.</b> Programs must be valid Guest C: signed <code>int</code>, <code>char</code>, <code>double</code>, pointers, arrays and structs; no <code>unsigned</code>, <code>long</code> or <code>float</code>.</li>
+      <li><b>The 6502 is small.</b> It has 64 KiB and a 16-bit <code>int</code>. One corpus program does not fit, and it computes different answers when a result needs more than 16 bits. The report says so.</li>
+      <li><b>Unsigned builds.</b> Windows shows a SmartScreen prompt and macOS needs right-click, Open, the first time. The CI macOS build is Apple Silicon only.</li>
+    </ul>
+  </section>
+
+
+  <!-- ================================================================ -->
+  <section id="sources">
+    <div class="sec-head">
+      <span class="sec-no">08 · Sources</span>
+      <h2>Where every reference comes from</h2>
+      <p class="sec-lede">Each upstream the project builds or checks against, pinned to the exact version it uses. Every link was opened and checked on 2026-09-25, and each claim above was checked against what the source itself says.</p>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Source</th><th>Used for</th><th>Pinned</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://github.com/llvm/llvm-project/releases/tag/llvmorg-23.1.0">LLVM 23.1.0</a></td><td>clang and lld: every fixture, every shipped binary, and the in-app compiler</td><td class="mono">tag llvmorg-23.1.0 &rarr; <a href="https://github.com/llvm/llvm-project/commit/ea7d852a70e8bdfaf601d6626a760f9771b2c4b4">ea7d852a</a></td></tr>
+          <tr><td><a href="https://github.com/llvm-mos/llvm-mos-sdk/releases/tag/v23.0.1">llvm-mos SDK 23.0.1</a></td><td>6502 compiler, C library and mos-sim, the whole-program 6502 reference</td><td class="mono">built from <a href="https://github.com/llvm-mos/llvm-mos/tree/c798c31416f72b395c658b5502d281a162387ab1">llvm-mos c798c314</a></td></tr>
+          <tr><td><a href="https://github.com/YoWASP/llvm-project/commit/97196c8eeb1d495fa43bb8af2fb26af5ef5b89fb">YoWASP WASI patch</a></td><td>makes LLVM build and run as WebAssembly, ported here to 23.1.0 with one bug fixed</td><td class="mono">97196c8e, head of llvmorg-22.1.0+wasm</td></tr>
+          <tr><td><a href="https://download.qemu.org/qemu-11.1.0.tar.xz">QEMU 11.1.0</a></td><td>lockstep reference for RISC-V, AArch64, MIPS, POWER and SPARC</td><td class="mono">11.1.0</td></tr>
+          <tr><td><a href="https://github.com/bytecodealliance/wasmtime/releases/tag/v48.0.1">Wasmtime 48.0.1</a></td><td>second engine for whole WebAssembly programs</td><td class="mono">v48.0.1</td></tr>
+          <tr><td><a href="https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-33">WASI SDK 33</a></td><td>wasi-libc and compiler-rt for WebAssembly, and the toolchain the in-app compiler is built with</td><td class="mono">wasi-sdk-33</td></tr>
+          <tr><td><a href="https://musl.libc.org/releases/musl-1.2.5.tar.gz">musl 1.2.5</a></td><td>C library for RISC-V, AArch64, x86-64, MIPS and POWER</td><td class="mono">1.2.5</td></tr>
+          <tr><td><a href="https://github.com/picolibc/picolibc/releases/tag/1.8.10">picolibc 1.8.10</a></td><td>C library for SPARC V8, which musl does not support</td><td class="mono">1.8.10</td></tr>
+          <tr><td><a href="https://packages.debian.org/bookworm/binutils-sparc64-linux-gnu">GNU binutils (Debian)</a></td><td>links SPARC fixtures, which lld cannot link</td><td class="mono">2.40-2</td></tr>
+          <tr><td><a href="https://github.com/SingleStepTests/65x02/tree/2f6980a2d95757486c7bee24355c360e40e2a224/6502">SingleStepTests 65x02</a></td><td>the 6502 per-opcode vectors. Generated by a reference implementation that, per its README, conforms to all available documentation and passes all other published test sets</td><td class="mono">2f6980a2</td></tr>
+          <tr><td><a href="https://www.6502.org/tutorials/decimal_mode.html">Bruce Clark, &ldquo;Decimal Mode&rdquo;</a></td><td>documented NMOS decimal-mode flag behaviour (appendix A), which confirms where mos-sim is wrong</td><td class="mono">6502.org</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-lede" style="font-size:0.95rem">Checking the sources changed one claim. Earlier versions of this report and of the project said the 6502 vectors were recorded from hardware. SingleStepTests' own README says they are generated, so every mention was corrected, including the label the app shows for the 6502. The conclusions drawn from the vectors still stand, because the documented hardware behaviour agrees with them.</p>
+  </section>
+
+  <footer>
+    <span>ISA Bench · <a href="https://github.com/bonquifo/isa-bench">github.com/bonquifo/isa-bench</a></span>
+    <span>Figures from the main branch and the packaged Windows app, 2026-09-24. Sources checked 2026-09-25.</span>
+  </footer>
+</div>
+</body>
+</html>
