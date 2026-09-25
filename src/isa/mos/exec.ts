@@ -6,7 +6,7 @@
  * behaviour comes from an oracle rather than from memory. Four things in
  * this file are the ones an implementation written from a reference card
  * gets wrong, and all four are checked instruction-by-instruction against
- * per-opcode vectors recorded from hardware.
+ * the SingleStepTests per-opcode vectors.
  *
  * **Decimal mode.** `sed` does not switch the adder into a different
  * mode; it inserts a correction after it, and the correction happens

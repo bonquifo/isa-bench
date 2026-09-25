@@ -7,9 +7,9 @@
  * tracing interface, so there is no way to step it alongside this
  * interpreter and compare registers before every instruction, and there
  * is no guest state dump because there is no reference to compare one
- * against. What replaces lockstep is in vectors.test.ts: per-opcode cases
- * recorded from hardware, which for one instruction at a time say more
- * than lockstep does.
+ * against. What replaces lockstep is in vectors.test.ts: the
+ * SingleStepTests per-opcode cases, which for one instruction at a time
+ * say more than lockstep does.
  *
  * So the claim this target makes is:
  *
@@ -19,8 +19,8 @@
  *
  * and *not* that its intermediate state was ever compared against a
  * reference. The middle tier is what makes that acceptable: a wrong
- * instruction would have to be wrong in a way 23,502 hardware-recorded
- * cases did not notice and that still produced the right output.
+ * instruction would have to be wrong in a way 23,502 cases did not
+ * notice and that still produced the right output.
  */
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -127,7 +127,8 @@ describe('MOS 6502: where the whole-program oracle cannot be followed', () => {
    * Someone -- including a later version of me -- sees the decimal probe
    * disagreeing with the simulator, concludes the interpreter is broken,
    * and "fixes" it to match. The result would pass the whole-program
-   * tier and break 23,502 hardware-recorded cases, and the direction of
+   * tier and break 23,502 per-opcode cases -- and the documented NMOS
+   * behaviour they encode -- and the direction of
    * that trade is the whole argument of this project.
    *
    * Two specific things the simulator does differently, both measured
@@ -140,14 +141,17 @@ describe('MOS 6502: where the whole-program oracle cannot be followed', () => {
    *     because the correction is applied as though the input were valid
    *     BCD.
    *
-   * The assertions below are on *hardware*: they establish that this
-   * backend's decimal mode is not the simplified one, and by how much.
+   * The assertions below are on the vectors, not the simulator, and
+   * agree with Bruce Clark's documented NMOS decimal mode
+   * (https://www.6502.org/tutorials/decimal_mode.html, appendix A).
+   * They establish that this backend's decimal mode is not the
+   * simplified one, and by how much.
    */
   const ADC_IMMEDIATE = 0x69
   const decimal = (parseVectors(readVectorBytes()).get(ADC_IMMEDIATE) ?? [])
     .filter((entry) => (entry.initial.p & 0x08) !== 0)
 
-  it('has decimal cases recorded from hardware to reason about', () => {
+  it('has decimal cases in the vectors to reason about', () => {
     expect(decimal.length).toBeGreaterThan(40)
   })
 

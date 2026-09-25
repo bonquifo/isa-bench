@@ -169,10 +169,10 @@ export const REAL_TARGETS: readonly RealTarget[] = [
     instructions: '6502',
     // The only target with no emulator to step alongside: mos-sim cannot
     // be traced. So the comparison is made per instruction instead of per
-    // step, against cases recorded from the hardware itself, and then
+    // step, against the SingleStepTests cases, and then
     // whole programs are compared against the simulator end to end. Both
     // halves are named here because neither alone is what the others do.
-    oracle: 'hardware-recorded opcode vectors, then mos-sim',
+    oracle: 'SingleStepTests opcode vectors, then mos-sim',
     verified: 'every documented opcode from arbitrary machine state, ' +
       'then whole programs end to end',
     libc: "llvm-mos's libc",

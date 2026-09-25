@@ -110,12 +110,13 @@ const PROBES: { name: string; extension: 'c' | 's'; source: string }[] = [
     // decimal mode by the textbook rule instead of by what the adder
     // does, and is wrong twice over: for operands with a nibble above
     // nine it produces the wrong accumulator, in eight of sixty-four
-    // cases recorded from hardware, and for *every* operand it takes N
+    // cases from the SingleStepTests vectors, and for *every* operand it
+    // takes N
     // and V from the plain binary sum, which on an NMOS part they are
     // not. So the probe keeps both operands valid BCD and reports the
     // accumulator and the carry, which is the part the simulator gets
     // right. The flags, and the invalid-digit inputs, are checked
-    // against hardware instead -- see the decimal-mode test in
+    // against the vectors instead -- see the decimal-mode test in
     // src/isa/mos/conformance.test.ts, which exists so that nobody
     // later "fixes" this backend to agree with the simulator.
     source: `        .section .zp.bss,"aw",@nobits

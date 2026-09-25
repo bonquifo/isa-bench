@@ -24,8 +24,8 @@ export const mosBackend: IsaBackend = {
   naming: MOS_NAMING,
   gprCount: MOS_GPR_COUNT,
   // No guest state dump: this target has no lockstep oracle to compare one
-  // against. What it has instead is per-opcode vectors recorded from
-  // hardware, which say more about a single instruction than a dump of the
+  // against. What it has instead is the SingleStepTests per-opcode
+  // vectors, which say more about a single instruction than a dump of the
   // state at the end of a program says about all of them. See
   // src/isa/mos/vectors.test.ts.
   dumpBytes: 0,
