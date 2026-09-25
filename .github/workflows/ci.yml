@@ -141,12 +141,25 @@ jobs:
           set -euo pipefail
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             gh release create "$GITHUB_REF_NAME" --verify-tag --latest \
-              --title "ISA Bench ${GITHUB_REF_NAME#v}" --generate-notes artifacts/*
+              --title "ISA Bench ${GITHUB_REF_NAME#v}" \
+              --notes-file .github/release-notes.md --generate-notes artifacts/*
           else
-            # One rolling prerelease, moved to this commit and refilled.
+            # One rolling prerelease, moved to this commit and refilled. Its
+            # files drop the version from their names, so a link such as
+            # releases/download/latest-main/ISA-Bench-Setup-win-x64.exe
+            # always fetches the newest build; the datasheet's download
+            # section and the README link to exactly those names.
+            for file in artifacts/*; do
+              stable="$(basename "$file" | sed -E 's/^ISA[ .]Bench/ISA-Bench/; s/-[0-9]+\.[0-9]+\.[0-9]+(-main\.[0-9]+)?//')"
+              mv "$file" "artifacts/$stable"
+            done
+            ls artifacts
+            {
+              echo "Built automatically from ${GITHUB_SHA} on main. Unsigned; not a versioned release."
+              echo
+              cat .github/release-notes.md
+            } > notes.md
             gh release delete latest-main --yes --cleanup-tag 2>/dev/null || true
             gh release create latest-main --prerelease --target "$GITHUB_SHA" \
-              --title "Latest main (${GITHUB_SHA::7})" \
-              --notes "Built automatically from ${GITHUB_SHA} on main. Unsigned; not a versioned release." \
-              artifacts/*
+              --title "Latest main (${GITHUB_SHA::7})" --notes-file notes.md artifacts/*
           fi
