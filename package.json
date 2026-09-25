@@ -2,8 +2,9 @@
   "name": "isa-bench",
   "private": true,
   "version": "1.0.0",
+  "license": "MIT",
   "description": "Desktop ISA simulator: run the same C program across eight instruction-set architectures and compare modeled timing",
-  "author": "ISA Bench",
+  "author": "Toby Buckmaster",
   "type": "module",
   "main": "desktop/dist/main.js",
   "scripts": {
@@ -110,6 +111,7 @@
           "manifest.json"
         ]
       }
-    ]
+    ],
+    "copyright": "Copyright © 2026 Toby Buckmaster"
   }
 }

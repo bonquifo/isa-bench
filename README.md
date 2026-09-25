@@ -322,3 +322,15 @@ src/ui/       Report rendering, saved runs, exports
 src/index.css All styling
 desktop/      Electron shell
 ```
+
+## License
+
+ISA Bench is released under the [MIT License](LICENSE), copyright © 2026
+Toby Buckmaster.
+
+That covers this project's own code. The installers also carry third-party
+software under its own licenses: Electron and Chromium (whose notices
+electron-builder ships beside the app), and, in the in-app compiler, LLVM
+and llvm-mos (Apache-2.0 with LLVM exception), musl (MIT), picolibc (BSD),
+wasi-libc and compiler-rt. The pinned source of each is listed in
+[`tools/isa`](tools/isa) and in the [datasheet](https://bonquifo.github.io/isa-bench/).
