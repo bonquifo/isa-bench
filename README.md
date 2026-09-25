@@ -332,5 +332,7 @@ That covers this project's own code. The installers also carry third-party
 software under its own licenses: Electron and Chromium (whose notices
 electron-builder ships beside the app), and, in the in-app compiler, LLVM
 and llvm-mos (Apache-2.0 with LLVM exception), musl (MIT), picolibc (BSD),
-wasi-libc and compiler-rt. The pinned source of each is listed in
-[`tools/isa`](tools/isa) and in the [datasheet](https://bonquifo.github.io/isa-bench/).
+wasi-libc and compiler-rt. Their full license texts, at the versions the app
+pins, are in [`THIRD-PARTY-NOTICES.txt`](THIRD-PARTY-NOTICES.txt), which every
+installer includes; `node scripts/notices.mjs` regenerates it when a pinned
+version changes.

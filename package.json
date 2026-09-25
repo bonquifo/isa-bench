@@ -110,6 +110,14 @@
           "sysroot.tar",
           "manifest.json"
         ]
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.txt"
+      },
+      {
+        "from": "THIRD-PARTY-NOTICES.txt",
+        "to": "THIRD-PARTY-NOTICES.txt"
       }
     ],
     "copyright": "Copyright © 2026 Toby Buckmaster"
