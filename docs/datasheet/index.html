@@ -160,10 +160,45 @@
 
   footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--faint); font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 8px 24px; }
 
+
+  /* ---- download ------------------------------------------------------- */
+  .dl-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+  .dl-note { color: var(--muted); font-size: 0.92rem; }
+  .dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .os {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px;
+    display: grid; gap: 14px; align-content: start; position: relative;
+  }
+  .os.is-you { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 0 28px rgba(0, 240, 255, 0.18); order: -1; }
+  .os h3 { font-size: 1.3rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .you { display: none; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase;
+         color: #07030f; background: var(--cyan); border-radius: 999px; padding: 3px 9px; }
+  .os.is-you .you { display: inline-block; }
+  .os .req { color: var(--faint); font-size: 0.85rem; margin-top: -8px; }
+  .btn {
+    display: grid; gap: 2px; text-decoration: none; border-radius: 10px; padding: 11px 14px;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--ink);
+  }
+  .btn b { font-family: var(--display); font-weight: 600; font-size: 1rem; }
+  .btn span { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); overflow-wrap: anywhere; }
+  .btn.primary { background: var(--cyan); border-color: var(--cyan); color: #07030f; }
+  .btn.primary span { color: #13303a; }
+  .btn:hover { border-color: var(--cyan); }
+  .btn.primary:hover { background: #6ff7ff; }
+  .os ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: 0.9rem; display: grid; gap: 6px; }
+  .os ol code { font-size: 0.82em; }
+  .os .alt { color: var(--faint); font-size: 0.85rem; }
+  .mobile-note { display: none; padding: 12px 16px; border: 1px dashed var(--amber); border-radius: 10px; color: var(--muted); font-size: 0.95rem; }
+  .mobile-note.show { display: block; }
+  .dl-foot { color: var(--faint); font-size: 0.88rem; }
+  .cta { display: inline-block; margin-top: 16px; font-family: var(--display); font-weight: 600; text-decoration: none;
+         color: #07030f; background: var(--cyan); border-radius: 999px; padding: 9px 20px; }
+  .cta:hover { background: #6ff7ff; }
+
   @media (max-width: 860px) {
     .flow { grid-template-columns: minmax(0, 1fr); gap: 0; }
     .arrow { transform: rotate(90deg); height: 26px; }
-    .grid-3, .pipeline { grid-template-columns: minmax(0, 1fr); }
+    .grid-3, .pipeline, .dl { grid-template-columns: minmax(0, 1fr); }
     .spec { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 620px) {
@@ -189,6 +224,7 @@
       <div class="partno"><span>Datasheet</span><span>8 instruction sets</span><span>Rev. main · 2026-09-24</span></div>
       <h1>ISA <em>Bench</em></h1>
       <p class="lede">A desktop app that compiles one C program for eight instruction sets, runs every build on an interpreter checked against a real reference, and compares what each architecture actually executed on one shared, deterministic timing model.</p>
+      <a class="cta" href="#download">Download for Windows, macOS or Linux</a>
     </div>
   </header>
 
@@ -198,6 +234,59 @@
     <div role="listitem"><b>23,502</b><span>single-instruction 6502 cases from SingleStepTests</span></div>
     <div role="listitem"><b>1,803</b><span>tests (1,776 regular + 27 deep), all passing</span></div>
   </div>
+
+
+  <!-- ================================================================ -->
+  <section id="download">
+    <div class="sec-head">
+      <span class="sec-no">Download</span>
+      <div class="dl-head">
+        <h2>Get ISA Bench</h2>
+        <span class="dl-note">Latest build of main · free, MIT licensed · about 150&ndash;180 MB</span>
+      </div>
+      <p class="sec-lede">Download one file for your computer. Nothing else to install: the compilers for all eight instruction sets are built in and work offline.</p>
+    </div>
+    <p class="mobile-note" id="mobile-note">ISA Bench is a desktop app. Open this page on a Windows, Mac or Linux computer to download it.</p>
+
+    <div class="dl">
+      <div class="os" id="os-windows">
+        <h3>Windows <span class="you">Your computer</span></h3>
+        <p class="req">Windows 10 or 11, 64-bit</p>
+        <a class="btn primary" href="https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-Setup-win-x64.exe"><b>Download installer</b><span>ISA-Bench-Setup-win-x64.exe</span></a>
+        <a class="btn" href="https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-Portable-win-x64.exe"><b>Portable, no install</b><span>ISA-Bench-Portable-win-x64.exe</span></a>
+        <ol>
+          <li>Run the installer and choose where to install. The portable file runs directly.</li>
+          <li>If Windows SmartScreen warns about an unrecognised app, choose <strong>More info</strong>, then <strong>Run anyway</strong>. The app is not code-signed.</li>
+          <li>Start ISA Bench from the Start menu or the desktop shortcut.</li>
+        </ol>
+      </div>
+
+      <div class="os" id="os-mac">
+        <h3>macOS <span class="you">Your computer</span></h3>
+        <p class="req">Apple Silicon (M1 and later)</p>
+        <a class="btn primary" href="https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-mac-arm64.dmg"><b>Download for Mac</b><span>ISA-Bench-mac-arm64.dmg</span></a>
+        <a class="btn" href="https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-mac-arm64.zip"><b>Zip archive</b><span>ISA-Bench-mac-arm64.zip</span></a>
+        <ol>
+          <li>Open the <code>.dmg</code> and drag ISA Bench into Applications.</li>
+          <li>The first time, right-click the app and choose <strong>Open</strong>, then <strong>Open</strong> again. The app is not notarized.</li>
+        </ol>
+        <p class="alt" id="mac-intel">Intel Mac? There is no prebuilt download yet. Build it from the <a href="https://github.com/bonquifo/isa-bench">source</a>: <code>npm ci</code>, <code>node scripts/fetch-toolchain.mjs</code>, <code>npm run desktop:pack:mac</code>.</p>
+      </div>
+
+      <div class="os" id="os-linux">
+        <h3>Linux <span class="you">Your computer</span></h3>
+        <p class="req">64-bit x86 (x86_64)</p>
+        <a class="btn primary" href="https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-linux-x86_64.AppImage"><b>Download AppImage</b><span>ISA-Bench-linux-x86_64.AppImage</span></a>
+        <a class="btn" href="https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-linux-x64.tar.gz"><b>Tarball, no FUSE needed</b><span>ISA-Bench-linux-x64.tar.gz</span></a>
+        <ol>
+          <li>Make the AppImage executable: <code>chmod +x ISA-Bench-linux-x86_64.AppImage</code></li>
+          <li>Run it: <code>./ISA-Bench-linux-x86_64.AppImage</code></li>
+          <li>On Ubuntu 22.04 and later, if it does not start, install FUSE 2: <code>sudo apt install libfuse2</code>. Or use the tarball: extract it and run <code>isa-bench</code>.</li>
+        </ol>
+      </div>
+    </div>
+    <p class="dl-foot">Every file, with its build commit, is on the <a href="https://github.com/bonquifo/isa-bench/releases/tag/latest-main">release page</a>. These links always fetch the newest build of main. Numbered releases, when there are some, are listed on the <a href="https://github.com/bonquifo/isa-bench/releases">releases list</a>.</p>
+  </section>
 
   <!-- ================================================================ -->
   <section id="capabilities">
@@ -475,5 +564,31 @@
     <span>Figures from the main branch and the packaged Windows app, 2026-09-24. Sources checked 2026-09-25.</span>
   </footer>
 </div>
+<script>
+  // Put the visitor's own system first. Without this script every card
+  // shows equally, so the page is complete either way.
+  (function () {
+    var ua = navigator.userAgent || ''
+    var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ''
+    var mobile = /Android|iPhone|iPad|iPod/i.test(ua) || (navigator.userAgentData && navigator.userAgentData.mobile)
+    if (mobile) { document.getElementById('mobile-note').classList.add('show'); return }
+    var os = /win/i.test(platform) || /Windows/.test(ua) ? 'windows'
+      : /mac/i.test(platform) || /Macintosh/.test(ua) ? 'mac'
+      : /linux|x11|cros/i.test(platform + ' ' + ua) ? 'linux' : null
+    if (!os) return
+    var card = document.getElementById('os-' + os)
+    card.classList.add('is-you')
+    var cta = document.querySelector('.cta')
+    var names = { windows: 'Windows', mac: 'macOS', linux: 'Linux' }
+    if (cta) cta.textContent = 'Download for ' + names[os]
+    // Chromium browsers can say whether a Mac is Intel; Safari cannot, so
+    // the Intel note stays visible for everyone else.
+    if (os === 'mac' && navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+      navigator.userAgentData.getHighEntropyValues(['architecture']).then(function (v) {
+        if (v.architecture === 'x86') document.getElementById('mac-intel').style.color = 'var(--amber)'
+      }).catch(function () {})
+    }
+  })()
+</script>
 </body>
 </html>

@@ -13,16 +13,21 @@ and a change to it on `main` republishes it.
 
 ## Install
 
-Download the installer for your platform from the
-[releases page](https://github.com/bonquifo/isa-bench/releases) — the latest
-versioned release, or **Latest main** for a build of whatever is on `main`
-now — and run it:
+Download one file for your computer. The
+[datasheet](https://bonquifo.github.io/isa-bench/#download) picks the right one
+for you and walks through the first run.
 
-| Platform | Artifact |
-| --- | --- |
-| Windows | `ISA Bench-Setup-<version>-win-x64.exe`, or the `-Portable-` build for no install |
-| Linux | `ISA Bench-<version>-linux-x86_64.AppImage`, or the `.tar.gz` |
-| macOS | `ISA Bench-<version>-mac.dmg` |
+| Your computer | Download | Then |
+| --- | --- | --- |
+| Windows 10/11, 64-bit | [ISA-Bench-Setup-win-x64.exe](https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-Setup-win-x64.exe) (installer) or [ISA-Bench-Portable-win-x64.exe](https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-Portable-win-x64.exe) (no install) | If SmartScreen warns, choose **More info → Run anyway**: the app is not code-signed |
+| Linux, x86_64 | [ISA-Bench-linux-x86_64.AppImage](https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-linux-x86_64.AppImage) | `chmod +x` it and run it. Ubuntu 22.04+ may need `sudo apt install libfuse2`, or use the [tarball](https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-linux-x64.tar.gz) and run `isa-bench` inside |
+| macOS, Apple Silicon | [ISA-Bench-mac-arm64.dmg](https://github.com/bonquifo/isa-bench/releases/download/latest-main/ISA-Bench-mac-arm64.dmg) | Drag it to Applications; the first time, right-click it and choose **Open** |
+| macOS, Intel | build it yourself, below | |
+
+These links always fetch the newest build of `main`
+([release page](https://github.com/bonquifo/isa-bench/releases/tag/latest-main)).
+Nothing else needs installing: the compilers for all eight instruction sets are
+built into the app and work offline.
 
 To build an installer yourself:
 
