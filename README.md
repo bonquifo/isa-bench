@@ -4,7 +4,8 @@ A desktop app that runs the same program across eight instruction-set
 architectures and shows you how each one's modeled timing compares.
 
 Write C, pick your ISAs, hit **RUN MODEL**. Everything runs locally inside the
-app — no server, no Docker, no network, no account.
+app — no server, no Docker, no account. The only network use is a check for
+a new version.
 
 **[Read the datasheet](https://bonquifo.github.io/isa-bench/)**: what the app
 does, how a run works, how every target was verified, and the sources behind
@@ -28,6 +29,24 @@ These links always fetch the newest build of `main`
 ([release page](https://github.com/bonquifo/isa-bench/releases/tag/latest-main)).
 Nothing else needs installing: the compilers for all eight instruction sets are
 built into the app and work offline.
+
+### Updates
+
+An installed copy keeps itself current with the newest **numbered release**
+(a `v*` tag); builds of `main` never reach it. It checks shortly after it
+starts and every twelve hours:
+
+- **Windows installer and Linux AppImage**: the update downloads in the
+  background, then the app asks to restart. Choose *Later* and it installs
+  the next time you quit.
+- **macOS, the Windows portable exe and the Linux tarball** can't replace
+  themselves (macOS won't let an unsigned app do it), so the app says a new
+  version is available and opens the download page.
+
+Set `ISA_BENCH_NO_UPDATES=1` to turn the check off. To ship an update to
+everyone, bump `version` in `package.json` if you like, then
+`git tag v1.1.0 && git push origin v1.1.0`; CI builds, publishes, and the
+installed copies pick it up.
 
 To build an installer yourself:
 

@@ -55,7 +55,7 @@
   "build": {
     "appId": "org.isa-bench.workbench",
     "productName": "ISA Bench",
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "artifactName": "ISA-Bench-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "release"
     },
@@ -79,10 +79,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "shortcutName": "ISA Bench",
-      "artifactName": "${productName}-Setup-${version}-${os}-${arch}.${ext}"
+      "artifactName": "ISA-Bench-Setup-${version}-${os}-${arch}.${ext}"
     },
     "portable": {
-      "artifactName": "${productName}-Portable-${version}-${os}-${arch}.${ext}"
+      "artifactName": "ISA-Bench-Portable-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
       "target": [
@@ -120,6 +120,13 @@
         "to": "THIRD-PARTY-NOTICES.txt"
       }
     ],
-    "copyright": "Copyright © 2026 Toby Buckmaster"
+    "copyright": "Copyright © 2026 Toby Buckmaster",
+    "publish": {
+      "provider": "generic",
+      "url": "https://github.com/bonquifo/isa-bench/releases/latest/download/"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

@@ -9,4 +9,7 @@
 | **macOS** (Intel) | build from source: `npm ci`, `node scripts/fetch-toolchain.mjs`, `npm run desktop:pack:mac` | |
 
 Nothing else to install: the compilers for all eight instruction sets are built in and work offline.
+
+**Already have it?** The Windows installer and Linux AppImage update themselves: the app downloads the new version and asks to restart. On macOS, and for the portable exe or the tarball, the app tells you a new version is out; download it here and replace the old one.
+
 More about the app: https://bonquifo.github.io/isa-bench/

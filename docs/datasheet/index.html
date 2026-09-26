@@ -293,7 +293,7 @@
     <div class="sec-head">
       <span class="sec-no">01 · Capabilities</span>
       <h2>What it does</h2>
-      <p class="sec-lede">Pick a program, pick the instruction sets, press <strong>Run model</strong>. Everything runs locally inside the app: no server, no Docker, no network, no account.</p>
+      <p class="sec-lede">Pick a program, pick the instruction sets, press <strong>Run model</strong>. Everything runs locally inside the app: no server, no Docker, no account. The only network use is a check for a new version.</p>
     </div>
 
     <div class="scroll">
@@ -526,6 +526,7 @@
       <li><b>Libraries differ.</b> Most targets link musl, SPARC links picolibc, WebAssembly links wasi-libc and the 6502 links llvm-mos's own, so a difference inside <code>printf</code> is partly a difference of library.</li>
       <li><b>Your C is a subset.</b> Programs must be valid Guest C: signed <code>int</code>, <code>char</code>, <code>double</code>, pointers, arrays and structs; no <code>unsigned</code>, <code>long</code> or <code>float</code>.</li>
       <li><b>The 6502 is small.</b> It has 64 KiB and a 16-bit <code>int</code>. One corpus program does not fit, and it computes different answers when a result needs more than 16 bits. The report says so.</li>
+      <li><b>Updates.</b> Installed copies update from numbered releases only. The Windows installer and the Linux AppImage update themselves after asking to restart; macOS, the portable exe and the tarball say a new version is out and link here.</li>
       <li><b>Unsigned builds.</b> Windows shows a SmartScreen prompt and macOS needs right-click, Open, the first time. The CI macOS build is Apple Silicon only.</li>
     </ul>
   </section>

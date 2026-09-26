@@ -2,6 +2,8 @@ import { app, BrowserWindow, Menu, net, protocol, shell } from 'electron'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { desktopFromMain, toolchainFileFor } from './paths.js'
+import { startUpdates } from './updater.js'
+import { updateMode } from './updates.js'
 
 const started = desktopFromMain(import.meta.url, process.argv, process.env, process.resourcesPath)
 let window: BrowserWindow | undefined
@@ -87,7 +89,9 @@ async function start(): Promise<void> {
     }
   }
   // The simulation runs entirely in the renderer, so the packaged app loads the
-  // built bundle straight off disk. There is no local server and no network use.
+  // built bundle straight off disk. There is no local server; the only network
+  // use is the check for a newer release (updater.ts).
   if (!started.layout.staticDir) throw new Error('packaged UI bundle is missing; run `npm run build` first')
   await window.loadFile(join(started.layout.staticDir, 'index.html'))
+  startUpdates(updateMode({ development: started.development, platform: process.platform, env: process.env }), () => window)
 }

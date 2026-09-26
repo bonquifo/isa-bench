@@ -67,16 +67,21 @@ jobs:
             script: desktop:pack:win
             artifacts: |
               release/*.exe
+              release/*.blockmap
+              release/latest*.yml
           - os: ubuntu-latest
             script: desktop:pack:linux
             artifacts: |
               release/*.AppImage
               release/*.tar.gz
+              release/latest*.yml
           - os: macos-latest
             script: desktop:pack:mac
             artifacts: |
               release/*.dmg
               release/*.zip
+              release/*.blockmap
+              release/latest*.yml
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -144,6 +149,11 @@ jobs:
               --title "ISA Bench ${GITHUB_REF_NAME#v}" \
               --notes-file .github/release-notes.md --generate-notes artifacts/*
           else
+            # Latest main is not an update source (installed copies update
+            # from numbered releases only), so its update descriptions and
+            # blockmaps stay out. (A build of main describes itself in
+            # main.yml, which no installed copy reads.)
+            rm -f artifacts/*.yml artifacts/*.blockmap
             # One rolling prerelease, moved to this commit and refilled. Its
             # files drop the version from their names, so a link such as
             # releases/download/latest-main/ISA-Bench-Setup-win-x64.exe
